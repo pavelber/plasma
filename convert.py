@@ -60,16 +60,42 @@ def read_ai(ai_f):
 	exit(1)
 
 # Make it negative if greater than ai or increment by one otherwise
-def convert_level(level_str,ai_coef): 
+def convert_level(level_str,ai_coef,start_level,start_ai_level): 
 	level = int(level_str)
 	
 	if level >= ai_coef:
-		return ai_coef - 1 - level
+		if start_ai_level is None:
+			sys.stderr.write('Detected AI level, where it don\'t expected. Level = ' + level_str + '\n')
+			exit(1)
+		return abs(ai_coef - 1 - level)+start_ai_level - 1
 	else:	
-		return level + 1
+		return level + start_level - 1
+
+def read_utl_transition_file(ss_f,ss_lev):
+	ss_f.readline() # skip first line
+	ss = int(ss_lev)
+	level_positive_detected = False
+	level_negative_detected = False
+	start_negative_level = None
+	for line in ss_f:
+		columns = line.split()
+		if level_positive_detected:
+			start_positive_level = int(len(columns)-1)
+			level_positive_detected = False
+		if level_negative_detected:
+			start_negative_level = int(len(columns)-1)
+			level_negative_detected = False
+		if len(columns) > 1:
+			print(columns[1][0]=='[')
+		if len(columns) > 1 and columns[1][0]=='[' and int(columns[0])==ss :  #ASK - 33 w/o [
+			level_positive_detected = True
+		if len(columns) > 2 and columns[2]=="AIs" and int(columns[0])==ss : 
+			level_negative_detected = True
+			
+	return start_positive_level, start_negative_level
 		
 #Main loop of converting transitions file line by line	
-def print_transitions(trans_f, ss, levels_energy, ai_coef):
+def print_transitions(trans_f, ss, levels_energy, ai_coef,start_level,start_ai_level):
 	print( HEADER_FORMAT_STRING % ('SS','UP','UP ST.W','UP ENERGY','LOW','LOW ST.W','LOW ENERGY','PHOTON ENERGY','EINSTEIN A','STD DEV'))
 	
 	levels_to_output = {}
@@ -78,10 +104,10 @@ def print_transitions(trans_f, ss, levels_energy, ai_coef):
 		if len(columns)>5: #Skip empty lines
 			#### Remember indexes in array start from 0 !!!
 			col_1_ss = ss
-			col_2_up_level = convert_level(columns[0], ai_coef)
+			col_2_up_level = convert_level(columns[0], ai_coef,start_level,start_ai_level)
 			col_3_up_stat_weight = int(columns[1]) + 1
 			col_4_up_energy = levels_energy[columns[0]] #Use original column as a key
-			col_5_low_level = convert_level(columns[2], ai_coef)
+			col_5_low_level = convert_level(columns[2], ai_coef,start_level,start_ai_level)
 			col_6_low_stat_weight = int(columns[3])+1
 			col_7_low_energy = levels_energy[columns[2]] #Use original column as a key
 			col_8_photon_energy = columns[4]
@@ -103,8 +129,8 @@ def print_transitions(trans_f, ss, levels_energy, ai_coef):
 		print(value[1])
 
 ################################## HERE THE MAIN CODE ##################################################################
-if len(sys.argv)!=4:
-	sys.stderr.write('Usage: ' + sys.argv[0] + ' levels_file transitions_file autoionization_file\n')
+if len(sys.argv)!=5:
+	sys.stderr.write('Usage: ' + sys.argv[0] + ' levels_file transitions_file autoionization_file UTL_transition_file\n')
 	exit(1)
 
 if os.path.exists(sys.argv[1]):
@@ -113,22 +139,27 @@ if os.path.exists(sys.argv[1]):
 			with open(sys.argv[2], 'rb') as trans_f:
 				if os.path.exists(sys.argv[3]):
 					with open(sys.argv[3], 'rb') as ai_f:
-						# Read Spectroscopic Symbol from two files and compare
-						ss_lev = get_ss(levels_f,LINE_OF_SS_IN_LEVELS_FILE, HEADER_LINES_NUM_LEVELS_FILE )
-						ss_tran = get_ss(trans_f,LINE_OF_SS_IN_TRANSITIONS_FILE,HEADER_LINES_NUM_TRANSITIONS_FILE )
-						if ss_lev != ss_tran:
-							sys.stderr.write('Spectroscopic symbol is not identical in files or is not on 6 line\n')
+						if os.path.exists(sys.argv[4]):
+							with open(sys.argv[4], 'rb') as ss_f: #UTL/transition
+								# Read Spectroscopic Symbol from two files and compare
+								ss_lev = get_ss(levels_f,LINE_OF_SS_IN_LEVELS_FILE, HEADER_LINES_NUM_LEVELS_FILE )
+								ss_tran = get_ss(trans_f,LINE_OF_SS_IN_TRANSITIONS_FILE,HEADER_LINES_NUM_TRANSITIONS_FILE )
+								if ss_lev != ss_tran:
+									sys.stderr.write('Spectroscopic symbol is not identical in files or is not on 6 line\n')
+									exit(1)
+						
+								start_level, start_ai_level = read_utl_transition_file(ss_f,ss_lev)
+								#Read levels energy into a dictionary
+								levels_energy = read_levels(levels_f)
+						
+								#Read autoionization coefficient from autoionization file
+								ai_coef = read_ai(ai_f)
+								
+								#Look over transitions and print output lines
+								print_transitions(trans_f,ss_lev,levels_energy,ai_coef,start_level,start_ai_level)
+						else : 
+							sys.stderr.write('Can\'t open UTL/transition file ' + sys.argv[3]+'\n')
 							exit(1)
-				
-						
-						#Read levels energy into a dictionary
-						levels_energy = read_levels(levels_f)
-				
-						#Read autoionization coefficient from autoionization file
-						ai_coef = read_ai(ai_f)
-						
-						#Look over transitions and print output lines
-						print_transitions(trans_f,ss_lev,levels_energy,ai_coef)
 				else : 
 					sys.stderr.write('Can\'t open autoionization file ' + sys.argv[3]+'\n')
 					exit(1)
