@@ -85,8 +85,6 @@ def read_utl_transition_file(ss_f,ss_lev):
 		if level_negative_detected:
 			start_negative_level = int(len(columns)-1)
 			level_negative_detected = False
-		if len(columns) > 1:
-			print(columns[1][0]=='[')
 		if len(columns) > 1 and columns[1][0]=='[' and int(columns[0])==ss :  #ASK - 33 w/o [
 			level_positive_detected = True
 		if len(columns) > 2 and columns[2]=="AIs" and int(columns[0])==ss : 
