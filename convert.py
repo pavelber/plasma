@@ -62,14 +62,13 @@ def read_ai(ai_f):
 # Make it negative if greater than ai or increment by one otherwise
 def convert_level(level_str, ai_coef,start_level,start_ai_level): 
 	level = int(level_str)
-	
 	if level >= ai_coef:
 		if start_ai_level is None:
 			sys.stderr.write('Detected AI level, where it don\'t expected. Level = ' + level_str + '\n')
 			exit(1)
 		return abs(ai_coef - 1 - level) + start_ai_level - 1
 	else:	
-		return level + start_level - 1
+		return level + start_level
 
 def read_utl_transition_file(ss_f,ss_lev):
 	ss_f.readline() # skip first line
