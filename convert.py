@@ -60,14 +60,14 @@ def read_ai(ai_f):
 	exit(1)
 
 # Make it negative if greater than ai or increment by one otherwise
-def convert_level(level_str,ai_coef,start_level,start_ai_level): 
+def convert_level(level_str, ai_coef,start_level,start_ai_level): 
 	level = int(level_str)
 	
 	if level >= ai_coef:
 		if start_ai_level is None:
 			sys.stderr.write('Detected AI level, where it don\'t expected. Level = ' + level_str + '\n')
 			exit(1)
-		return abs(ai_coef - 1 - level)+start_ai_level - 1
+		return abs(ai_coef - 1 - level) + start_ai_level - 1
 	else:	
 		return level + start_level - 1
 
@@ -80,10 +80,10 @@ def read_utl_transition_file(ss_f,ss_lev):
 	for line in ss_f:
 		columns = line.split()
 		if level_positive_detected:
-			start_positive_level = int(len(columns)-1)
+			start_positive_level = int(columns[len(columns)-1])
 			level_positive_detected = False
 		if level_negative_detected:
-			start_negative_level = int(len(columns)-1)
+			start_negative_level = int(columns[len(columns)-1])
 			level_negative_detected = False
 		if len(columns) > 1 and columns[1][0]=='[' and int(columns[0])==ss :  #ASK - 33 w/o [
 			level_positive_detected = True
@@ -147,6 +147,7 @@ if os.path.exists(sys.argv[1]):
 									exit(1)
 						
 								start_level, start_ai_level = read_utl_transition_file(ss_f,ss_lev)
+								
 								#Read levels energy into a dictionary
 								levels_energy = read_levels(levels_f)
 						
