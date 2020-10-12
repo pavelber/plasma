@@ -42,7 +42,7 @@ def default_processor(line_number, line):
 
 def fac_processor(line_number, line):
     if line_number == 1:
-        if line.strip() == 'cFAC 1.6.3':
+        if line.startswith('cFAC'):
             return Res.done('FAC 1.1.1')
         else:
             return Res.err('Expected cFAC 1.6.3 in the first line of file ')
