@@ -86,7 +86,7 @@ def is_zero(c):
 
 
 def null_line(columns):
-    return is_zero(columns[4]) and is_zero(columns[5]) and is_zero(columns[7]) and is_zero(columns[8])
+    return is_zero(columns[4]) and is_zero(columns[5]) and is_zero(columns[7])
 
 
 class TrProcessor:
