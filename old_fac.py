@@ -42,7 +42,7 @@ def default_processor(line_number, line):
 
 def fac_processor(line_number, line):
     if line_number == 1:
-        if line.strip() == 'cFAC 1.6.3':
+        if line.startswith('cFAC'):
             return Res.done('FAC 1.1.1')
         else:
             return Res.err('Expected cFAC 1.6.3 in the first line of file ')
@@ -86,7 +86,7 @@ def is_zero(c):
 
 
 def null_line(columns):
-    return is_zero(columns[4]) and is_zero(columns[5]) and is_zero(columns[7]) and is_zero(columns[8])
+    return is_zero(columns[4]) and is_zero(columns[5]) and is_zero(columns[7])
 
 
 class TrProcessor:
@@ -145,12 +145,14 @@ ce = os.path.sep + "fac.ce"
 ci = os.path.sep + "fac.ci"
 lev = os.path.sep + "fac.lev"
 tr = os.path.sep + "fac.tr"
+rr = os.path.sep + "fac.rr"
 
 tr_processor = TrProcessor()
 
 ai_processors = [fac_processor]
 ci_processors = [fac_processor]
 lev_processors = [fac_processor]
+rr_processors = [fac_processor]
 ce_processors = [fac_processor, qkmode_processor]
 tr_pass_1_processors = [fac_processor, tr_processor.skip_lines]
 tr_pass_2_processors = [tr_processor.change_ntrans]
@@ -159,6 +161,7 @@ convert(in_dir + ai, out_dir + ai, ai_processors)
 convert(in_dir + ce, out_dir + ce, ce_processors)
 convert(in_dir + ci, out_dir + ci, ci_processors)
 convert(in_dir + lev, out_dir + lev, lev_processors)
+convert(in_dir + rr, out_dir + rr, rr_processors)
 
 convert(in_dir + tr, out_dir + tr + '.tmp', tr_pass_1_processors)
 tr_processor.block_num = 0
