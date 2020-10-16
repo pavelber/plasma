@@ -92,7 +92,9 @@ def read_table():
     path = os.path.dirname(__file__)
     if path == "" or path is None:
         path = "."
-    with open(os.path.dirname(__file__) + os.path.sep + "PeriodicTable.csv", 'rb') as infile:
+    table_file = path+ os.path.sep + "PeriodicTable.csv"
+    print table_file
+    with open(table_file, 'rb') as infile:
         reader = csv.reader(infile)
         headers = next(reader)[0:]
         for row in reader:
