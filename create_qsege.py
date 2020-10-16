@@ -103,9 +103,6 @@ if len(sys.argv) != 2:
 
 (name_to_table, num_to_table) = read_table()
 
-print os.path.abspath(__file__)
-print os.path.dirname(__file__)
-
 if os.path.exists(sys.argv[1]):
     with open(sys.argv[1], 'rb') as inp:
         element = read_element(inp)
