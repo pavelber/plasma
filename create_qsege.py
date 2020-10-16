@@ -89,6 +89,9 @@ def read_element(inp):
 def read_table():
     dict1 = {}
     dict2 = {}
+    path = os.path.dirname(__file__)
+    if path == "" or path is None:
+        path = "."
     with open(os.path.dirname(__file__) + os.path.sep + "PeriodicTable.csv", 'rb') as infile:
         reader = csv.reader(infile)
         headers = next(reader)[0:]
