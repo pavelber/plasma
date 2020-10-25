@@ -3,9 +3,61 @@ import os
 import sys
 
 HEADER_FORMAT_STRING = '%3s  %3s  %3s %8s %8s'
-OUTPUT_FORMAT_STRING = '%24s%5s%13s%7d%9d'
-OUTPUT_FORMAT_STRING2 = '%24s%5s%13s%7d%9d%9s%15s'
+OUTPUT_FORMAT_STRING = '%48s%5s%13s%7d%9d'
+OUTPUT_FORMAT_STRING2 = '%48s%5s%13s%7d%9d%9s%15s'
 
+levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "5s", "5p", "4f", "5d", "6s", "6p", "5f", "6d"]
+level_to_electrons = {
+    "1s": 2,
+    "2s": 2,
+    "2p": 6,
+    "3s": 2,
+    "3p": 6,
+    "3d": 10,
+    "4s": 2,
+    "4p": 6,
+    "4d": 10,
+    "4f": 14,
+    "5s": 2,
+    "5p": 6,
+    "5d": 10,
+    "5f": 14,
+    "6s": 2,
+    "6p": 6,
+    "6d": 10
+}
+
+
+def parse_level(s):
+    level = s[0:2]
+    num = int(s[2:])
+    return level, num
+
+
+def create_levels_string(level1, level2, num_of_electrons):
+    num = num_of_electrons
+    result = []
+    (level1_name, level1_num) = parse_level(level1)
+    (level2_name, level2_num) = parse_level(level2)
+    num = num - level2_num - level1_num
+    for level in levels_order:
+        if level == level1_name:
+            result.append(level1_name+str(level1_num))
+        elif level == level2_name:
+            result.append(level2_name + str(level2_num))
+            break
+        else:
+            num_in_level = level_to_electrons[level]
+            if num < num_in_level:
+                result.append(level + str(num))
+                num = 0
+            else:
+                result.append(level + str(num_in_level))
+                num = num - num_in_level
+
+    return ' '.join(result)
+
+# 1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 4f14 5d10 6s2 6p6 5f3 6d1 7s2
 
 def error(s):
     sys.stderr.write(s + '\n')
@@ -64,13 +116,13 @@ def copy_atomic(f, element):
         elif len(columns) == 7:
             if not autoionization:
                 print OUTPUT_FORMAT_STRING % (
-                    columns[0] + " " + columns[1], columns[2], columns[3], block_counter, counter)
+                    create_levels_string(columns[0],columns[1], num), columns[2], columns[3], block_counter, counter)
                 counter += 1
                 block_counter += 1
         elif len(columns) == 9:
             if not autoionization:
                 print OUTPUT_FORMAT_STRING2 % (
-                    columns[0] + " " + columns[1], columns[2], columns[3], block_counter, counter, columns[7],
+                    create_levels_string(columns[0],columns[1], num), columns[2], columns[3], block_counter, counter, columns[7],
                     columns[8])
                 counter += 1
                 block_counter += 1
@@ -92,7 +144,7 @@ def read_table():
     path = os.path.dirname(__file__)
     if path == "" or path is None:
         path = "."
-    table_file = path+ os.path.sep + "PeriodicTable.csv"
+    table_file = path + os.path.sep + "PeriodicTable.csv"
     print table_file
     with open(table_file, 'rb') as infile:
         reader = csv.reader(infile)
