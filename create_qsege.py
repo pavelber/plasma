@@ -111,6 +111,7 @@ def copy_atomic(f, element):
             if num == 0:
                 print "33"
                 print OUTPUT_FORMAT_STRING % ("nucleus", "1", "0.000", 1, counter)
+                counter += 1
                 break
             name = num_to_table[str(num)]["Symbol"]
             if counter == 1:  # first time
