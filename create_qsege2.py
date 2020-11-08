@@ -99,8 +99,8 @@ def error(s):
 
 
 def print_header():
-    print HEADER_FORMAT_STRING % ('SpS', 'QSs', 'AI', 'FAC PI', 'NIST PI')
-    print '------------------------------------------'
+    print(HEADER_FORMAT_STRING % ('SpS', 'QSs', 'AI', 'FAC PI', 'NIST PI'))
+    print('------------------------------------------')
 
 
 def skip_n_lines(f, num):
@@ -128,8 +128,7 @@ def copy_lines(f, element, fac_dir):
             if num == 0:
                 break
             name = num_to_table[str(num)]["Symbol"]
-            print HEADER_FORMAT_STRING % (columns[0], columns[1], columns[2], columns[4], columns[6]),
-            print(" [" + name + "]")
+            print(HEADER_FORMAT_STRING % (columns[0], columns[1], columns[2], columns[4], columns[6]) + " [" + name + "]")
         else:
             break
 
@@ -157,8 +156,8 @@ def copy_atomic(f, element, fac_dir):
                 fac_file.close()
 
             if num == 0:
-                print "33"
-                print OUTPUT_FORMAT_STRING % ("nucleus", "1", "0.000", 1, counter)
+                print("33")
+                print(OUTPUT_FORMAT_STRING % ("nucleus", "1", "0.000", 1, counter))
                 counter += 1
                 break
             fac_file_name = fac_dir + os.path.sep + e + os.path.sep + "fac.lev"
@@ -172,9 +171,9 @@ def copy_atomic(f, element, fac_dir):
             block_counter = 1
         elif len(columns) == 7:
             if not autoionization:
-                print OUTPUT_FORMAT_STRING % (
+                print(OUTPUT_FORMAT_STRING % (
                     create_levels_string(num, fac_file), columns[2], columns[3], block_counter,
-                    counter)
+                    counter))
                 counter += 1
                 block_counter += 1
             else:  # Store autoionization
@@ -185,7 +184,8 @@ def copy_atomic(f, element, fac_dir):
 
         elif len(columns) == 9:
             if not autoionization:
-                print OUTPUT_FORMAT_STRING2 % (
+                print
+                OUTPUT_FORMAT_STRING2 % (
                     create_levels_string(num, fac_file), columns[2], columns[3], block_counter,
                     counter,
                     columns[7],
@@ -212,7 +212,7 @@ def copy_atomic(f, element, fac_dir):
         for ai_line in lines:
             block_counter -= 1
             counter += 1
-            print OUTPUT_FORMAT_STRING_AI2 % (ai_line, block_counter, counter)
+            print(OUTPUT_FORMAT_STRING_AI2 % (ai_line, block_counter, counter))
 
 
 def read_element(inp):
@@ -228,7 +228,6 @@ def read_table():
     if path == "" or path is None:
         path = "."
     table_file = path + os.path.sep + "PeriodicTable.csv"
-    print table_file
     with open(table_file, 'rb') as infile:
         reader = csv.reader(infile)
         headers = next(reader)[0:]
@@ -249,7 +248,7 @@ if os.path.exists(sys.argv[1]):
         print_header()
         skip_lines(inp)
         copy_lines(inp, element, sys.argv[2])
-        print "----------------------------------------------------------------"
+        print("----------------------------------------------------------------")
         copy_atomic(inp, element, sys.argv[2])
 else:
     error('Can\'t open file ' + sys.argv[1])
