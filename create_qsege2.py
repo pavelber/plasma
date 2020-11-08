@@ -8,7 +8,7 @@ OUTPUT_FORMAT_STRING_AI = '%24s%5s%13s'
 OUTPUT_FORMAT_STRING_AI2 = '%s%7d%9d'
 OUTPUT_FORMAT_STRING2 = '%24s%5s%13s%7d%9d%9s%15s'
 
-levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "5s", "5p", "4f", "5d", "6s", "6p", "5f", "6d"]
+levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f", "6s", "6p", "6d"]
 level_to_electrons = {
     "1s": 2,
     "2s": 2,
@@ -65,6 +65,10 @@ def create_levels_string(num_of_electrons, fac_file):
 
     result = []
 
+    # remove holes num of electrons in advance
+    for hole_level in holes:
+        num_to_electrons[hole_level[0:1]] -= holes[hole_level]
+
     current = '1'
     for level in levels_order:
         now = level[0:1]
@@ -76,7 +80,7 @@ def create_levels_string(num_of_electrons, fac_file):
                 if current not in num_to_electrons:
                     break
         if level in holes:
-            num_to_electrons[current] -= holes[level]
+            # num_to_electrons[current] -= holes[level]
             result.append(level + str(holes[level]))
         else:
             num_in_level = level_to_electrons[level]
@@ -128,7 +132,8 @@ def copy_lines(f, element, fac_dir):
             if num == 0:
                 break
             name = num_to_table[str(num)]["Symbol"]
-            print(HEADER_FORMAT_STRING % (columns[0], columns[1], columns[2], columns[4], columns[6]) + " [" + name + "]")
+            print(
+                HEADER_FORMAT_STRING % (columns[0], columns[1], columns[2], columns[4], columns[6]) + " [" + name + "]")
         else:
             break
 
@@ -171,25 +176,19 @@ def copy_atomic(f, element, fac_dir):
             block_counter = 1
         elif len(columns) == 7:
             if not autoionization:
-                print(OUTPUT_FORMAT_STRING % (
-                    create_levels_string(num, fac_file), columns[2], columns[3], block_counter,
-                    counter))
+                print(OUTPUT_FORMAT_STRING % (create_levels_string(num, fac_file), columns[2], columns[3], block_counter,counter))
                 counter += 1
                 block_counter += 1
             else:  # Store autoionization
                 autoionization_lines = autoionization_levels[e]
-                autoionization_lines.append(
-                    OUTPUT_FORMAT_STRING_AI % (
-                        create_levels_string(num, fac_file), columns[2], columns[3]))
-
+                autoionization_lines.append(OUTPUT_FORMAT_STRING_AI % (create_levels_string(num, fac_file), columns[2], columns[3]))
         elif len(columns) == 9:
             if not autoionization:
-                print
-                OUTPUT_FORMAT_STRING2 % (
+                print  (OUTPUT_FORMAT_STRING2 % (
                     create_levels_string(num, fac_file), columns[2], columns[3], block_counter,
                     counter,
                     columns[7],
-                    columns[8])
+                    columns[8]))
                 counter += 1
                 block_counter += 1
         elif len(columns) == 2:
