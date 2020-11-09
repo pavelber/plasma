@@ -2,7 +2,7 @@ import csv
 import os
 import sys
 
-HEADER_FORMAT_STRING = '%3s  %3s  %3s %8s %8s'
+HEADER_FORMAT_STRING = '%3s  %3s  %3s   %8s  %8s'
 OUTPUT_FORMAT_STRING = '%24s%5s%13s%7d%9d'
 OUTPUT_FORMAT_STRING_AI = '%24s%5s%13s'
 OUTPUT_FORMAT_STRING_AI2 = '%s%7d%9d'
@@ -69,21 +69,26 @@ def create_levels_string(num_of_electrons, fac_file):
     for hole_level in holes:
         num_to_electrons[hole_level[0:1]] -= holes[hole_level]
 
+    go_until_holes = max([int(k[0:1]) for k in holes.keys()])
+    go_until_num_of = max([int(k[0:1]) for k in num_to_electrons.keys()])
+    go_until = max(go_until_holes, go_until_num_of)
     current = '1'
     for level in levels_order:
         now = level[0:1]
         if now != current:
             if num_to_electrons[current] > 0:  # got to next level, not all electrons used
-                error("Now: " + level + " resuly until now: " + str(result))
+                error("Now: " + level + " result until now: " + str(result))
             else:
                 current = now
-                if current not in num_to_electrons:
+                if current not in num_to_electrons and int(current) > go_until:
                     break
         if level in holes:
             # num_to_electrons[current] -= holes[level]
             result.append(level + str(holes[level]))
         else:
             num_in_level = level_to_electrons[level]
+            if current not in num_to_electrons:
+                num_to_electrons[current] = 0
             if num_to_electrons[current] < num_in_level:
                 if num_to_electrons[current] > 0:
                     result.append(level + str(num))
@@ -91,6 +96,10 @@ def create_levels_string(num_of_electrons, fac_file):
             else:
                 result.append(level + str(num_in_level))
                 num_to_electrons[current] = num_to_electrons[current] - num_in_level
+
+    remain_electrons = sum(num_to_electrons.values())
+    if remain_electrons > 0:
+        error("Remained electrons")
 
     return ' '.join(result)
 
@@ -133,7 +142,8 @@ def copy_lines(f, element, fac_dir):
                 break
             name = num_to_table[str(num)]["Symbol"]
             print(
-                HEADER_FORMAT_STRING % (columns[0], columns[1], columns[2], columns[4], columns[6]) + " [" + name + "]")
+                    HEADER_FORMAT_STRING % (
+            columns[0], columns[1], columns[2], columns[4], columns[6]) + "  [" + name + "]")
         else:
             break
 
@@ -170,18 +180,20 @@ def copy_atomic(f, element, fac_dir):
             read_until(fac_file, "  ILEV")
             name = num_to_table[str(num)]["Symbol"]
             if counter == 1:  # first time
-                print(e + " [" + name + "]" + "                    g0        E(eV)       #       ##")
+                print(e + " [" + name + "]" + "                    g0       E(eV)       #       ##   ")
             else:
                 print(e + " [" + name + "]")
             block_counter = 1
         elif len(columns) == 7:
             if not autoionization:
-                print(OUTPUT_FORMAT_STRING % (create_levels_string(num, fac_file), columns[2], columns[3], block_counter,counter))
+                print(OUTPUT_FORMAT_STRING % (
+                create_levels_string(num, fac_file), columns[2], columns[3], block_counter, counter))
                 counter += 1
                 block_counter += 1
             else:  # Store autoionization
                 autoionization_lines = autoionization_levels[e]
-                autoionization_lines.append(OUTPUT_FORMAT_STRING_AI % (create_levels_string(num, fac_file), columns[2], columns[3]))
+                autoionization_lines.append(
+                    OUTPUT_FORMAT_STRING_AI % (create_levels_string(num, fac_file), columns[2], columns[3]))
         elif len(columns) == 9:
             if not autoionization:
                 print  (OUTPUT_FORMAT_STRING2 % (
@@ -209,9 +221,9 @@ def copy_atomic(f, element, fac_dir):
         print(e + " " + name + "-like AIs")
         block_counter = -1
         for ai_line in lines:
+            print(OUTPUT_FORMAT_STRING_AI2 % (ai_line, block_counter, counter))
             block_counter -= 1
             counter += 1
-            print(OUTPUT_FORMAT_STRING_AI2 % (ai_line, block_counter, counter))
 
 
 def read_element(inp):
