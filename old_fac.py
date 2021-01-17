@@ -189,7 +189,7 @@ out_dir = sys.argv[2]
 if os.path.exists(out_dir):
     error('Output directory ' + out_dir + ' should not exist')
 else:
-    os.mkdir(out_dir)
+    os.makedirs(out_dir)
 
 ai = os.path.sep + "fac.ai"
 ce = os.path.sep + "fac.ce"
