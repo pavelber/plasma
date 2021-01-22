@@ -24,12 +24,12 @@ def runcommand(cmd, cwd=".", cmd_in=None):
     return code, std_out, std_err
 
 
-def copy_and_run(exe, prefix, out_dir, cwd=".", cmd_in=None):
+def copy_and_run(exe, prefix, out_dir, cwd=".", cmd_in=None, args=""):
     if not os.path.exists(out_dir):
         error(out_dir + " not exists")
     copy(exe, out_dir)
     path_to, file_name = os.path.split(exe)
-    cmd = prefix + " " + out_dir + os.path.sep + file_name
+    cmd = prefix + " " + out_dir + os.path.sep + file_name+" "+args
     print(cmd)
     code, std_out, std_err = runcommand(cmd, cwd, cmd_in)
     return code, std_out, std_err

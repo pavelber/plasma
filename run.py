@@ -19,9 +19,23 @@ def check_dirs(i_dir, o_dir):
         error("Directory " + o_dir + " should not exist or be empty")
 
 
+def read_nlev(fac_lev):
+    if os.path.exists(fac_lev):
+        with open(fac_lev, 'rb') as inf:
+            for line in inf:
+                columns = line.split()
+                if len(columns) == 3 and columns[0] == 'NLEV':
+                    return columns[2]
+            error("NLEV not found in " + fac_lev)
+    else:
+        error(fac_lev + " does not exist!")
+
+
 def run_for_one_number(spn, in_dir_spn, out_dir_spn):
     run_old_fac(in_dir_spn, out_dir_spn)
-    run_fit(spn, out_dir_spn)
+    levels = read_nlev(out_dir_spn + os.path.sep + "fac.lev")
+    print("Levels from fac.lev: " + levels)
+    run_fit(spn, levels, out_dir_spn)
     run_ph_fac(spn, out_dir_spn)
     run_exc_fac(spn, out_dir_spn)
 
@@ -38,9 +52,9 @@ def run_exc_fac(spn, out_dir_spn):
     print(std_out + " " + std_out)
 
 
-def run_fit(spn, out_dir_spn):
+def run_fit(spn, levels, out_dir_spn):
     fac_dir = out_dir_spn
-    code, std_out, std_err = copy_and_run(fit_path, perl_path, fac_dir, out_dir_spn, spn)
+    code, std_out, std_err = copy_and_run(fit_path, perl_path, fac_dir, out_dir_spn, spn, " -t " + levels)
     print(std_out + " " + std_out)
 
 
@@ -64,8 +78,8 @@ if len(sys.argv) < 3:
     error('\nUsage: ' + sys.argv[
         0] + 'directory-with-cFAC-1.6.3-files-per-spectroscopic-charge output-directory [path-to-perl-executable]')
 
-in_dir = sys.argv[1]
-out_dir = sys.argv[2]
+in_dir = os.path.abspath(sys.argv[1])
+out_dir = os.path.abspath(sys.argv[2])
 
 if len(sys.argv) > 4:
     perl_exe = sys.argv[3]
