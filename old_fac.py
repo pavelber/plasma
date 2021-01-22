@@ -107,7 +107,7 @@ def error(s):
     exit(1)
 
 
-def convert(in_file, out_file, processors):
+def convert(in_file, out_file, processors, optional=False):
     procs = processors + [default_processor]
     if os.path.exists(in_file):
         with open(in_file, 'rb') as inf:
@@ -122,7 +122,7 @@ def convert(in_file, out_file, processors):
                         if not res.continue_processing:
                             break
 
-    else:
+    elif not optional:
         error('Can\'t open transitions file ' + in_file)
 
 
@@ -208,7 +208,7 @@ ce_processors = [fac_processor, qkmode_processor]
 tr_pass_1_processors = [fac_processor, tr_processor.skip_lines]
 tr_pass_2_processors = [tr_processor.change_ntrans]
 
-convert(in_dir + ai, out_dir + ai, ai_processors)
+convert(in_dir + ai, out_dir + ai, ai_processors, True)
 convert(in_dir + ce, out_dir + ce, ce_processors)
 convert(in_dir + ci, out_dir + ci, ci_processors)
 convert(in_dir + lev, out_dir + lev, lev_processors)
@@ -223,5 +223,5 @@ os.remove(out_dir + tr + '.tmp')
 split(out_dir + ce, out_dir)
 split(out_dir + rr, out_dir)
 
-os.remove(out_dir + ce)
-os.remove(out_dir + rr)
+#os.remove(out_dir + ce)
+#os.remove(out_dir + rr)

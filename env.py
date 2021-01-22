@@ -1,22 +1,9 @@
 import os
 import sys
 from os.path import abspath, dirname
-from subprocess import Popen, PIPE
 
-
-def error(s):
-    sys.stderr.write(s + '\n')
-    exit(1)
-
-
-def runcommand(cmd):
-    proc = Popen(cmd,
-                 stdout=PIPE,
-                 stderr=PIPE,
-                 shell=True,
-                 universal_newlines=True)
-    std_out, std_err = proc.communicate()
-    return proc.returncode, std_out, std_err
+from utils import error
+from utils import runcommand
 
 
 def check_file(p):
@@ -69,11 +56,3 @@ def env(perl_path):
 
     return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path
 
-
-################## MAIN ######################
-if len(sys.argv) > 1:
-    perl_exe = sys.argv[1]
-else:
-    perl_exe = None
-
-python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path = env(perl_exe)
