@@ -42,13 +42,13 @@ def run_for_one_number(spn, in_dir_spn, out_dir_spn):
 
 def run_ph_fac(spn, out_dir_spn):
     rec_dir = out_dir_spn + os.path.sep + "REC"
-    code, std_out, std_err = copy_and_run(ph_fac_path, "", rec_dir, out_dir_spn, spn)
+    code, std_out, std_err = copy_and_run(ph_fac_path, "", rec_dir, rec_dir, spn)
     print(std_out + " " + std_out)
 
 
 def run_exc_fac(spn, out_dir_spn):
     exc_dir = out_dir_spn + os.path.sep + "EXC"
-    code, std_out, std_err = copy_and_run(exc_fac_path, "", exc_dir, out_dir_spn, spn)
+    code, std_out, std_err = copy_and_run(exc_fac_path, "", exc_dir, exc_dir, spn)
     print(std_out + " " + std_out)
 
 
