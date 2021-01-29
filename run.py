@@ -1,9 +1,11 @@
 import os
 import sys
 
-from env import env
-from utils import error, copy_and_run
-from utils import runcommand
+from lib.env import env
+from lib.files_union import create_bcfp, create_excit, create_rrec
+from lib.inp1 import create_inp
+from lib.utils import error, copy_and_run
+from lib.utils import runcommand
 
 
 def check_dirs(i_dir, o_dir):
@@ -66,11 +68,12 @@ def run_old_fac(in_dir_spn, out_dir_spn):
 
 
 def run_for_all_numbers():
-    i_spectro = sorted(filter(lambda f: f.isdigit(), os.listdir(in_dir)))
+    i_spectro = map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(in_dir)))))
     for spn in i_spectro:
         in_dir_spn = in_dir + os.path.sep + spn
         out_dir_spn = out_dir + os.path.sep + spn
         run_for_one_number(spn, in_dir_spn, out_dir_spn)
+    return i_spectro
 
 
 ################## MAIN ######################
@@ -89,4 +92,9 @@ else:
 python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path = env(perl_exe)
 check_dirs(in_dir, out_dir)
 
-run_for_all_numbers()
+spec_numbers = run_for_all_numbers()
+
+create_bcfp(out_dir, spec_numbers)
+create_excit(out_dir, spec_numbers)
+create_rrec(out_dir, spec_numbers)
+create_inp(out_dir, spec_numbers)

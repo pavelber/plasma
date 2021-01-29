@@ -14,7 +14,7 @@ def check_file(p):
 
 
 def env(perl_path):
-    my_dir = dirname(abspath(__file__))
+    my_dir = dirname(abspath(__file__))+os.path.sep+".."
     print("Script path: " + my_dir)
     os_name = sys.platform
     print("Current OS: " + os_name)
