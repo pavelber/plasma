@@ -39,15 +39,16 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_name
             with open(in_path, 'rb') as inf:
                 for line in inf:
-                    #print(line)
+                    print(line)
                     new_line = ''
                     pred_pos = 0
-                    for pos in position_3_chars_to_translation_table:
+                    positions = sorted(position_3_chars_to_translation_table.keys())
+                    for pos in positions:
                         new_line += line[pred_pos: pos]
                         num = line[pos: pos + 3]
                         new_num = position_3_chars_to_translation_table[pos](n)[num.strip()]
                         new_line += "%3s" % new_num
                         pred_pos = pos + 3
                     new_line += line[pred_pos:]
-
+                    print(new_line)
                     outf.write(new_line)
