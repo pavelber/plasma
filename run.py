@@ -4,6 +4,7 @@ import sys
 from lib.env import env
 from lib.files_union import create_bcfp, create_excit, create_rrec
 from lib.inp1 import create_inp
+from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
 
@@ -72,7 +73,8 @@ def run_for_all_numbers():
     for spn in i_spectro:
         in_dir_spn = in_dir + os.path.sep + spn
         out_dir_spn = out_dir + os.path.sep + spn
-        run_for_one_number(spn, in_dir_spn, out_dir_spn)
+        if not dont_run_all_tools:
+            run_for_one_number(spn, in_dir_spn, out_dir_spn)
     return i_spectro
 
 
@@ -83,18 +85,22 @@ if len(sys.argv) < 3:
 
 in_dir = os.path.abspath(sys.argv[1])
 out_dir = os.path.abspath(sys.argv[2])
+dont_run_all_tools = len(sys.argv) > 3 and sys.argv[3] == "false"
 
-if len(sys.argv) > 3:
-    perl_exe = sys.argv[3]
+if len(sys.argv) > 4:
+    perl_exe = sys.argv[4]
 else:
     perl_exe = None
 
 python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path = env(perl_exe)
-check_dirs(in_dir, out_dir)
+if not dont_run_all_tools:
+    check_dirs(in_dir, out_dir)
 
 spec_numbers = run_for_all_numbers()
-
-create_bcfp(out_dir, spec_numbers)
-create_excit(out_dir, spec_numbers)
-create_rrec(out_dir, spec_numbers)
-create_inp(out_dir, spec_numbers)
+ionization_potential, translation_table = create_tables(out_dir)
+next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
+translation_table[next_spec_number] = {"1":"1"}
+create_bcfp(out_dir, spec_numbers, translation_table)
+create_excit(out_dir, spec_numbers, translation_table)
+create_rrec(out_dir, spec_numbers, translation_table)
+create_inp(out_dir, spec_numbers, translation_table, ionization_potential)

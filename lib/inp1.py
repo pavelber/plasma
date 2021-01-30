@@ -14,7 +14,8 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
          "   or     A / (B + C*t + D*t*t)  D = 0.00000D-03\n" + \
          "Step= 1.0D-09 sec:No of steps=6\n"
 
-#Take in1.inp, add last column, translation from row number according to the translation table
+
+# Take in1.inp, add last column, translation from row number according to the translation table
 # Drop 3rd column
 
 def read_element(in_dir):
@@ -33,17 +34,30 @@ def read_element(in_dir):
 
 
 def create_inp_header(out_dir, spec_numbers):
-    el, el_nu, num_of_electrons = read_element(out_dir + os.path.sep + spec_numbers[0])
+    last_spect_number = spec_numbers[len(spec_numbers) - 1]
+    el, el_nu, num_of_electrons = read_element(out_dir + os.path.sep + last_spect_number)
     sp_min = int(spec_numbers[0])
-    sp_max = int(spec_numbers[len(spec_numbers) - 1])
+    sp_max = int(last_spect_number)
     if num_of_electrons == 1:
         sp_max = sp_max + 1
     return HEADER1 % (el, el_nu, sp_min, sp_max,) + HEADER
 
 
-def create_inp(out_dir, spec_numbers):
+def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers):
+    for n in spec_numbers:
+        pass
+
+
+def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers):
+    for n in spec_numbers:
+        pass
+
+
+def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
     file_path = out_dir + os.path.sep + "IN1.INP"
     print("Creation of " + file_path)
     header = create_inp_header(out_dir, spec_numbers)
     with open(file_path, 'wb') as outf:
         outf.write(header)
+        lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers)
+        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers)
