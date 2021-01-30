@@ -84,7 +84,7 @@ if len(sys.argv) < 3:
 in_dir = os.path.abspath(sys.argv[1])
 out_dir = os.path.abspath(sys.argv[2])
 
-if len(sys.argv) > 4:
+if len(sys.argv) > 3:
     perl_exe = sys.argv[3]
 else:
     perl_exe = None

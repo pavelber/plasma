@@ -14,6 +14,8 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
          "   or     A / (B + C*t + D*t*t)  D = 0.00000D-03\n" + \
          "Step= 1.0D-09 sec:No of steps=6\n"
 
+#Take in1.inp, add last column, translation from row number according to the translation table
+# Drop 3rd column
 
 def read_element(in_dir):
     in_path = in_dir + os.path.sep + "fac.ci"

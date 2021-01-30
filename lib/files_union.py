@@ -5,15 +5,15 @@ BCFP_HEADER = "  iSS  iQS  fSS  fQS           D              -A               B 
 EXCIT_HEADER = "  SS   #1   #2   Mthd        A          B            C            D            E            F          Osc.Strngth\n" + \
                "------------------------------------------------------------------------------------------------------------------\n"
 
-
+#Take tranlation table, 2nd column from this cpectr. number, 4rd columnd from the table of next sperct number
 def create_bcfp(out_dir, spec_numbers):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP")
 
-
+#Take tranlation table, 2nd column from this cpectr. number, 3rd columnd from the table of next sperct number
 def create_rrec(out_dir, spec_numbers):
     create_union(out_dir, spec_numbers, "", "RREC.INP", "output_ph.dat", "REC")
 
-
+#Take tranlation table, 2nd column and 3rd column from this cpectr. number,
 def create_excit(out_dir, spec_numbers):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "EXCIT.INP", "outpp.dat", "EXC")
 
