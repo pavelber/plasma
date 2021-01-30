@@ -43,14 +43,38 @@ def create_inp_header(out_dir, spec_numbers):
     return HEADER1 % (el, el_nu, sp_min, sp_max,) + HEADER
 
 
-def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers):
-    for n in spec_numbers:
-        pass
+def get_num_of_levels(translation_table_for_sp_num):
+    num_of_levels, num_of_ai_levels = 0, 0
+    for level in translation_table_for_sp_num:
+        if int(translation_table_for_sp_num[level]) > 0:
+            num_of_levels += 1
+        else:
+            num_of_ai_levels += 1
+    return num_of_levels, num_of_ai_levels
 
 
-def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers):
+def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, ionization_potential):
+    outf.write("\n\n\n\n")
     for n in spec_numbers:
-        pass
+        #  5  15   0   0  123.35    12  126.22  	0.000  0.0000	0.000
+        num_of_levels, num_of_ai_levels = get_num_of_levels(translation_table[n])
+        outf.write(
+            "%3s %3d %3d   0 %4.2f    12 %4.2f  	0.000  0.0000	0.000\n" % (n, num_of_levels, num_of_ai_levels,
+                                                                                 ionization_potential[n],
+                                                                                 ionization_potential[n]))
+
+
+def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table):
+    for n in spec_numbers:
+        outf.write(str(n) + "\n")
+
+        in_path = out_dir + os.path.sep + n + os.path.sep + "IN1.INP"
+        with open(in_path, 'rb') as inf:
+            count = 1
+            for line in inf:
+                new_line = line[:11] + line[17:len(line) - 2] + ("%4s\n" % translation_table[n][str(count)])
+                outf.write(new_line)
+                count += 1
 
 
 def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
@@ -59,5 +83,5 @@ def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
     header = create_inp_header(out_dir, spec_numbers)
     with open(file_path, 'wb') as outf:
         outf.write(header)
-        lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers)
-        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers)
+        lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, ionization_potential)
+        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table)
