@@ -54,7 +54,6 @@ def get_num_of_levels(translation_table_for_sp_num):
 
 
 def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, ionization_potential):
-    outf.write("\n\n\n\n")
     for n in spec_numbers:
         #  5  15   0   0  123.35    12  126.22  	0.000  0.0000	0.000
         num_of_levels, num_of_ai_levels = get_num_of_levels(translation_table[n])
@@ -72,7 +71,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
         with open(in_path, 'rb') as inf:
             count = 1
             for line in inf:
-                new_line = line[:11] + line[17:len(line) - 2] + ("%4s\n" % translation_table[n][str(count)])
+                new_line = line[:11] + line[17:len(line) - 2] + ("%6s\n" % translation_table[n][str(count)])
                 outf.write(new_line)
                 count += 1
 
