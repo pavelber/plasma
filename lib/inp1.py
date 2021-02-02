@@ -35,7 +35,7 @@ def read_element(in_dir):
 
 def create_inp_header(out_dir, spec_numbers):
     last_spect_number = spec_numbers[len(spec_numbers) - 1]
-    el, el_nu, num_of_electrons = read_element(out_dir + os.path.sep + last_spect_number)
+    el, el_nu, num_of_electrons = read_element(os.path.join(out_dir, last_spect_number))
     sp_min = int(spec_numbers[0])
     sp_max = int(last_spect_number)
     if num_of_electrons == 1:

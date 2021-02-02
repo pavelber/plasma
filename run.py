@@ -5,6 +5,7 @@ from lib.env import env
 from lib.files_union import create_bcfp, create_excit, create_rrec
 from lib.inp1 import create_inp
 from lib.renumer import create_tables
+from lib.spect import create_spectr
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
 
@@ -104,3 +105,4 @@ create_bcfp(out_dir, spec_numbers, translation_table)
 create_excit(out_dir, spec_numbers, translation_table)
 create_rrec(out_dir, spec_numbers, translation_table)
 create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
+create_spectr(out_dir, spec_numbers, translation_table, ionization_potential)

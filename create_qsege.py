@@ -1,6 +1,8 @@
-import csv
+import os
 import os
 import sys
+
+from lib.utils import read_table, skip_n_lines
 
 HEADER_FORMAT_STRING = '%3s  %3s  %3s   %8s  %8s'
 OUTPUT_FORMAT_STRING = '%24s%5s%13s%7d%9d'
@@ -116,11 +118,6 @@ def print_header():
     print('------------------------------------------')
 
 
-def skip_n_lines(f, num):
-    for _ in range(num):
-        next(f)
-
-
 def skip_lines(f):
     skip_n_lines(f, 12)
 
@@ -143,7 +140,7 @@ def copy_lines(f, element, fac_dir):
             name = num_to_table[str(num)]["Symbol"]
             print(
                     HEADER_FORMAT_STRING % (
-            columns[0], columns[1], columns[2], columns[4], columns[6]) + "  [" + name + "]")
+                columns[0], columns[1], columns[2], columns[4], columns[6]) + "  [" + name + "]")
         else:
             break
 
@@ -187,7 +184,7 @@ def copy_atomic(f, element, fac_dir):
         elif len(columns) == 7:
             if not autoionization:
                 print(OUTPUT_FORMAT_STRING % (
-                create_levels_string(num, fac_file), columns[2], columns[3], block_counter, counter))
+                    create_levels_string(num, fac_file), columns[2], columns[3], block_counter, counter))
                 counter += 1
                 block_counter += 1
             else:  # Store autoionization
@@ -230,22 +227,6 @@ def read_element(inp):
     line = inp.readline()
     columns = line.split()
     return columns[0]
-
-
-def read_table():
-    dict1 = {}
-    dict2 = {}
-    path = os.path.dirname(__file__)
-    if path == "" or path is None:
-        path = "."
-    table_file = path + os.path.sep + "PeriodicTable.csv"
-    with open(table_file, 'rb') as infile:
-        reader = csv.reader(infile)
-        headers = next(reader)[0:]
-        for row in reader:
-            dict1[row[2]] = {key: value for key, value in zip(headers, row[0:])}
-            dict2[row[0]] = {key: value for key, value in zip(headers, row[0:])}
-    return dict1, dict2
 
 
 if len(sys.argv) != 3:
