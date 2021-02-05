@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal
 
 from lib.utils import read_table, skip_n_lines
 
@@ -25,20 +26,47 @@ def create_spectr_header(out_dir, spec_numbers):
     return str(name_to_table[el]['AtomicMass']) + " 100.0 200.0 1000\n"
 
 
-def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table):
+def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr):
     in_path = os.path.join(out_dir, "EXCIT.INP")
     with open(in_path, 'rb') as inf:
         skip_n_lines(inf, 2)
         for line in inf:
             parts = line.split()
-            new_line = "%2s %4s %4s   1.000\n" % (parts[0],parts[1],parts[2])
-            outf.write(new_line)
+            tr = (parts[1], parts[2])
+            if tr in from_fac_tr:
+                transition_data = from_fac_tr[tr]
+                einstein = transition_data[0]
+                wave_len = transition_data[1]
+                new_line = "%2s %4s %4s   1.000   %s   %s\n" % (parts[0], parts[1], parts[2], einstein, wave_len)
+                outf.write(new_line)
+
+
+def read_fac_tr(out_dir, spec_numbers):
+    transition_to_line = {}
+    for n in spec_numbers:
+        in_path = os.path.join(out_dir, n, "fac.tr")
+        with open(in_path, 'rb') as inf:
+            for line in inf:
+                parts = line.split()
+                if len(parts) == 8:
+                    tr = (str(int(parts[1]) + 1), str(int(parts[0]) + 1))
+                    einstein = parts[6]
+                    e = float(parts[4])
+                    wave_length = Decimal(float(12398.318 / e)).normalize().to_eng_string()
+                    if tr in transition_to_line:
+                        old = transition_to_line[tr]
+                        if float(old[0]) < float(einstein):
+                            transition_to_line[tr] = (einstein, wave_length)
+                    else:
+                        transition_to_line[tr] = (einstein, wave_length)
+    return transition_to_line
 
 
 def create_spectr(out_dir, spec_numbers, translation_table, ionization_potential):
+    from_fac_tr = read_fac_tr(out_dir, spec_numbers)
     file_path = out_dir + os.path.sep + "SPECTR.INP"
     print("Creation of " + file_path)
     header = create_spectr_header(out_dir, spec_numbers)
     with open(file_path, 'wb') as outf:
         outf.write(header)
-        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table)
+        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr)
