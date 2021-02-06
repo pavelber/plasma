@@ -82,14 +82,15 @@ def run_for_all_numbers():
 ################## MAIN ######################
 if len(sys.argv) < 3:
     error('\nUsage: ' + sys.argv[
-        0] + 'directory-with-cFAC-1.6.3-files-per-spectroscopic-charge output-directory [path-to-perl-executable]')
+        0] + 'directory-with-cFAC-1.6.3-files-per-spectroscopic-charge output-directory min_eins_coeff [run exe]')
 
 in_dir = os.path.abspath(sys.argv[1])
 out_dir = os.path.abspath(sys.argv[2])
-dont_run_all_tools = len(sys.argv) > 3 and sys.argv[3] == "false"
+min_eins_coef = float(sys.argv[3])
+dont_run_all_tools = len(sys.argv) > 4 and sys.argv[4] == "false"
 
-if len(sys.argv) > 4:
-    perl_exe = sys.argv[4]
+if len(sys.argv) > 5:
+    perl_exe = sys.argv[5]
 else:
     perl_exe = None
 
@@ -100,9 +101,9 @@ if not dont_run_all_tools:
 spec_numbers = run_for_all_numbers()
 ionization_potential, translation_table = create_tables(out_dir)
 next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
-translation_table[next_spec_number] = {"1":"1"}
+translation_table[next_spec_number] = {"1": "1"}
 create_bcfp(out_dir, spec_numbers, translation_table)
 create_excit(out_dir, spec_numbers, translation_table)
 create_rrec(out_dir, spec_numbers, translation_table)
 create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
-create_spectr(out_dir, spec_numbers, translation_table, ionization_potential)
+create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
