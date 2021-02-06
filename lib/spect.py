@@ -41,7 +41,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 outf.write(new_line)
 
 
-def read_fac_tr(out_dir, spec_numbers):
+def read_fac_tr(out_dir, spec_numbers, translation_table):
     transition_to_line = {}
     for n in spec_numbers:
         in_path = os.path.join(out_dir, n, "fac.tr")
@@ -49,21 +49,26 @@ def read_fac_tr(out_dir, spec_numbers):
             for line in inf:
                 parts = line.split()
                 if len(parts) == 8:
-                    tr = (str(int(parts[1]) + 1), str(int(parts[0]) + 1))
-                    einstein = parts[6]
-                    e = float(parts[4])
-                    wave_length = Decimal(float(12398.318 / e)).normalize().to_eng_string()
-                    if tr in transition_to_line:
-                        old = transition_to_line[tr]
-                        if float(old[0]) < float(einstein):
+                    tr1 = parts[1]
+                    tr2 = parts[0]
+                    if tr1 in translation_table[n] and tr2 in translation_table[n]:
+                        tr = (translation_table[n][tr1], translation_table[n][tr2])
+                        einstein = parts[6]
+                        e = float(parts[4])
+                        wave_length = Decimal(float(12398.318 / e)).normalize().to_eng_string()
+                        if tr in transition_to_line:
+                            old = transition_to_line[tr]
+                            if float(old[0]) < float(einstein):
+                                transition_to_line[tr] = (einstein, wave_length)
+                        else:
                             transition_to_line[tr] = (einstein, wave_length)
                     else:
-                        transition_to_line[tr] = (einstein, wave_length)
+                        print("No transition "+tr1+" "+tr2 +" in translation table")
     return transition_to_line
 
 
 def create_spectr(out_dir, spec_numbers, translation_table, ionization_potential):
-    from_fac_tr = read_fac_tr(out_dir, spec_numbers)
+    from_fac_tr = read_fac_tr(out_dir, spec_numbers, translation_table)
     file_path = out_dir + os.path.sep + "SPECTR.INP"
     print("Creation of " + file_path)
     header = create_spectr_header(out_dir, spec_numbers)
