@@ -25,20 +25,34 @@ def create_spectr_header(out_dir, spec_numbers):
     return str(name_to_table[el]['AtomicMass']) + " 100.0 200.0 1000\n"
 
 
-def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr,min_eins_coef):
+def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr, min_eins_coef):
     in_path = os.path.join(out_dir, "EXCIT.INP")
+    last_sp_num = None
+    line_data = []
     with open(in_path, 'rb') as inf:
         skip_n_lines(inf, 2)
         for line in inf:
             parts = line.split()
-            tr = (parts[0], parts[1], parts[2])
+            sp_num = parts[0]
+            if sp_num != last_sp_num:
+                line_data.sort(key=lambda x: int(x[1]))
+                write_lines_to_file(line_data, outf)
+                line_data = []
+                last_sp_num = sp_num
+            tr = (sp_num, parts[1], parts[2])
             if tr in from_fac_tr:
                 transition_data = from_fac_tr[tr]
                 einstein = transition_data[0]
                 wave_len = transition_data[1]
-                if einstein>min_eins_coef:
-                    new_line = "%2s %4s %4s   1.000   %11.4f  %.5e\n" % (parts[0], parts[2], parts[1], wave_len, einstein,)
-                    outf.write(new_line)
+                if einstein > min_eins_coef:
+                    line_data.append((sp_num, parts[2], parts[1], wave_len, einstein))
+        write_lines_to_file(line_data, outf)
+
+
+def write_lines_to_file(line_data, outf):
+    for l in line_data:
+        new_line = "%2s %4s %4s   1.000   %11.4f  %.5e\n" % l
+        outf.write(new_line)
 
 
 def read_fac_tr(out_dir, spec_numbers, translation_table):
@@ -74,4 +88,4 @@ def create_spectr(out_dir, spec_numbers, translation_table, ionization_potential
     header = create_spectr_header(out_dir, spec_numbers)
     with open(file_path, 'wb') as outf:
         outf.write(header)
-        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr,min_eins_coef)
+        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr, min_eins_coef)
