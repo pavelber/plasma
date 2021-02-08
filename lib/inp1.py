@@ -33,7 +33,7 @@ def read_element(in_dir):
             line_num += 1
 
 
-def create_inp_header(out_dir, spec_numbers, outf):
+def create_inp_header(out_dir, spec_numbers):
     last_spect_number = spec_numbers[len(spec_numbers) - 1]
     el, el_nu, num_of_electrons = read_element(os.path.join(out_dir, last_spect_number))
     sp_min = int(spec_numbers[0])
@@ -43,8 +43,8 @@ def create_inp_header(out_dir, spec_numbers, outf):
         added_num = True
     else:
         added_num = False
-    outf.write(HEADER1 % (el, el_nu, sp_min, sp_max,) + HEADER)
-    return added_num
+
+    return added_num, sp_max, HEADER1 % (el, el_nu, sp_min, sp_max,) + HEADER
 
 
 def get_num_of_levels(translation_table_for_sp_num):
@@ -58,7 +58,7 @@ def get_num_of_levels(translation_table_for_sp_num):
 
 
 def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, ionization_potential,
-                                    should_add_next_spect_num):
+                                    should_add_next_spect_num, nucleus):
     for n in spec_numbers:
         #  5  15   0   0  123.35    12  126.22  	0.000  0.0000	0.000
         num_of_levels, num_of_ai_levels = get_num_of_levels(translation_table[n])
@@ -67,13 +67,12 @@ def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tab
                                                                                  ionization_potential[n],
                                                                                  ionization_potential[n]))
 
-    max_sp = max(map(lambda x: int(x), spec_numbers))
     if should_add_next_spect_num:
         outf.write(
-            "%3s   1   0   0    0.00     0    0.00   0.000  0.0000	0.000\n" % (max_sp + 1))
+            "%3s   1   0   0    0.00     0    0.00   0.000  0.0000	0.000\n" % (nucleus))
 
 
-def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table,should_add_next_spect_num):
+def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, should_add_next_spect_num, nucleus):
     for n in spec_numbers:
         outf.write(str(n) + "\n")
 
@@ -85,14 +84,16 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 outf.write(new_line)
                 count += 1
     if should_add_next_spect_num:
-        outf.write("11\nNucleus     0          0.000    0.00e+00 0.00e+00      1\n")
+        outf.write("%d\nNucleus     0          0.000    0.00e+00 0.00e+00      1\n" % nucleus)
 
 
 def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
     file_path = out_dir + os.path.sep + "IN1.INP"
     print("Creation of " + file_path)
     with open(file_path, 'wb') as outf:
-        should_add_next_spect_num = create_inp_header(out_dir, spec_numbers, outf)
+        should_add_next_spect_num, nucleus, header = create_inp_header(out_dir, spec_numbers)
+        outf.write(header)
         lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, ionization_potential,
-                                        should_add_next_spect_num)
-        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, should_add_next_spect_num)
+                                        should_add_next_spect_num, nucleus)
+        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, should_add_next_spect_num,
+                                       nucleus)
