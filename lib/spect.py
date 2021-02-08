@@ -51,10 +51,16 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
 
 def sorting_key(x):
     c = int(x[1])
+    d = int(x[2])
     if c > 0:
-        return c
+        n = c
     else:
-        return 1000 - c
+        n = 1000 - c
+    if d > 0:
+        k = d
+    else:
+        k = 1000 - d
+    return 10000 * n + k
 
 
 def write_lines_to_file(line_data, outf):
