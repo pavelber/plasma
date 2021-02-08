@@ -79,9 +79,16 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
         in_path = out_dir + os.path.sep + n + os.path.sep + "IN1.INP"
         with open(in_path, 'rb') as inf:
             count = 1
+            prev_energy = None
             for line in inf:
-                new_line = line[:11] + line[17:len(line) - 2] + ("%6s\n" % translation_table[n][str(count)])
+                energy = line[22:34]
+                if energy == prev_energy:
+                    energy = float(energy.strip()) + 0.001
+                    energy = "%12.3f" % energy
+                new_line = line[:11] + line[17:22] + energy + line[34:len(line) - 2] + (
+                            "%6s\n" % translation_table[n][str(count)])
                 outf.write(new_line)
+                prev_energy = energy
                 count += 1
     if should_add_next_spect_num:
         outf.write("%d\nNucleus     0          0.000    0.00e+00 0.00e+00      1\n" % nucleus)
