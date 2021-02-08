@@ -35,7 +35,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
             parts = line.split()
             sp_num = parts[0]
             if sp_num != last_sp_num:
-                line_data.sort(key=lambda x: int(x[1]))
+                line_data.sort(key=sorting_key)
                 write_lines_to_file(line_data, outf)
                 line_data = []
                 last_sp_num = sp_num
@@ -47,6 +47,14 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 if einstein > min_eins_coef:
                     line_data.append((sp_num, parts[2], parts[1], wave_len, einstein))
         write_lines_to_file(line_data, outf)
+
+
+def sorting_key(x):
+    c = int(x[1])
+    if c > 0:
+        return c
+    else:
+        return 1000 - c
 
 
 def write_lines_to_file(line_data, outf):
