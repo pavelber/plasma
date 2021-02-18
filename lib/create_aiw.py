@@ -4,6 +4,7 @@ import os
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table):
     for n in spec_numbers:
         n_next = str(int(n)+1)
+        max_level = max(map(lambda x: int(x), translation_table[n].keys()))
         in_path = os.path.join(out_dir, n, "fac.ai")
         if os.path.exists(in_path):
             with open(in_path, 'rb') as inf:
@@ -14,7 +15,6 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                         lev2_search = str(int(parts[2]) + 1)
                         if lev1_search in translation_table[n]:
                             lev1 = translation_table[n][lev1_search]
-                            max_level = max(map(lambda x: int(x), translation_table[n].keys()))
                             lev2 = str(int(lev2_search)-max_level)
                             outf.write("%5s%5s%5s%5s%15s%15s\n" % (n, lev1, n_next, lev2, parts[5], parts[4]))
                         else:
