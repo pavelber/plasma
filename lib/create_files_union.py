@@ -1,5 +1,7 @@
 import os
 
+from lib.utils import skip_n_lines
+
 BCFP_HEADER = "  iSS  iQS  fSS  fQS           D              -A               B               C\n" + \
               "-----------------------------------------------------------------------------------\n"
 EXCIT_HEADER = "  SS   #1   #2   Mthd        A          B            C            D            E            F          Osc.Strngth\n" + \
@@ -9,6 +11,7 @@ EXCIT_HEADER = "  SS   #1   #2   Mthd        A          B            C          
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
                  {8: lambda n: translation_table[n], 20: lambda n: translation_table[str(int(n) + 1)]})
+    copy_from_aiw(out_dir)
 
 
 def create_rrec(out_dir, spec_numbers, translation_table):
@@ -20,6 +23,20 @@ def create_rrec(out_dir, spec_numbers, translation_table):
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "EXCIT.INP", "outpp.dat",
                  {6: lambda n: translation_table[n], 11: lambda n: translation_table[n]}, "EXC")
+
+
+def copy_from_aiw(out_dir):
+    in_filename = os.path.join(out_dir, "AIW.INP")
+    out_filename = os.path.join(out_dir, "BCFP.INP")
+    print("Append to " + out_filename)
+
+    with open(out_filename, 'ab') as outf:
+        with open(in_filename, 'rb') as inf:
+            skip_n_lines(inf, 1)
+            for line in inf:
+                parts = line.split()
+                outf.write("%4s  %5s %5s %5s %15s 	 0.0000e+00 	 0.0000e+00      0.0000e+00\n" %
+                           (parts[0], parts[1], parts[2], parts[3], parts[4]))
 
 
 def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, position_3_chars_to_translation_table,
