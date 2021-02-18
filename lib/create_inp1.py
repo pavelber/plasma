@@ -103,10 +103,13 @@ def choose_better_levels_string(old_levels_string, new_levels_string):
     if len(new_levels_string_parts) > len(old_levels_string_parts):
         levels_string_parts = new_levels_string_parts
     if len(levels_string_parts) < 2:
-        return "%11s" % levels_string_parts[0]
-    else:
-        num = len(levels_string_parts)
-        return " %3s    %3s" % (levels_string_parts[num - 2], levels_string_parts[num - 1])
+        if levels_string_parts[0].startswith("1s"):
+            levels_string_parts.append("2s0")
+        else:
+            levels_string_parts.insert(0, "1s0")
+
+    num = len(levels_string_parts)
+    return " %3s    %3s" % (levels_string_parts[num - 2], levels_string_parts[num - 1])
 
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table,
