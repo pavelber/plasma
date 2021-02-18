@@ -97,15 +97,16 @@ def read_fac_lev(out_dir, n):
 
 
 def choose_better_levels_string(old_levels_string, new_levels_string):
-    old_levels_string_parts =  old_levels_string.split()
-    new_levels_string_parts =  new_levels_string.split()
+    old_levels_string_parts = old_levels_string.split()
+    new_levels_string_parts = new_levels_string.split()
     levels_string_parts = old_levels_string_parts
-    if len(new_levels_string_parts)> len(old_levels_string_parts):
-        levels_string_parts = old_levels_string_parts
-    if len(levels_string_parts) <2:
+    if len(new_levels_string_parts) > len(old_levels_string_parts):
+        levels_string_parts = new_levels_string_parts
+    if len(levels_string_parts) < 2:
         return "%11s" % levels_string_parts[0]
     else:
-        return " %3s    %3s" % (levels_string_parts[0] , levels_string_parts[1])
+        num = len(levels_string_parts)
+        return " %3s    %3s" % (levels_string_parts[num - 2], levels_string_parts[num - 1])
 
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table,
@@ -132,7 +133,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 else:
                     last_num = level_num
                 new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_num])
-                levels_string =  choose_better_levels_string(levels_string,new_levels_string)
+                levels_string = choose_better_levels_string(levels_string, new_levels_string)
                 new_line = levels_string + line[17:22] + energy + line[34:len(line) - 2] + (
                         "%6s\n" % level_num)
                 outf.write(new_line)
