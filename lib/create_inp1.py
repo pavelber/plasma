@@ -122,6 +122,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
         with open(in_path, 'rb') as inf:
             count = 1
             last_num = 1
+            first_ai = True
             prev_energy = None
             for line in inf:
                 energy = line[22:34]
@@ -132,10 +133,14 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 level_num = int(translation_table[n][str(count)])
                 if level_num < 0:
                     last_num += 1
-                    level_num = last_num
+                    level_for_line = last_num
+                    if first_ai:
+                        outf.write("Autoionizating states\n")
+                        first_ai = False
                 else:
                     last_num = level_num
-                new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_num])
+                    level_for_line = level_num
+                new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_for_line])
                 levels_string = choose_better_levels_string(levels_string, new_levels_string)
                 new_line = levels_string + line[17:22] + energy + line[34:len(line) - 2] + (
                         "%6s\n" % level_num)
