@@ -2,11 +2,11 @@ import os
 import sys
 
 from lib.create_aiw import create_aiw
-from lib.env import env
 from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
-from lib.renumer import create_tables
 from lib.create_spect import create_spectr
+from lib.env import env
+from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
 
@@ -51,10 +51,48 @@ def run_ph_fac(spn, out_dir_spn):
     print(std_out + " " + std_out)
 
 
+def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file):
+    count = 0
+    should_create_new = True
+    new_list_file_name = None
+    line_count = 0
+    in_file_name = os.path.join(run_dir, files_list_file)
+    with open(in_file_name, 'rb') as inf:
+        for line in inf:
+            if should_create_new:
+                new_dir = os.path.join(run_dir, str(count))
+                os.mkdir(new_dir)
+                if new_list_file_name:
+                    new_list_file.close()
+                new_list_file_name = os.path.join(new_dir, files_list_file)
+                new_list_file = open(files_list_file, 'wb')
+                runcommand("cp " + exe_path + " " + new_dir)
+                count += 1
+            new_list_file.write(line)
+            parts = line.split()
+            old_file = os.path.join(run_dir, parts[0])
+            new_file = os.path.join(new_dir, parts[0])
+            runcommand("mv " + old_file + " " + new_file)
+            line_count += 1
+            if line_count % max_files == 0:
+                should_create_new = True
+            else:
+                should_create_new = False
+
+    new_list_file.close()
+
+
 def run_exc_fac(spn, out_dir_spn):
     exc_dir = out_dir_spn + os.path.sep + "EXC"
-    code, std_out, std_err = copy_and_run(exc_fac_path, "", exc_dir, exc_dir, spn)
-    print(std_out + " " + std_out)
+    code, std_out, std_err = runcommand("wc -l info_ex.dat", exc_dir)
+    num_of_lines = int(std_out.split()[0])
+    if num_of_lines > 10000:
+        print "EXC NEED SPLIT " + str(num_of_lines)
+        split_and_run(exc_dir, 10000, exc_fac_path, "info_ex.dat", "outpp.dat")
+    else:
+        print "EXC NOT NEED SPLIT " + str(num_of_lines)
+        code, std_out, std_err = copy_and_run(exc_fac_path, "", exc_dir, exc_dir, spn)
+        print(std_out + " " + std_out)
 
 
 def run_fit(spn, levels, out_dir_spn):
