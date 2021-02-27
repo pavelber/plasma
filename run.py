@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 
 from lib.create_aiw import create_aiw
@@ -9,6 +10,8 @@ from lib.env import env
 from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
+
+MAX_LINES = 10000
 
 
 def check_dirs(i_dir, o_dir):
@@ -45,54 +48,72 @@ def run_for_one_number(spn, in_dir_spn, out_dir_spn):
     run_exc_fac(spn, out_dir_spn)
 
 
-def run_ph_fac(spn, out_dir_spn):
-    rec_dir = out_dir_spn + os.path.sep + "REC"
-    code, std_out, std_err = copy_and_run(ph_fac_path, "", rec_dir, rec_dir, spn)
-    print(std_out + " " + std_out)
-
-
-def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file):
+def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn):
     count = 0
     should_create_new = True
-    new_list_file_name = None
+    new_list_file = None
+
     line_count = 0
-    in_file_name = os.path.join(run_dir, files_list_file)
-    with open(in_file_name, 'rb') as inf:
+    orig_file = os.path.join(run_dir, files_list_file)
+    bak_file = os.path.join(run_dir, files_list_file + ".bak")
+    shutil.move(orig_file, bak_file)
+
+    with open(bak_file, 'rb') as inf:
         for line in inf:
             if should_create_new:
-                new_dir = os.path.join(run_dir, str(count))
-                os.mkdir(new_dir)
-                if new_list_file_name:
-                    new_list_file.close()
-                new_list_file_name = os.path.join(new_dir, files_list_file)
-                new_list_file = open(files_list_file, 'wb')
-                runcommand("cp " + exe_path + " " + new_dir)
+                if new_list_file:
+                    close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn)
+                print "SPLIT: opening " + files_list_file
+                new_list_file = open(orig_file, 'wb')
                 count += 1
             new_list_file.write(line)
-            parts = line.split()
-            old_file = os.path.join(run_dir, parts[0])
-            new_file = os.path.join(new_dir, parts[0])
-            runcommand("mv " + old_file + " " + new_file)
             line_count += 1
             if line_count % max_files == 0:
                 should_create_new = True
             else:
                 should_create_new = False
 
+    close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn)
+    code, std_out, std_err = runcommand("cat " + merge_file + ".* >" + merge_file, run_dir)
+    print(std_out + " " + std_err)
+
+
+def close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn):
     new_list_file.close()
+    print "SPLIT: closing " + files_list_file
+    code, std_out, std_err = copy_and_run(exe_path, "", run_dir, run_dir, spn)
+    print(std_out + " " + std_err)
+    code, std_out, std_err = runcommand("wc -l *.dat", run_dir)
+    print("SPLIT wc " + std_out + " " + std_err)
+    merge_file_path = os.path.join(run_dir, merge_file)
+    print("SPLIT: move " + merge_file_path + " to " + merge_file_path + "." + str(count))
+    shutil.move(merge_file_path, merge_file_path + "." + str(count))
+
+
+def run_ph_fac(spn, out_dir_spn):
+    rec_dir = out_dir_spn + os.path.sep + "REC"
+    code, std_out, std_err = runcommand("wc -l info_ph.dat", rec_dir)
+    num_of_lines = int(std_out.split()[0])
+    if num_of_lines > MAX_LINES:
+        print "EXC NEED SPLIT " + str(num_of_lines)
+        split_and_run(rec_dir, MAX_LINES, ph_fac_path, "info_ph.dat", "output_ph.dat", spn)
+    else:
+        print "EXC NOT NEED SPLIT " + str(num_of_lines)
+        code, std_out, std_err = copy_and_run(ph_fac_path, "", rec_dir, rec_dir, spn)
+        print(std_out + " " + std_err)
 
 
 def run_exc_fac(spn, out_dir_spn):
     exc_dir = out_dir_spn + os.path.sep + "EXC"
     code, std_out, std_err = runcommand("wc -l info_ex.dat", exc_dir)
     num_of_lines = int(std_out.split()[0])
-    if num_of_lines > 10000:
+    if num_of_lines > MAX_LINES:
         print "EXC NEED SPLIT " + str(num_of_lines)
-        split_and_run(exc_dir, 10000, exc_fac_path, "info_ex.dat", "outpp.dat")
+        split_and_run(exc_dir, MAX_LINES, exc_fac_path, "info_ex.dat", "outpp.dat", spn)
     else:
         print "EXC NOT NEED SPLIT " + str(num_of_lines)
         code, std_out, std_err = copy_and_run(exc_fac_path, "", exc_dir, exc_dir, spn)
-        print(std_out + " " + std_out)
+        print(std_out + " " + std_err)
 
 
 def run_fit(spn, levels, out_dir_spn):
