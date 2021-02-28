@@ -11,7 +11,7 @@ from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
 
-MAX_LINES = 10000
+MAX_LINES = 80000
 
 
 def check_dirs(i_dir, o_dir):
