@@ -95,10 +95,10 @@ def run_ph_fac(spn, out_dir_spn):
     code, std_out, std_err = runcommand("wc -l info_ph.dat", rec_dir)
     num_of_lines = int(std_out.split()[0])
     if num_of_lines > MAX_LINES:
-        print "EXC NEED SPLIT " + str(num_of_lines)
+        print "REC NEED SPLIT " + str(num_of_lines)
         split_and_run(rec_dir, MAX_LINES, ph_fac_path, "info_ph.dat", "output_ph.dat", spn)
     else:
-        print "EXC NOT NEED SPLIT " + str(num_of_lines)
+        print "REC NOT NEED SPLIT " + str(num_of_lines)
         code, std_out, std_err = copy_and_run(ph_fac_path, "", rec_dir, rec_dir, spn)
         print(std_out + " " + std_err)
 
