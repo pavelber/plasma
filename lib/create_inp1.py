@@ -76,9 +76,9 @@ def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tab
         #  5  15   0   0  123.35    12  126.22  	0.000  0.0000	0.000
         num_of_levels, num_of_ai_levels = get_num_of_levels(translation_table[n])
         outf.write(
-            "%3s %3d %3d   0 %4.2f    12 %4.2f  	0.000  0.0000	0.000\n" % (n, num_of_levels, num_of_ai_levels,
-                                                                                 ionization_potential[n],
-                                                                                 ionization_potential[n]))
+            "%3s %3d %3d   0 %7.2f    12 %7.2f   0.0000   0.0000   0.000\n" % (n, num_of_levels, num_of_ai_levels,
+                                                                               ionization_potential[n],
+                                                                               ionization_potential[n]))
 
     if should_add_next_spect_num:
         outf.write(
@@ -109,7 +109,7 @@ def choose_better_levels_string(old_levels_string, new_levels_string):
             levels_string_parts.insert(0, "1s0")
 
     num = len(levels_string_parts)
-    return " %3s    %3s" % (levels_string_parts[num - 2], levels_string_parts[num - 1])
+    return " %3s  %3s" % (levels_string_parts[num - 2], levels_string_parts[num - 1])
 
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table,
@@ -142,8 +142,9 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                     level_for_line = level_num
                 new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_for_line])
                 levels_string = choose_better_levels_string(levels_string, new_levels_string)
-                new_line = levels_string + line[17:22] + energy + line[34:len(line) - 2] + (
-                        "%6s\n" % level_num)
+                new_line = levels_string + "       " + line[17:22] + \
+                           "   " + energy + line[34:len(line) - 2] + (
+                                   " %6s\n" % level_num)
                 outf.write(new_line)
                 prev_energy = energy
                 count += 1
