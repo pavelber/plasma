@@ -127,13 +127,14 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
             energy_increment = 0.001
             for line in inf:
                 energy = line[22:34]
-                if energy == prev_energy:
+                if (not prev_energy is None) and ( energy == prev_energy or float(energy.strip()) < float(
+                        prev_energy.strip())):
                     energy_with_increment = float(prev_energy.strip()) + energy_increment
                     use_energy = "%12.3f" % energy_with_increment
                 else:
                     use_energy = energy
-                if n=="8":
-                    print(n+" "+str(level_num)+" "+energy+" "+use_energy)
+                #if n == "8":
+                #    print(n + " " + str(level_num) + " " + energy + " " + use_energy)
                 levels_string = line[:11]
                 level_num = int(translation_table[n][str(count)])
                 if level_num < 0:
