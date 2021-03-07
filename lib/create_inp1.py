@@ -124,11 +124,16 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
             last_num = 1
             first_ai = True
             prev_energy = None
+            energy_increment = 0.001
             for line in inf:
                 energy = line[22:34]
                 if energy == prev_energy:
-                    energy = float(energy.strip()) + 0.001
-                    energy = "%12.3f" % energy
+                    energy_with_increment = float(energy.strip()) + energy_increment
+                    use_energy = "%12.3f" % energy_with_increment
+                    energy_increment += 0.001
+                else:
+                    use_energy = energy
+                    energy_increment = 0.001
                 levels_string = line[:11]
                 level_num = int(translation_table[n][str(count)])
                 if level_num < 0:
@@ -143,7 +148,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_for_line])
                 levels_string = choose_better_levels_string(levels_string, new_levels_string)
                 new_line = levels_string + "       " + line[17:22] + \
-                           "   " + energy + line[34:len(line) - 2] + (
+                           "  " + use_energy + line[34:len(line) - 2] + (
                                    " %6s\n" % level_num)
                 outf.write(new_line)
                 prev_energy = energy
