@@ -151,7 +151,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                            "  " + use_energy + line[34:len(line) - 2] + (
                                    " %6s\n" % level_num)
                 outf.write(new_line)
-                prev_energy = energy
+                prev_energy = use_energy
                 count += 1
     if should_add_next_spect_num:
         outf.write("%d\nNucleus     0          0.000    0.00e+00 0.00e+00      1\n" % nucleus)
