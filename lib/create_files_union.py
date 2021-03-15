@@ -8,6 +8,12 @@ EXCIT_HEADER = "  SS   #1   #2   Mthd        A          B            C          
                "------------------------------------------------------------------------------------------------------------------\n"
 
 
+def excit_line_improver(l):
+    s = l.split()
+    return "%4s %4s %4s %4s  %12s %12s %12s %12s %12s %12s   %13s\n" % (
+    s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10])
+
+
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
                  {8: lambda n: translation_table[n], 20: lambda n: translation_table[str(int(n) + 1)]})
@@ -21,8 +27,8 @@ def create_rrec(out_dir, spec_numbers, translation_table):
 
 
 def create_excit(out_dir, spec_numbers, translation_table):
-    create_union(out_dir, spec_numbers, BCFP_HEADER, "EXCIT.INP", "outpp.dat",
-                 {6: lambda n: translation_table[n], 11: lambda n: translation_table[n]}, "EXC")
+    create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
+                 {6: lambda n: translation_table[n], 11: lambda n: translation_table[n]}, "EXC", excit_line_improver)
 
 
 def copy_from_aiw(out_dir):
@@ -40,7 +46,7 @@ def copy_from_aiw(out_dir):
 
 
 def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, position_3_chars_to_translation_table,
-                 in_file_dir=None):
+                 in_file_dir=None, final_line_converter=lambda x: x):
     file_path = out_dir + os.path.sep + out_file_name
     print("Creation of " + file_path)
 
@@ -63,4 +69,4 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                         new_line += "%3s" % new_num
                         pred_pos = pos + 3
                     new_line += line[pred_pos:]
-                    outf.write(new_line)
+                    outf.write(final_line_converter(new_line))
