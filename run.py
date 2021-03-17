@@ -139,6 +139,15 @@ def run_for_all_numbers():
     return i_spectro
 
 
+def run_qsege(o_dir):
+    dir_path = os.path.join(o_dir, "fisher")
+    os.mkdir(dir_path)
+    file_path = os.path.join(dir_path, "QSsGe922.inp")
+    with open(file_path, 'wb') as outf:
+        code, std_out, std_err = runcommand(qsege_path + " IN1.INP "+o_dir,o_dir)
+        outf.write(std_out)
+
+
 ################## MAIN ######################
 if len(sys.argv) < 3:
     error('\nUsage: ' + sys.argv[
@@ -154,7 +163,7 @@ if len(sys.argv) > 5:
 else:
     perl_exe = None
 
-python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path = env(perl_exe)
+python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path = env(perl_exe)
 if not dont_run_all_tools:
     check_dirs(in_dir, out_dir)
 
@@ -168,3 +177,4 @@ create_excit(out_dir, spec_numbers, translation_table)
 create_rrec(out_dir, spec_numbers, translation_table)
 create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
 create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
+run_qsege(out_dir)

@@ -14,7 +14,7 @@ def check_file(p):
 
 
 def env(perl_path):
-    my_dir = dirname(abspath(__file__))+os.path.sep+".."
+    my_dir = dirname(abspath(__file__)) + os.path.sep + ".."
     print("Script path: " + my_dir)
     os_name = sys.platform
     print("Current OS: " + os_name)
@@ -49,10 +49,11 @@ def env(perl_path):
     ph_fac_path = os_path + os.path.sep + ph_fac_name
     fit_path = my_dir + os.path.sep + "fit.pl"
     old_path = my_dir + os.path.sep + "old_fac.py"
+    qsege_path = my_dir + os.path.sep + "create_qsege2.py"
     check_file(old_path)
     check_file(fit_path)
     check_file(exc_fac_path)
     check_file(ph_fac_path)
+    check_file(qsege_path)
 
-    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path
-
+    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path
