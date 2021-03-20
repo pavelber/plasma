@@ -143,9 +143,9 @@ def run_qsege(o_dir):
     dir_path = os.path.join(o_dir, "fisher")
     os.mkdir(dir_path)
     file_path = os.path.join(dir_path, "QSsGe922.inp")
-    print("Creation of "+file_path)
+    print("Creation of " + file_path)
     with open(file_path, 'wb') as outf:
-        code, std_out, std_err = runcommand(qsege_path + " IN1.INP "+o_dir,o_dir)
+        code, std_out, std_err = runcommand(python_path + " " + qsege_path + " IN1.INP " + o_dir, o_dir)
         outf.write(std_out)
         print (std_err)
 
