@@ -155,7 +155,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 prev_energy = use_energy
                 count += 1
     if should_add_next_spect_num:
-        outf.write("%d\n  Nucleus           0         0.000    0.00e+00 0.00e+00       1\n" % nucleus)
+        outf.write("%d\n  Nucleus           0         0.000     0.00e+00 0.00e+00      1\n" % nucleus)
 
 
 def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
