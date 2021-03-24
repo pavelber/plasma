@@ -7,6 +7,7 @@ from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
 from lib.create_spect import create_spectr
 from lib.env import env
+from lib.fisher import run_for_fisher
 from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
@@ -139,16 +140,6 @@ def run_for_all_numbers():
     return i_spectro
 
 
-def run_qsege(o_dir):
-    dir_path = os.path.join(o_dir, "fisher")
-    os.mkdir(dir_path)
-    file_path = os.path.join(dir_path, "QSsGe922.inp")
-    print("Creation of " + file_path)
-    with open(file_path, 'wb') as outf:
-        code, std_out, std_err = runcommand(python_path + " " + qsege_path + " IN1.INP " + o_dir, o_dir)
-        outf.write(std_out)
-        print (std_err)
-
 
 ################## MAIN ######################
 if len(sys.argv) < 3:
@@ -177,6 +168,6 @@ create_aiw(out_dir, spec_numbers, translation_table)
 create_bcfp(out_dir, spec_numbers, translation_table)
 create_excit(out_dir, spec_numbers, translation_table)
 create_rrec(out_dir, spec_numbers, translation_table)
-create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
+element = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
 create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-run_qsege(out_dir)
+run_for_fisher(dont_run_all_tools,  python_path, qsege_path, element,  out_dir)

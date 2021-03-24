@@ -171,3 +171,4 @@ def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
                                         should_add_next_spect_num, nucleus)
         copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, should_add_next_spect_num,
                                        nucleus)
+    return el

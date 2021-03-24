@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from lib.utils import skip_n_lines
 
@@ -11,12 +12,13 @@ EXCIT_HEADER = "  SS   #1   #2   Mthd        A          B            C          
 def excit_line_improver(l):
     s = l.split()
     return "%4s %4s %4s %4s  %12s %12s %12s %12s %12s %12s   %13s\n" % (
-    s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10])
+        s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10])
 
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
                  {8: lambda n: translation_table[n], 20: lambda n: translation_table[str(int(n) + 1)]})
+    shutil.copyfile(os.path.join(out_dir, "BCFP.INP"), os.path.join(out_dir, "BCFP.INP.before.AIW"))
     copy_from_aiw(out_dir)
 
 
