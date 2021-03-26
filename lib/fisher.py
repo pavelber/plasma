@@ -9,21 +9,25 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir):
     in_file_path_1 = os.path.join(o_dir, "BCFP.INP.before.AIW")
     in_file_path_2 = os.path.join(o_dir, "RREC.INP")
     out_file_path = os.path.join(dir_path, "Inz" + element + levels_num + ".INP")
+    print("Creation of " + out_file_path)
     levels_to_bcfp = {}
     with open(in_file_path_1, "rb") as inf1:
         for line1 in inf1:
             parts1 = line1.split()
             if len(parts1) > 4:
                 id_by = (parts1[0], parts1[1], parts1[3])
-                levels_to_bcfp[id_by] = parts1
+                levels_to_bcfp[id_by] = line1
     with open(in_file_path_2, "rb") as inf2:
-        skip_n_lines(inf1, 2)
+        skip_n_lines(inf2, 2)
         with open(out_file_path, "wb") as outf:
+            outf.write("  iSS  iQS  fSS  fQS                     Electron Impact Ionization                    Mthd                         Photoionization                Threshold\n")
             for line2 in inf2:
                 parts2 = line2.split()
                 id_by = (parts2[0], parts2[1], parts2[2])
                 if not id_by in levels_to_bcfp:
                     print id_by
+                else:
+                    outf.write(levels_to_bcfp[id_by].rstrip()+line2[13:])
 
 
 def run_qsege(dont_run_all_tools, python_path, qsege_path, element, o_dir):
