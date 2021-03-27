@@ -3,6 +3,8 @@ import shutil
 
 from lib.utils import runcommand, skip_n_lines
 
+HEADER = "  iSS  iQS  fSS  fQS                     Electron Impact Ionization                    Mthd                         Photoionization                Threshold\n"
+
 
 def createIonFile(dont_run_all_tools, element, levels_num, o_dir):
     dir_path = os.path.join(o_dir, "fisher")
@@ -20,14 +22,20 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir):
     with open(in_file_path_2, "rb") as inf2:
         skip_n_lines(inf2, 2)
         with open(out_file_path, "wb") as outf:
-            outf.write("  iSS  iQS  fSS  fQS                     Electron Impact Ionization                    Mthd                         Photoionization                Threshold\n")
+            outf.write(HEADER)
             for line2 in inf2:
                 parts2 = line2.split()
                 id_by = (parts2[0], parts2[1], parts2[2])
                 if not id_by in levels_to_bcfp:
                     print id_by
                 else:
-                    outf.write(levels_to_bcfp[id_by].rstrip()+line2[13:])
+                    bcfp_parts = levels_to_bcfp[id_by].split()
+                    bsfp = " %4s %4s %4s %4s %14s %15s %15s %15s" % (
+                        bcfp_parts[0], bcfp_parts[1], bcfp_parts[2], bcfp_parts[3], bcfp_parts[4], bcfp_parts[5],
+                        bcfp_parts[6], bcfp_parts[7])
+                    rrec = " %6s %13s %12s %12s %12s %14s" % (
+                        parts2[3], parts2[4], parts2[5], parts2[6], parts2[7], parts2[8])
+                    outf.write(bsfp + rrec+"\n")
 
 
 def run_qsege(dont_run_all_tools, python_path, qsege_path, element, o_dir):
