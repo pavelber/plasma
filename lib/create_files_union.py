@@ -15,6 +15,12 @@ def excit_line_improver(l):
         s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10])
 
 
+def rrec_line_improver(l):
+    s = l.split()
+    return " %2s   %4s   %4s   %2s   %10s   %11s   %11s   %11s   %11s   %11s   %11s   %11s   %11s   %11s\n" % (
+        s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10], s[11], s[12], s[13])
+
+
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
                  {8: lambda n: translation_table[n], 20: lambda n: translation_table[str(int(n) + 1)]})
@@ -25,7 +31,7 @@ def create_bcfp(out_dir, spec_numbers, translation_table):
 def create_rrec(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, "", "RREC.INP", "output_ph.dat",
                  {5: lambda n: translation_table[n], 10: lambda n: translation_table[str(int(n) + 1)]},
-                 "REC")
+                 "REC", rrec_line_improver)
 
 
 def create_excit(out_dir, spec_numbers, translation_table):
