@@ -16,40 +16,6 @@ def start_file(lines, in_file, odir, file_num, l):
     return out
 
 
-def split(in_file, odir):
-    if os.path.exists(in_file):
-        header = True
-        header_lines = []
-        file_counter = 0
-        line_counter = 0
-
-        with open(in_file, 'rb') as inf:
-            for line in inf:
-                columns = line.split()
-                if len(columns) < COLUMNS_IN_BLOCK_START and header:  # Header
-                    header_lines.append(line)
-                elif len(columns) == COLUMNS_IN_BLOCK_START and header:  # End of header
-                    header = False
-                    out_f = start_file(header_lines, in_file, odir, file_counter, line)
-                elif not header and len(columns) == COLUMNS_IN_BLOCK_START and line_counter >= MAX_LINES:  # exceeded
-                    out_f.close()
-                    file_counter += 1
-                    line_counter = 0
-                    out_f = start_file(header_lines, in_file, odir, file_counter, line)
-                elif not header and len(columns) == COLUMNS_IN_BLOCK_START and line_counter < MAX_LINES:  # regular line
-                    out_f.write(line)
-                    line_counter += 1
-                elif not header and len(columns) < COLUMNS_IN_BLOCK_START:  # regular line
-                    out_f.write(line)
-                    line_counter += 1
-                else:
-                    error("Should not be there")
-        out_f.close()
-
-    else:
-        error('Can\'t open input file ' + in_file)
-
-
 class Res:
     def __init__(self, err, out, continue_processing):
         self.err = err
@@ -159,12 +125,15 @@ class TrProcessor:
         if line.startswith('NELE'):
             self.block_num += 1
             return Res.skip()
+        elif line.startswith('NBlocks'):
+            self.block_count = line.split()[2]
+            return Res.skip()
         else:
             columns = line.split()
             if len(columns) != 9:
                 return Res.skip()
             if null_line(columns):
-                if self.block_num == 2 or self.block_num == 3:
+                if (self.block_num == 2 or self.block_num == 3) and self.block_count == "4":
                     return Res.err("0s in block N " + str(self.block_num))
                 else:  # 1 or 4
                     return Res.delete()
@@ -220,8 +189,5 @@ tr_processor.block_num = 0
 convert(out_dir + tr + '.tmp', out_dir + tr, tr_pass_2_processors)
 os.remove(out_dir + tr + '.tmp')
 
-split(out_dir + ce, out_dir)
-split(out_dir + rr, out_dir)
-
-#os.remove(out_dir + ce)
-#os.remove(out_dir + rr)
+# os.remove(out_dir + ce)
+# os.remove(out_dir + rr)
