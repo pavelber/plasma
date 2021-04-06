@@ -76,13 +76,13 @@ def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tab
         #  5  15   0   0  123.35    12  126.22  	0.000  0.0000	0.000
         num_of_levels, num_of_ai_levels = get_num_of_levels(translation_table[n])
         outf.write(
-            "%3s %3d %3d   0 %7.2f    12 %7.2f   0.0000   0.0000   0.000\n" % (n, num_of_levels, num_of_ai_levels,
+            "%3s %3d %3d   0 %8.2f    12 %8.2f   0.0000   0.0000   0.000\n" % (n, num_of_levels, num_of_ai_levels,
                                                                                ionization_potential[n],
                                                                                ionization_potential[n]))
 
     if should_add_next_spect_num:
         outf.write(
-            "%3s   1   0   0    0.00     0    0.00   0.000  0.0000	0.000\n" % (nucleus))
+            "%3s   1   0   0     0.00     0     0.00   0.0000   0.0000   0.000\n" % (nucleus))
 
 
 def read_fac_lev(out_dir, n):
