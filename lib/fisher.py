@@ -1,7 +1,8 @@
 import os
 import shutil
 
-from lib.utils import runcommand, skip_n_lines
+from lib.create_qsege import create_qsege
+from lib.utils import skip_n_lines
 
 HEADER = "  iSS  iQS  fSS  fQS                     Electron Impact Ionization                    Mthd                         Photoionization                Threshold\n"
 
@@ -59,10 +60,8 @@ def run_qsege(dont_run_all_tools, python_path, qsege_path, element, o_dir):
         os.mkdir(dir_path)
     file_path = os.path.join(dir_path, "QSs" + element + ".inp")
     print("Creation of " + file_path)
-    with open(file_path, 'wb') as outf:
-        code, std_out, std_err = runcommand(python_path + " " + qsege_path + " IN1.INP " + o_dir, o_dir)
-        outf.write(std_out)
-        print (std_err)
+    create_qsege(os.path.join(o_dir, "IN1.INP"), o_dir, file_path)
+
     with open(file_path, 'rb') as inf:
         for line in inf:
             parts = line.split()
