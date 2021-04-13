@@ -49,7 +49,7 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                     energy = compute_energy_diff(spectr_num_low, level_low, spectr_num_high, level_high,
                                                  spectr_num_to_aion_energy,
                                                  spectr_num_level_to_energy)
-                    rrec = " %6s %13s %12s %12s %12s %14.2f" % (
+                    rrec = " %6s %13s %12s %12s %12s %14.2e" % (
                         parts2[3], parts2[4], parts2[5], parts2[6], parts2[7], energy)
                     outf.write(bsfp + rrec + "\n")
 
