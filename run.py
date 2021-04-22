@@ -171,3 +171,4 @@ create_rrec(out_dir, spec_numbers, translation_table)
 element = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
 create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
 run_for_fisher(dont_run_all_tools,  python_path, qsege_path, element,  out_dir)
+
