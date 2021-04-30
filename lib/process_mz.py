@@ -7,9 +7,31 @@ from lib.utils import skip_n_lines
 # search_table_he - ((from last level, stat weight), (to last level, start weight))
 # search_table_in1 - spectr num, level num to stat weight, last level config
 
+# Prepare 2 search tables from mz -  key to einstein coef. One table for H, He, the second for Li.
+# Its key is a transition data - tuple of from leve and to level.
+# Each level is tuple of the last level config (such as 2s3p ans stat weight)
+# Example:
+# (('2p2p', '5'), ('1s2p', '3')) -> '1.34E+01'
+# (('2p', '3'), ('1s', '1'))  -> '1.30E+01'
+# (('2s2s', '3'), ('1s2p', '1'))  -> '1.16E+01'
+# (('2s2p', '1'), ('1s2s', '3'))  -> '1.34E+01'
+
+# Then prepare a table from IN1.INP - search_table_in1
+# Its key is tuple of spectroscopic number and level number (including AI levels) and value is
+# last level config and stat number
+# Example:
+# ('6', '-118') -> ('3p1', '10')
+# ('6', '-35') -> ('3s1', '4')
+# ('7', '-111') -> ('3d1', '3')
+# ('6', '-96') -> ('3s1', '8')
+
+#Then I read a line from spectr, read spectr number and level num from from and to levels,
+# Find last level config and stat num in search_table_in1 and then search for the transition in search_table_he
+
+#ISSUE! - Can't find level configs! 1s2p, 2s3s etc - not present in IN1.INP
 letter2config_he = {
     "Y": "1s", "R": "2p", "R'": "3p",
-    "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "ls3s", "P'": "1s3p",
+    "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "1s3s", "P'": "1s3p",
     "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
 }
 
