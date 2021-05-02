@@ -25,21 +25,21 @@ from lib.utils import skip_n_lines
 # ('7', '-111') -> ('3d1', '3')
 # ('6', '-96') -> ('3s1', '8')
 
-#Then I read a line from spectr, read spectr number and level num from from and to levels,
+# Then I read a line from spectr, read spectr number and level num from from and to levels,
 # Find last level config and stat num in search_table_in1 and then search for the transition in search_table_he
 
-#ISSUE! - Can't find level configs! 1s2p, 2s3s etc - not present in IN1.INP
+# ISSUE! - Can't find level configs! 1s2p, 2s3s etc - not present in IN1.INP
 letter2config_he = {
     "Y": "1s", "R": "2p", "R'": "3p",
-    "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "1s3s", "P'": "1s3p",
-    "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
+    # "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "1s3s", "P'": "1s3p",
+    # "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
 }
 
 # TODO: change
 letter2config_li = {
     "Y": "1s", "R": "2p", "R'": "3p",
-    "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "ls3s", "P'": "1s3p",
-    "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
+    # "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "ls3s", "P'": "1s3p",
+    # "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
 }
 
 
@@ -88,6 +88,18 @@ def create_key_spectr(parts, search_table_in1):
            search_table_in1[(parts[0], parts[2])]  # spectroscopic number,from level -   number, to level
 
 
+def convert_config(cfg):
+    if cfg[-1] == "0":
+        return ""
+    elif cfg[-1] == "1":
+        return cfg[:-1]
+    return cfg
+
+
+def convert_level_configs(cfg1, cfg2):
+    return convert_config(cfg1) + convert_config(cfg2)
+
+
 def read_in1_inp(out_dir):
     levels = {}
     with open(os.path.join(out_dir, "IN1.INP"), "rb") as inf:
@@ -98,7 +110,8 @@ def read_in1_inp(out_dir):
                 spect_num = parts[0]
             if len(parts) == 7:
                 levels[(spect_num, parts[6])] = \
-                    parts[1], parts[2]  # TODO change - last part of level configuration and stat weight
+                    convert_level_configs(parts[0], parts[1]), parts[
+                        2]  # TODO change - last part of level configuration and stat weight
     return levels
 
 
@@ -113,18 +126,24 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                 replaced = False
                 parts = line.split()
                 sp_num = int(parts[0])
-                if sp_num == el_num - 2:  # He like
+                if sp_num == el_num - 1 or sp_num == el_num:  # He like, H - like
                     key = create_key_spectr(parts, search_table_in1)
                     if key in search_table_he:
+                        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
                         parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he[key]
                         replaced = True
-                elif sp_num == el_num - 3:  # Li like
+                        print "Replaced for key " + str(key)
+                elif sp_num == el_num - 1:  # Li like
                     key = create_key_spectr(parts, search_table_in1)
                     if key in search_table_li:
+                        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
                         parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_li[key]
                         replaced = True
+                        print "Replaced for key " + str(key)
                 outf.write("%2s %4s %4s %7s %13s %12s"
                            % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
                 if replaced:
-                    outf.write("  #replaced by key " + key)
+                    outf.write(
+                        "  # replaced " + old_einstein + " by " + parts[COEFF_EINS_INDEX_IN_SPECTR] + " for key " + str(
+                            key))
                 outf.write("\n")
