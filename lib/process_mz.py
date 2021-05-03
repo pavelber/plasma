@@ -64,7 +64,7 @@ COEFF_EINS_INDEX_IN_MS = 4
 COEFF_EINS_INDEX_IN_SPECTR = 5
 
 
-def read_mz():
+def read_mz(el_num):
     path = os.path.dirname(__file__)
     if path == "" or path is None:
         path = "."
@@ -75,11 +75,12 @@ def read_mz():
         mz_file.readline()
         for line in mz_file:
             parts = line.split(",")
-            key_he = create_key_he(parts)
-            key_li = create_key_li(parts)
-            coeff_eins = parts[COEFF_EINS_INDEX_IN_MS]
-            he[key_he] = coeff_eins
-            li[key_li] = coeff_eins
+            if int(parts[2]) == el_num:
+                key_he = create_key_he(parts)
+                key_li = create_key_li(parts)
+                coeff_eins = parts[COEFF_EINS_INDEX_IN_MS]
+                he[key_he] = coeff_eins
+                li[key_li] = coeff_eins
     return he, li
 
 
@@ -117,7 +118,7 @@ def read_in1_inp(out_dir):
 
 def adjust_eins_weight(python_path, el_num, out_dir):
     print "Creation of " + os.path.join(out_dir, "SPECTR.INP.UPD") + " with updated Einstein weights"
-    search_table_he, search_table_li = read_mz()
+    search_table_he, search_table_li = read_mz(el_num)
     search_table_in1 = read_in1_inp(out_dir)
     with open(os.path.join(out_dir, "SPECTR.INP"), "rb") as inf:
         inf.readline()  # header
