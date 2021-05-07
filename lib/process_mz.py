@@ -58,17 +58,17 @@ def create_key_li(parts):
 
 
 # TODO: check
-COEFF_EINS_INDEX_IN_MS = 4
+COEFF_EINS_INDEX_IN_MS = 5
 
 # TODO: check
 COEFF_EINS_INDEX_IN_SPECTR = 5
 
 
-def read_mz(el_num):
+def read_mz(table_name, el_num):
     path = os.path.dirname(__file__)
     if path == "" or path is None:
         path = "."
-    mz_file_path = path + os.path.sep + "MZ.csv"
+    mz_file_path = path + os.path.sep + "MZ" + table_name + ".csv"
     he = {}
     li = {}
     with open(mz_file_path, "rb") as mz_file:
@@ -78,9 +78,15 @@ def read_mz(el_num):
             if int(parts[2]) == el_num:
                 key_he = create_key_he(parts)
                 key_li = create_key_li(parts)
-                coeff_eins = parts[COEFF_EINS_INDEX_IN_MS]
-                he[key_he] = coeff_eins
-                li[key_li] = coeff_eins
+                coeff_eins = str(float(parts[COEFF_EINS_INDEX_IN_MS])*1e13)
+                if key_he is not None:
+                    if key_he in he:
+                        print "Overriding He" + str(key_he) + " in " + table_name
+                    he[key_he] = coeff_eins
+                if key_li is not None:
+                    if key_li in li:
+                        print "Overriding Li" + str(key_li) + " in " + table_name
+                    li[key_li] = coeff_eins
     return he, li
 
 
@@ -118,7 +124,8 @@ def read_in1_inp(out_dir):
 
 def adjust_eins_weight(python_path, el_num, out_dir):
     print "Creation of " + os.path.join(out_dir, "SPECTR.INP.UPD") + " with updated Einstein weights"
-    search_table_he, search_table_li = read_mz(el_num)
+    search_table_he_ia, search_table_li_ia = read_mz("Ia", el_num)
+    search_table_he_ib, search_table_li_ib = read_mz("Ib", el_num)
     search_table_in1 = read_in1_inp(out_dir)
     with open(os.path.join(out_dir, "SPECTR.INP"), "rb") as inf:
         inf.readline()  # header
@@ -127,20 +134,25 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                 replaced = False
                 parts = line.split()
                 sp_num = int(parts[0])
-                if sp_num == el_num - 1 or sp_num == el_num:  # He like, H - like
+                if sp_num == sp_num == el_num:  # He like, H - like
                     key = create_key_spectr(parts, search_table_in1)
-                    if key in search_table_he:
+                    if key[0][0] == '2p' and key in search_table_he_ia:
                         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he[key]
+                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he_ia[key]
                         replaced = True
                         print "Replaced for key " + str(key)
-                elif sp_num == el_num - 1:  # Li like
-                    key = create_key_spectr(parts, search_table_in1)
-                    if key in search_table_li:
+                    elif key[0][0] == '3p' and key in search_table_he_ib:
                         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_li[key]
+                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he_ib[key]
                         replaced = True
                         print "Replaced for key " + str(key)
+                # elif sp_num == el_num - 2  # Li like
+                #     key = create_key_spectr(parts, search_table_in1)
+                #     if key in search_table_li:
+                #         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
+                #         parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_li[key]
+                #         replaced = True
+                #         print "Replaced for key " + str(key)
                 outf.write("%2s %4s %4s %7s %13s %12s"
                            % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
                 if replaced:
