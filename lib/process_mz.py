@@ -74,7 +74,7 @@ def read_mz(table_name, el_num, letter_2_config):
 
 
 def create_key_spectr(parts, search_table_in1):
-    return parts[1][0], search_table_in1[(parts[0], parts[1])], \
+    return search_table_in1[(parts[0], parts[1])], \
            search_table_in1[(parts[0], parts[2])]  # spectroscopic number,from level -   number, to level
 
 
@@ -107,7 +107,7 @@ def read_in1_inp(out_dir):
 
 def adjust_eins_weight(python_path, el_num, out_dir):
     print "Creation of " + os.path.join(out_dir, "SPECTR.INP.UPD") + " with updated Einstein weights"
-    search_table_h_iia = read_mz("IIa", el_num, letter2config_he)
+    search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_in1 = read_in1_inp(out_dir)
     with open(os.path.join(out_dir, "SPECTR.INP"), "rb") as inf:
@@ -119,12 +119,7 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                 sp_num = int(parts[0])
                 if sp_num == el_num:  # H - like
                     key = create_key_spectr(parts, search_table_in1)
-                    if key[1][0] == '2p' and key in search_table_h_iia:
-                        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_h_iia[key]
-                        replaced = True
-                        print "Replaced for key " + str(key) + " from IIa"
-                    elif key[1][0] == '3p' and key in search_table_h_iia:
+                    if key in search_table_h_iia:
                         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
                         parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_h_iia[key]
                         replaced = True
