@@ -65,9 +65,9 @@ def read_mz(table_name, el_num, letter_2_config):
                 key = create_key(parts, letter_2_config)
                 coeff_eins = str(float(parts[COEFF_EINS_INDEX_IN_MS]) * 1e13)
                 if key is not None:
-                    if key in mz:
-                        print "Overriding " + str(key) + " in " + table_name + " was " + \
-                              mz[key] + " - " + coeff_eins + '\n' + line
+#                   if key in mz:
+#                      print "Overriding " + str(key) + " in " + table_name + " was " + \
+#                              mz[key] + " - " + coeff_eins + '\n' + line
                     mz[key] = coeff_eins
 
     return mz
