@@ -3,17 +3,21 @@ import os
 # TODO: check
 from lib.utils import skip_n_lines
 
+
+#Q: He/H, table, letter to config
+#Q recongize tranzition
+
 # 1. H:
 # Not correct IIa, no ' in IIa
 # don't use n1 in the key
 # use n1 = 2, check that for n1=3 is the same einstein number
 
-#2. take wave length and fix, 1st column after Z in MZ, 5th in spectr
+# 2. take wave length and fix, 1st column after Z in MZ, 5th in spectr
 
-#3. in spectr also add to comment line name
+# 3. in spectr also add to comment line name
 
-#4. He : IIb, the same logic, take n =2, for n=3 should be the same eins
-#5  Fix Y, R, R' - make like in the table
+# 4. He : IIb, the same logic, take n =2, for n=3 should be the same eins
+# 5  Fix Y, R, R' - make like in the table
 # We have the same perehod and stat weight for different lines
 # we should choose according to the first digit after R -
 # we see also several lines with the same perehov in in1.inp, but with different energy
@@ -22,7 +26,7 @@ from lib.utils import skip_n_lines
 # if with more than with 1 as first digit
 
 letter2config_h = {
-    "Y": "1s0", "R": "2p", "R'": "3p",
+    "Y": "1s0", "R": "2p1", "R'": "3p1",
     # "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "1s3s", "P'": "1s3p",
     # "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
 }
@@ -39,14 +43,14 @@ letter2config_he = {
 def create_key_he(parts):  # level config, stat weight
     if parts[9] not in letter2config_he or parts[11] not in letter2config_he:
         return None
-    return parts[0], (letter2config_he[parts[9]], parts[10][2]), (letter2config_he[parts[11]], parts[12][2])
+    return (letter2config_he[parts[9]], parts[10][2]), (letter2config_he[parts[11]], parts[12][2])
 
 
 # TODO: change, check whether may be not in the dictionary or it is mistake
-def create_key_li(parts):
-    if parts[9] not in letter2config_li or parts[11] not in letter2config_li:
+def create_key_h(parts):
+    if parts[9] not in letter2config_h or parts[11] not in letter2config_h:
         return None
-    return parts[0], (letter2config_li[parts[9]], parts[10][2]), (letter2config_li[parts[11]], parts[12][2])
+    return (letter2config_h[parts[9]], parts[10][2]), (letter2config_h[parts[11]], parts[12][2])
 
 
 # TODO: check
@@ -62,24 +66,26 @@ def read_mz(table_name, el_num):
         path = "."
     mz_file_path = path + os.path.sep + "MZ" + table_name + ".csv"
     he = {}
-    li = {}
+    h = {}
     with open(mz_file_path, "rb") as mz_file:
         mz_file.readline()
         for line in mz_file:
             parts = line.split(",")
             if int(parts[2]) == el_num:
                 key_he = create_key_he(parts)
-                key_li = create_key_li(parts)
+                key_h = create_key_h(parts)
                 coeff_eins = str(float(parts[COEFF_EINS_INDEX_IN_MS]) * 1e13)
                 if key_he is not None:
                     if key_he in he:
-                        print "Overriding He" + str(key_he) + " in " + table_name + "\n\t" + line
+                        print "Overriding He" + str(key_he) + " in " + table_name + " was " + h[
+                            key_h] + " - " + coeff_eins + '\n' + line
                     he[key_he] = coeff_eins
-                if key_li is not None:
-                    if key_li in li:
-                        print "Overriding Li" + str(key_li) + " in " + table_name
-                    li[key_li] = coeff_eins
-    return he, li
+                if key_h is not None:
+                    if key_h in h:
+                        print "Overriding H" + str(key_h) + " in " + table_name + " was " + h[
+                            key_h] + " - " + coeff_eins + '\n' + line
+                    h[key_h] = coeff_eins
+    return he, h
 
 
 def create_key_spectr(parts, search_table_in1):
@@ -96,7 +102,7 @@ def convert_config(cfg):
 
 
 def convert_level_configs(cfg1, cfg2):
-    return convert_config(cfg1) + convert_config(cfg2)
+    return convert_config(cfg1) + " " + convert_config(cfg2)
 
 
 def read_in1_inp(out_dir):
@@ -116,8 +122,8 @@ def read_in1_inp(out_dir):
 
 def adjust_eins_weight(python_path, el_num, out_dir):
     print "Creation of " + os.path.join(out_dir, "SPECTR.INP.UPD") + " with updated Einstein weights"
-    search_table_he_iia, search_table_li_iia = read_mz("IIa", el_num)
-    search_table_he_iib, search_table_li_iib = read_mz("IIb", el_num)
+    search_table_he_iia, search_table_h_iia = read_mz("IIa", el_num)
+    search_table_he_iib, search_table_h_iib = read_mz("IIb", el_num)
     search_table_in1 = read_in1_inp(out_dir)
     with open(os.path.join(out_dir, "SPECTR.INP"), "rb") as inf:
         inf.readline()  # header
@@ -126,23 +132,23 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                 replaced = False
                 parts = line.split()
                 sp_num = int(parts[0])
-                if sp_num == sp_num == el_num:# or sp_num == sp_num == el_num - 1:   # H - like
+                if sp_num == el_num:  # H - like
                     key = create_key_spectr(parts, search_table_in1)
-                    if key[1][0] == '2p' and key in search_table_he_iia:
+                    if key[1][0] == '2p' and key in search_table_h_iia:
                         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he_iia[key]
+                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_h_iia[key]
                         replaced = True
                         print "Replaced for key " + str(key) + " from IIa"
-                    elif key[1][0] == '3p' and key in search_table_he_iia:
+                    elif key[1][0] == '3p' and key in search_table_h_iia:
                         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he_iia[key]
+                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_h_iia[key]
                         replaced = True
                         print "Replaced for key " + str(key) + " from IIa"
                 elif sp_num == sp_num == el_num - 1:  # He - like
                     key = create_key_spectr(parts, search_table_in1)
-                    if key in search_table_he_iib:
+                    if key in search_table_h_iia:
                         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he_iia[key]
+                        parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_h_iia[key]
                         replaced = True
                         print "Replaced for key " + str(key) + " from IIb"
                 # elif sp_num == el_num - 2  # Li like
