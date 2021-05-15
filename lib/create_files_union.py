@@ -21,6 +21,38 @@ def rrec_line_improver(l):
         s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10], s[11], s[12], s[13])
 
 
+def create_level_key(level):
+    l_int = int(level)
+    if l_int > 0:
+        return level.zfill(5)
+    else:
+        return "z" + str(abs(l_int)).zfill(5)
+
+
+def sort_file_by_levels(out_dir, file_name):
+    file_path = os.path.join(out_dir, file_name)
+    file_path_not_sorted = os.path.join(out_dir, file_name + ".notsorted")
+    shutil.copyfile(file_path, file_path_not_sorted)
+    lines = {}
+    keys = []
+    with open(file_path, 'wb') as outf:
+        with open(file_path_not_sorted, 'rb') as inf:
+            # read headers
+            outf.write(inf.readline())
+            outf.write(inf.readline())
+            # read lines to dict
+            for line in inf:
+                parts = line.split()
+                key = parts[0].zfill(5) + "-" + create_level_key(parts[1]) + "-" + create_level_key(parts[2])
+                if key in lines:
+                    print "WARNING: " + file_name + " duplicate line:\n\t" + line
+                lines[key] = line
+                keys.append(key)
+        keys.sort()
+        for k in keys:
+            outf.write(lines[k])
+
+
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
                  {8: lambda n: translation_table[n], 20: lambda n: translation_table[str(int(n) + 1)]})
@@ -37,6 +69,7 @@ def create_rrec(out_dir, spec_numbers, translation_table):
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
                  {6: lambda n: translation_table[n], 11: lambda n: translation_table[n]}, "EXC", excit_line_improver)
+    sort_file_by_levels(out_dir, "EXCIT.INP")
 
 
 def copy_from_aiw(out_dir):
