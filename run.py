@@ -160,6 +160,10 @@ python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_pat
 if not dont_run_all_tools:
     check_dirs(in_dir, out_dir)
 
+warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
+if os.path.exists(warnings_file_path):
+    os.remove(warnings_file_path)
+
 spec_numbers = run_for_all_numbers()
 ionization_potential, translation_table = create_tables(out_dir)
 next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)

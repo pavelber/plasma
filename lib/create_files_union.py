@@ -29,28 +29,32 @@ def create_level_key(level):
         return "z" + str(abs(l_int)).zfill(5)
 
 
-def sort_file_by_levels(out_dir, file_name):
+def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_level_index, skip_lines):
     file_path = os.path.join(out_dir, file_name)
     file_path_not_sorted = os.path.join(out_dir, file_name + ".notsorted")
     shutil.copyfile(file_path, file_path_not_sorted)
     lines = {}
     keys = []
-    with open(file_path, 'wb') as outf:
-        with open(file_path_not_sorted, 'rb') as inf:
-            # read headers
-            outf.write(inf.readline())
-            outf.write(inf.readline())
-            # read lines to dict
-            for line in inf:
-                parts = line.split()
-                key = parts[0].zfill(5) + "-" + create_level_key(parts[1]) + "-" + create_level_key(parts[2])
-                if key in lines:
-                    print "WARNING: " + file_name + " duplicate line:\n\t" + line
-                lines[key] = line
-                keys.append(key)
-        keys.sort()
-        for k in keys:
-            outf.write(lines[k])
+    warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
+    with open(warnings_file_path, 'ab') as warn_f:
+        with open(file_path, 'wb') as outf:
+            with open(file_path_not_sorted, 'rb') as inf:
+                # read headers
+                for _ in range(skip_lines):
+                    outf.write(inf.readline())
+                # read lines to dict
+                for line in inf:
+                    parts = line.split()
+                    key = parts[s_num_index].zfill(5) + "-" + create_level_key(
+                        parts[from_level_index]) + "-" + create_level_key(parts[to_level_index])
+                    if key in lines:
+                        print "WARNING: " + file_name + " duplicate line:\n\t" + line
+                        warn_f.write("WARNING: " + file_name + " duplicate line:\n\t" + line)
+                    lines[key] = line
+                    keys.append(key)
+            keys.sort()
+            for k in keys:
+                outf.write(lines[k])
 
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
@@ -58,18 +62,20 @@ def create_bcfp(out_dir, spec_numbers, translation_table):
                  {8: lambda n: translation_table[n], 20: lambda n: translation_table[str(int(n) + 1)]})
     shutil.copyfile(os.path.join(out_dir, "BCFP.INP"), os.path.join(out_dir, "BCFP.INP.before.AIW"))
     copy_from_aiw(out_dir)
+    sort_file_by_levels(out_dir, "BCFP.INP", 0, 1, 3, 2)
 
 
 def create_rrec(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, "", "RREC.INP", "output_ph.dat",
                  {5: lambda n: translation_table[n], 10: lambda n: translation_table[str(int(n) + 1)]},
                  "REC", rrec_line_improver)
+    sort_file_by_levels(out_dir, "RREC.INP", 0, 1, 2, 0)
 
 
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
                  {6: lambda n: translation_table[n], 11: lambda n: translation_table[n]}, "EXC", excit_line_improver)
-    sort_file_by_levels(out_dir, "EXCIT.INP")
+    sort_file_by_levels(out_dir, "EXCIT.INP", 0, 1, 2, 2)
 
 
 def copy_from_aiw(out_dir):
@@ -88,9 +94,8 @@ def copy_from_aiw(out_dir):
 
 def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, position_3_chars_to_translation_table,
                  in_file_dir=None, final_line_converter=lambda x: x):
-    file_path = out_dir + os.path.sep + out_file_name
+    file_path = os.path.join(out_dir, out_file_name)
     print("Creation of " + file_path)
-
     with open(file_path, 'wb') as outf:
         outf.write(header)
         for n in spec_numbers:
