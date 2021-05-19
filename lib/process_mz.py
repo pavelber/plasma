@@ -45,10 +45,12 @@ def read_mz(table_name, el_num, letter_2_config):
                 key = create_key(parts, letter_2_config)
                 coeff_eins = str(float(parts[COEFF_EINS_INDEX_IN_MS]) * 1e13)
                 if key is not None:
-                    #                   if key in mz:
-                    #                      print "Overriding " + str(key) + " in " + table_name + " was " + \
-                    #                              mz[key] + " - " + coeff_eins + '\n' + line
-                    mz[key] = coeff_eins
+                    if key in mz:
+                        print "Adding " + str(key) + " in " + table_name + " was " + \
+                              str(mz[key]) + " - " + coeff_eins + '\n' + line
+                    else:
+                        mz[key] = []
+                    mz[key].append((line, coeff_eins))
 
     return mz
 
@@ -83,6 +85,12 @@ def read_in1_inp(out_dir):
                     convert_level_configs(parts[0], parts[1]), parts[
                         2]
     return levels
+
+
+def replace(table, parts, key):
+    old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
+    parts[COEFF_EINS_INDEX_IN_SPECTR] = table[key]
+    return old_einstein
 
 
 def adjust_eins_weight(python_path, el_num, out_dir):
