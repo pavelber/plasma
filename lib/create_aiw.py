@@ -16,7 +16,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                         if lev1_search in translation_table[n]:
                             lev1 = translation_table[n][lev1_search]
                             lev2 = str(int(lev2_search)-max_level)
-                            outf.write("%5s%5s%5s%5s%15s%15s\n" % (n, lev1, n_next, lev2, parts[5], parts[4]))
+                            outf.write(("%5s%5s%5s%5s%15s%15s"+os.linesep) % (n, lev1, n_next, lev2, parts[5], parts[4]))
                         else:
                             print ("No " + lev1_search + " or " + lev2_search)
 
@@ -25,5 +25,5 @@ def create_aiw(out_dir, spec_numbers, translation_table):
     file_path = out_dir + os.path.sep + "AIW.INP"
     print("Creation of " + file_path)
     with open(file_path, 'wb') as outf:
-        outf.write("  SSi AIQS#  SSf  QSf#       WAI          DE(eV)\n")
+        outf.write("  SSi AIQS#  SSf  QSf#       WAI          DE(eV)"+os.linesep)
         copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table)
