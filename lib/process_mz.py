@@ -87,10 +87,21 @@ def read_in1_inp(out_dir):
     return levels
 
 
-def replace(table, parts, key):
-    old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-    parts[COEFF_EINS_INDEX_IN_SPECTR] = table[key]
-    return old_einstein
+def replace(table, search_table_in1, parts, table_name):
+    key = create_key_spectr(parts, search_table_in1)
+    if key in table:
+        lines_with_einst = table[key]
+        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
+        old_einstein_f = float(old_einstein)
+        min_line_with_einst = min(lines_with_einst, key=lambda (x): abs(old_einstein_f - float(x[1])) / old_einstein_f)
+        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
+        parts[COEFF_EINS_INDEX_IN_SPECTR] = min_line_with_einst[1]
+        print "Replaced for key " + str(key) + " from " + table_name
+        replaced = True
+    else:
+        replaced = False
+        old_einstein = None
+    return old_einstein, replaced
 
 
 def adjust_eins_weight(python_path, el_num, out_dir):
@@ -110,31 +121,17 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                     if sp_num == el_num:  # H - like
                         key = create_key_spectr(parts, search_table_in1)
                         if key in search_table_h_iia:
-                            old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                            parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_h_iia[key]
-                            replaced = True
-                            print "Replaced for key " + str(key) + " from IIa"
+                            old_einstein, replaced = replace(search_table_h_iia, search_table_in1, parts, 'IIa')
                     elif sp_num == sp_num == el_num - 1:  # He - like
                         key = create_key_spectr(parts, search_table_in1)
                         if key in search_table_he_iib:
-                            old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                            parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_he_iib[key]
-                            replaced = True
-                            print "Replaced for key " + str(key) + " from IIb"
-                    # elif sp_num == el_num - 2  # Li like
-                    #     key = create_key_spectr(parts, search_table_in1)
-                    #     if key in search_table_li:
-                    #         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-                    #         parts[COEFF_EINS_INDEX_IN_SPECTR] = search_table_li[key]
-                    #         replaced = True
-                    #         print "Replaced for key " + str(key)
+                            old_einstein, replaced = replace(search_table_he_iib, search_table_in1, parts, 'IIb')
                     outf.write("%2s %4s %4s %7s %13s %12s"
                                % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
                     if replaced:
                         outf.write(
-                            "  # replaced " + old_einstein + " by " + parts[
-                                COEFF_EINS_INDEX_IN_SPECTR] + " for key " + str(
-                                key))
-                        warn_f.write("Replaced in SPECTR.INP: in " + line.rstrip() + " # new coefficient = " + parts[
-                            COEFF_EINS_INDEX_IN_SPECTR] + " for transition " + str(key) + os.linesep)
+                            "  # replaced " + old_einstein + " by " +
+                            parts[COEFF_EINS_INDEX_IN_SPECTR] + " for key " + str(key))
+                        warn_f.write("Replaced in SPECTR.INP: in " + line.rstrip() + " # new coefficient = " +
+                                     parts[COEFF_EINS_INDEX_IN_SPECTR] + " for transition " + str(key) + os.linesep)
                     outf.write("\n")
