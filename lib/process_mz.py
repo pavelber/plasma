@@ -1,6 +1,6 @@
 import os
+import shutil
 
-# TODO: check
 from lib.utils import skip_n_lines
 
 letter2config_h = {
@@ -16,19 +16,33 @@ letter2config_he = {
     # "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
 }
 
+he_lines_names = {
+    ('5', '1'): "IC-line",
+    ('7', '1'): "He-alfa",
+    ('11', '1'): "He-beta IC",
+    ('15', '1'): "He-beta"
+}
 
-# TODO: change, check whether may be not in the dictionary or it is mistake
+h_lines_names = {
+    ('2', '1'): "Ly-alfa 1/2",
+    ('4', '1'): "Ly-alfa 3/2",
+    ('5', '1'): "Ly-beta 1/2",
+    ('8', '1'): "Ly-beta 3/2"
+}
+
+
 def create_key(parts, letter_2_config):  # level config, stat weight
     if parts[9] not in letter_2_config or parts[11] not in letter_2_config:
         return None
     return (letter_2_config[parts[9]], parts[10][2]), (letter_2_config[parts[11]], parts[12][2])
 
 
-# TODO: check
 COEFF_EINS_INDEX_IN_MS = 5
+WAVE_LENGTH_INDEX_IN_MS = 3
 
 # TODO: check
 COEFF_EINS_INDEX_IN_SPECTR = 5
+WAVE_LENGTH_INDEX_IN_SPECTR = 4
 
 
 def read_mz(table_name, el_num, letter_2_config):
@@ -44,13 +58,14 @@ def read_mz(table_name, el_num, letter_2_config):
             if int(parts[2]) == el_num:
                 key = create_key(parts, letter_2_config)
                 coeff_eins = str(float(parts[COEFF_EINS_INDEX_IN_MS]) * 1e13)
+                wave_length = str(float(parts[WAVE_LENGTH_INDEX_IN_MS]) * 1e13)
                 if key is not None:
                     if key in mz:
                         print "Adding " + str(key) + " in " + table_name + " was " + \
                               str(mz[key]) + " - " + coeff_eins + '\n' + line
                     else:
                         mz[key] = []
-                    mz[key].append((line, coeff_eins))
+                    mz[key].append((line, coeff_eins, wave_length))
 
     return mz
 
@@ -94,44 +109,70 @@ def replace(table, search_table_in1, parts, table_name):
         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
         old_einstein_f = float(old_einstein)
         min_line_with_einst = min(lines_with_einst, key=lambda (x): abs(old_einstein_f - float(x[1])) / old_einstein_f)
-        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
+        old_wave_length = parts[WAVE_LENGTH_INDEX_IN_SPECTR]
         parts[COEFF_EINS_INDEX_IN_SPECTR] = min_line_with_einst[1]
+        parts[WAVE_LENGTH_INDEX_IN_SPECTR] = min_line_with_einst[2]
         print "Replaced for key " + str(key) + " from " + table_name
         replaced = True
     else:
         replaced = False
         old_einstein = None
-    return old_einstein, replaced
+        old_wave_length = None
+    return old_einstein, old_wave_length, replaced
+
+
+def find_line_name(names, parts):
+    k = parts[1], parts[2]
+    if k in names:
+        return names[k]
+    else:
+        return "Unknown line"
+
+
+def find_line_name_h(parts):
+    return find_line_name(h_lines_names, parts)
+
+
+def find_line_name_he(parts):
+    return find_line_name(he_lines_names, parts)
 
 
 def adjust_eins_weight(python_path, el_num, out_dir):
-    print "Creation of " + os.path.join(out_dir, "SPECTR.INP.UPD") + " with updated Einstein weights"
+    spectr_path = os.path.join(out_dir, "SPECTR.INP")
+    old_spectr_path = os.path.join(out_dir, "SPECTR.INP.UPD")
+
+    print "Creation of " + spectr_path + " with updated Einstein weights"
+    shutil.move(spectr_path, old_spectr_path)
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_in1 = read_in1_inp(out_dir)
     warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
     with open(warnings_file_path, 'ab') as warn_f:
-        with open(os.path.join(out_dir, "SPECTR.INP"), "rb") as inf:
+        warn_f.write("Replaced in SPECTR.INP")
+        with open(old_spectr_path, "rb") as inf:
             inf.readline()  # header
-            with open(os.path.join(out_dir, "SPECTR.INP.UPD"), "wb") as outf:
+            with open(spectr_path, "wb") as outf:
                 for line in inf:
                     replaced = False
                     parts = line.split()
                     sp_num = int(parts[0])
                     if sp_num == el_num:  # H - like
                         key = create_key_spectr(parts, search_table_in1)
+                        line_name = find_line_name_h(parts)
+
                         if key in search_table_h_iia:
-                            old_einstein, replaced = replace(search_table_h_iia, search_table_in1, parts, 'IIa')
+                            old_einstein, old_wavelength, replaced = \
+                                replace(search_table_h_iia, search_table_in1, parts, 'IIa')
                     elif sp_num == sp_num == el_num - 1:  # He - like
                         key = create_key_spectr(parts, search_table_in1)
+                        line_name = find_line_name_he(parts)
                         if key in search_table_he_iib:
-                            old_einstein, replaced = replace(search_table_he_iib, search_table_in1, parts, 'IIb')
+                            old_einstein, old_wavelength, replaced = \
+                                replace(search_table_he_iib, search_table_in1, parts, 'IIb')
                     outf.write("%2s %4s %4s %7s %13s %12s"
                                % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
                     if replaced:
-                        outf.write(
-                            "  # replaced " + old_einstein + " by " +
-                            parts[COEFF_EINS_INDEX_IN_SPECTR] + " for key " + str(key))
-                        warn_f.write("Replaced in SPECTR.INP: in " + line.rstrip() + " # new coefficient = " +
-                                     parts[COEFF_EINS_INDEX_IN_SPECTR] + " for transition " + str(key) + os.linesep)
+                        outf.write("  # " + line_name)
+                        warn_f.write(line.rstrip() + "# " + line_name + " new coefficient, wavelength = " +
+                                     old_einstein + "," + old_wavelength + " for transition " + str(key) + os.linesep)
                     outf.write("\n")
