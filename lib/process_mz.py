@@ -58,7 +58,7 @@ def read_mz(table_name, el_num, letter_2_config):
             if int(parts[2]) == el_num:
                 key = create_key(parts, letter_2_config)
                 coeff_eins = str(float(parts[COEFF_EINS_INDEX_IN_MS]) * 1e13)
-                wave_length = str(float(parts[WAVE_LENGTH_INDEX_IN_MS]) * 1e13)
+                wave_length = parts[WAVE_LENGTH_INDEX_IN_MS]
                 if key is not None:
                     if key in mz:
                         print "Adding " + str(key) + " in " + table_name + " was " + \
@@ -148,7 +148,7 @@ def adjust_eins_weight(python_path, el_num, out_dir):
     search_table_in1 = read_in1_inp(out_dir)
     warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
     with open(warnings_file_path, 'ab') as warn_f:
-        warn_f.write("Replaced in SPECTR.INP")
+        warn_f.write("Replaced in SPECTR.INP" + os.linesep)
         with open(old_spectr_path, "rb") as inf:
             inf.readline()  # header
             with open(spectr_path, "wb") as outf:
@@ -173,6 +173,9 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                                % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
                     if replaced:
                         outf.write("  # " + line_name)
-                        warn_f.write(line.rstrip() + "# " + line_name + " new coefficient, wavelength = " +
-                                     old_einstein + "," + old_wavelength + " for transition " + str(key) + os.linesep)
+                        warn_f.write(line.rstrip() + "#  " + line_name + " " +
+                                     "einstein coefficient: " + old_einstein + " -> " + parts[
+                                         COEFF_EINS_INDEX_IN_SPECTR] +
+                                     ", wavelength :" + old_wavelength + " -> " + parts[WAVE_LENGTH_INDEX_IN_SPECTR] +
+                                     os.linesep)
                     outf.write("\n")
