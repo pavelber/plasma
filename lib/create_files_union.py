@@ -35,6 +35,9 @@ def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_le
     shutil.copyfile(file_path, file_path_not_sorted)
     lines = {}
     keys = []
+    spect_num_data_min_level = {}
+    spect_num_data_max_level = {}
+    spect_num_data_num_of_lines = {}
     warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
     with open(warnings_file_path, 'ab') as warn_f:
         with open(file_path, 'wb') as outf:
@@ -45,16 +48,45 @@ def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_le
                 # read lines to dict
                 for line in inf:
                     parts = line.split()
-                    key = parts[s_num_index].zfill(5) + "-" + create_level_key(
-                        parts[from_level_index]) + "-" + create_level_key(parts[to_level_index])
+                    s_num = parts[s_num_index]
+                    from_level = parts[from_level_index]
+                    to_level = parts[to_level_index]
+                    key = s_num.zfill(5) + "-" + create_level_key(
+                        from_level) + "-" + create_level_key(to_level)
                     if key in lines:
                         print "WARNING: " + file_name + " duplicate line:\n\t" + line
                         warn_f.write("WARNING: " + file_name + " duplicate line:\n\t" + line)
                     lines[key] = line
                     keys.append(key)
+
+                    if s_num in spect_num_data_num_of_lines:
+                        spect_num_data_num_of_lines[s_num] = spect_num_data_num_of_lines[s_num] + 1
+                        spect_num_data_min_level[s_num] = min(spect_num_data_min_level[s_num], int(from_level),
+                                                              int(to_level))
+                        spect_num_data_max_level[s_num] = max(spect_num_data_max_level[s_num], int(from_level),
+                                                              int(to_level))
+                    else:
+                        spect_num_data_num_of_lines[s_num] = 1
+                        spect_num_data_min_level[s_num] = min(int(from_level), int(to_level))
+                        spect_num_data_max_level[s_num] = max(int(from_level), int(to_level))
+
             keys.sort()
             for k in keys:
                 outf.write(lines[k])
+
+            for s_num in spect_num_data_num_of_lines:
+                num_of_levels = spect_num_data_max_level[s_num]
+                if spect_num_data_min_level[s_num] < 0:
+                    num_of_levels = num_of_levels + abs(spect_num_data_min_level[s_num])
+                max_num_of_levels = num_of_levels * (num_of_levels - 1) / 2
+                print(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                    max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]))
+                if max_num_of_levels < spect_num_data_num_of_lines[s_num]:
+                    print("ERROR")
+                    warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                        max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + os.linesep)
+                    warn_f.close()
+                    exit(1)
 
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
