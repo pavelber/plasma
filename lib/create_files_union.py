@@ -87,6 +87,9 @@ def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_le
                         max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + os.linesep)
                     warn_f.close()
                     exit(1)
+                else:
+                    warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                        max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + "... OK"+os.linesep)
 
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
