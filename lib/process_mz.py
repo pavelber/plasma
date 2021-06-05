@@ -109,21 +109,15 @@ def read_in1_inp(out_dir):
 
 
 def replace(table, key, parts, table_name):
-    if key in table:
-        lines_with_einst = table[key]
-        old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
-        old_einstein_f = float(old_einstein)
-        min_line_with_einst = min(lines_with_einst, key=lambda (x): abs(old_einstein_f - float(x[1])) / old_einstein_f)
-        old_wave_length = parts[WAVE_LENGTH_INDEX_IN_SPECTR]
-        parts[COEFF_EINS_INDEX_IN_SPECTR] = min_line_with_einst[1]
-        parts[WAVE_LENGTH_INDEX_IN_SPECTR] = min_line_with_einst[2]
-        print "Replaced for key " + str(key) + " from " + table_name
-        replaced = True
-    else:
-        replaced = False
-        old_einstein = None
-        old_wave_length = None
-    return old_einstein, old_wave_length, replaced
+    lines_with_einst = table[key]
+    old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
+    old_einstein_f = float(old_einstein)
+    min_line_with_einst = min(lines_with_einst, key=lambda (x): abs(old_einstein_f - float(x[1])) / old_einstein_f)
+    old_wave_length = parts[WAVE_LENGTH_INDEX_IN_SPECTR]
+    parts[COEFF_EINS_INDEX_IN_SPECTR] = min_line_with_einst[1]
+    parts[WAVE_LENGTH_INDEX_IN_SPECTR] = min_line_with_einst[2]
+    print "Replaced for key " + str(key) + " from " + table_name
+    return old_einstein, old_wave_length
 
 
 def find_line_name(names, k):
@@ -193,14 +187,20 @@ def replace_values(el_num, old_file_path, search_table_h_iia, search_table_he_ii
                         key = create_key_spectr(parts, search_table_in1, spectr_num_index, from_index, to_index)
                         if key in search_table_h_iia:
                             line_name = line_names[str(parts)]
-                            old_einstein, old_wavelength, replaced = \
+                            old_einstein, old_wavelength = \
                                 replace(search_table_h_iia, key, parts, 'IIa')
+                            replaced = True
+                        else:
+                            replaced = False
                     elif sp_num == sp_num == el_num - 1:  # He - like
                         key = create_key_spectr(parts, search_table_in1, spectr_num_index, from_index, to_index)
                         if key in search_table_he_iib:
                             line_name = line_names[str(parts)]
-                            old_einstein, old_wavelength, replaced = \
+                            old_einstein, old_wavelength = \
                                 replace(search_table_he_iib, key, parts, 'IIb')
+                            replaced = True
+                        else:
+                            replaced = False
                     outf.write("%2s %4s %4s %7s %13s %12s"
                                % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
                     if replaced:
