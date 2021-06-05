@@ -30,6 +30,7 @@ def create_level_key(level):
 
 
 def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_level_index, skip_lines):
+    print("Sorting "+file_name)
     file_path = os.path.join(out_dir, file_name)
     file_path_not_sorted = os.path.join(out_dir, file_name + ".notsorted")
     shutil.copyfile(file_path, file_path_not_sorted)
