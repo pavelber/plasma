@@ -29,7 +29,7 @@ def create_level_key(level):
         return "z" + str(abs(l_int)).zfill(5)
 
 
-def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_level_index, skip_lines):
+def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_level_index, skip_lines, count_transitions = False):
     file_path = os.path.join(out_dir, file_name)
     file_path_not_sorted = os.path.join(out_dir, file_name + ".notsorted")
     shutil.copyfile(file_path, file_path_not_sorted)
@@ -81,15 +81,16 @@ def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_le
                 max_num_of_levels = num_of_levels * (num_of_levels - 1) / 2
                 print(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
                     max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]))
-                if max_num_of_levels < spect_num_data_num_of_lines[s_num]:
-                    print("ERROR")
-                    warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
-                        max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + os.linesep)
-                    warn_f.close()
-                    exit(1)
-                else:
-                    warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
-                        max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + "... OK"+os.linesep)
+                if count_transitions:
+                    if max_num_of_levels < spect_num_data_num_of_lines[s_num]:
+                        print("ERROR")
+                        warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                            max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + os.linesep)
+                        warn_f.close()
+                        exit(1)
+                    else:
+                        warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                            max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + "... OK"+os.linesep)
 
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
@@ -110,7 +111,7 @@ def create_rrec(out_dir, spec_numbers, translation_table):
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
                  {6: lambda n: translation_table[n], 11: lambda n: translation_table[n]}, "EXC", excit_line_improver)
-    sort_file_by_levels(out_dir, "EXCIT.INP", 0, 1, 2, 2)
+    sort_file_by_levels(out_dir, "EXCIT.INP", 0, 1, 2, 2, True)
 
 
 def copy_from_aiw(out_dir):
