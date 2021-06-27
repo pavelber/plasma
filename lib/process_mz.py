@@ -185,7 +185,8 @@ def map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he
 
 def replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1, spectr_path,
                    warnings_file_path):
-    line_names = map_lines_names(el_num,old_spectr_path,search_table_h_iia,search_table_he_iib,search_table_in1)
+    line_names = map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1)
+    replaced_lines = []
     with open(warnings_file_path, 'ab') as warn_f:
         warn_f.write("Replaced in SPECTR.INP" + os.linesep)
         with open(old_spectr_path, "rb") as inf:
@@ -216,10 +217,26 @@ def replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_
                                          COEFF_EINS_INDEX_IN_SPECTR] +
                                      ", wavelength :" + old_wavelength + " -> " + parts[WAVE_LENGTH_INDEX_IN_SPECTR] +
                                      os.linesep)
+                        replaced_lines.append((str(sp_num), parts[2], parts[1]))
                     outf.write("\n")
+    return set(replaced_lines)
 
 
-def adjust_eins_weight(python_path, el_num, out_dir):
+def replace_in_excit(out_dir, replaced_lines):
+    excit_path = os.path.join(out_dir, "EXCIT.INP")
+    old_excit_path = os.path.join(out_dir, "EXCIT.INP.UPD")
+    shutil.move(excit_path, old_excit_path)
+    with open(old_excit_path, "rb") as inf:
+        with open(excit_path, "wb") as outf:
+            for line in inf:
+                parts = line.split()
+                if len(parts) > 3 and (parts[0], parts[1], parts[2]) in replaced_lines:
+                    outf.write(line.rstrip() + " # Replace\n")
+                else:
+                    outf.write(line)
+
+
+def replace_from_mz(python_path, el_num, out_dir):
     spectr_path = os.path.join(out_dir, "SPECTR.INP")
     old_spectr_path = os.path.join(out_dir, "SPECTR.INP.UPD")
 
@@ -229,5 +246,7 @@ def adjust_eins_weight(python_path, el_num, out_dir):
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_in1 = read_in1_inp(out_dir)
     warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
-    replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1, spectr_path,
-                   warnings_file_path)
+    replaced_lines = replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1,
+                                    spectr_path,
+                                    warnings_file_path)
+    replace_in_excit(out_dir, replaced_lines)
