@@ -8,7 +8,7 @@ from lib.create_inp1 import create_inp
 from lib.create_spect import create_spectr
 from lib.env import env
 from lib.fisher import run_for_fisher
-from lib.process_mz import adjust_eins_weight
+from lib.process_mz import replace_from_mz
 from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
 from lib.utils import runcommand
@@ -175,4 +175,4 @@ create_rrec(out_dir, spec_numbers, translation_table)
 element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
 create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
 run_for_fisher(dont_run_all_tools, python_path, qsege_path, element, out_dir)
-adjust_eins_weight(python_path, el_num, out_dir)
+replace_from_mz(python_path, el_num, out_dir)
