@@ -85,7 +85,7 @@ def close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, r
     print "SPLIT: closing " + files_list_file
     code, std_out, std_err = copy_and_run(exe_path, "", run_dir, run_dir, spn)
     print(std_out + " " + std_err)
-    code, std_out, std_err = runcommand("wc.exe -l *.dat", run_dir)
+    code, std_out, std_err = runcommand(wc_path + " -l *.dat", run_dir)
     print("SPLIT wc.exe " + std_out + " " + std_err)
     merge_file_path = os.path.join(run_dir, merge_file)
     print("SPLIT: move " + merge_file_path + " to " + merge_file_path + "." + str(count))
@@ -94,7 +94,7 @@ def close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, r
 
 def run_ph_fac(spn, out_dir_spn):
     rec_dir = out_dir_spn + os.path.sep + "REC"
-    code, std_out, std_err = runcommand("wc.exe -l info_ph.dat", rec_dir)
+    code, std_out, std_err = runcommand(wc_path + " -l info_ph.dat", rec_dir)
     num_of_lines = int(std_out.split()[0])
     if num_of_lines > MAX_LINES:
         print "REC NEED SPLIT " + str(num_of_lines)
@@ -107,7 +107,7 @@ def run_ph_fac(spn, out_dir_spn):
 
 def run_exc_fac(spn, out_dir_spn):
     exc_dir = out_dir_spn + os.path.sep + "EXC"
-    code, std_out, std_err = runcommand("wc.exe -l info_ex.dat", exc_dir)
+    code, std_out, std_err = runcommand(wc_path + " -l info_ex.dat", exc_dir)
     num_of_lines = int(std_out.split()[0])
     if num_of_lines > MAX_LINES:
         print "EXC NEED SPLIT " + str(num_of_lines)
@@ -156,7 +156,7 @@ if len(sys.argv) > 5:
 else:
     perl_exe = None
 
-python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path = env(perl_exe)
+python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path = env(perl_exe)
 if not dont_run_all_tools:
     check_dirs(in_dir, out_dir)
 

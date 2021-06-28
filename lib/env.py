@@ -22,7 +22,8 @@ def env(perl_path):
     print("Current OS executable path: " + os_path)
     python_path = sys.executable
     print("Path to python: " + python_path)
-
+    wc_path = os.path.join(my_dir,"wc.exe")
+    print("Path to wc: " + wc_path)
     codep, outp, errp = runcommand(python_path + ' --version')
     print('Python version:' + errp)
     if not perl_path:
@@ -56,4 +57,4 @@ def env(perl_path):
     check_file(ph_fac_path)
     check_file(qsege_path)
 
-    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path
+    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path
