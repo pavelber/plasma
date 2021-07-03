@@ -21,7 +21,7 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
 # Drop 3rd column
 
 def read_element(in_dir):
-    in_path = in_dir + os.path.sep + "fac.ci"
+    in_path = in_dir + os.path.sep + "fac.lev"
     line_num = 1
     with open(in_path, 'rb') as inf:
         for line in inf:

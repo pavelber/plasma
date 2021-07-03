@@ -25,9 +25,9 @@ def verify_fac(el, fac_dir):
         error("Expected file fac lev at " + path)
 
 
-def copy_lines(f, element, fac_dir, name_to_table, num_to_table, outf):
+def copy_lines(f, element, fac_dir, name_to_table, num_to_table, outf): #TODO: read number of lines as I depdenndx on command line param - read 3 lines in Cu
     el = int(name_to_table[element]["AtomicNumber"])
-    verify_fac(el, fac_dir)
+    #verify_fac(el, fac_dir)
     for line in f:
         columns = line.split()
         if len(columns) == 10:

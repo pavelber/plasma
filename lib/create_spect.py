@@ -4,7 +4,7 @@ from lib.utils import read_table, skip_n_lines
 
 
 def read_element(in_dir):
-    in_path = in_dir + os.path.sep + "fac.ci"
+    in_path = in_dir + os.path.sep + "fac.lev"
     line_num = 1
     with open(in_path, 'rb') as inf:
         for line in inf:

@@ -28,7 +28,7 @@ def verify_fac(el, fac_dir):
 
 def copy_lines(f, element, fac_dir):
     el = int(name_to_table[element]["AtomicNumber"])
-    verify_fac(el, fac_dir)
+    #verify_fac(el, fac_dir)
     for line in f:
         columns = line.split()
         if len(columns) == 7:
