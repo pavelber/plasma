@@ -145,7 +145,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
 def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
     last_spect_number = spec_numbers[len(spec_numbers) - 1]
     el, el_nu, num_of_electrons = read_element(os.path.join(out_dir, last_spect_number))
-    file_path = out_dir + os.path.sep + "IN1.INP"s
+    file_path = out_dir + os.path.sep + "IN1.INP"
     print("Creation of " + file_path)
     with open(file_path, 'wb') as outf:
         should_add_next_spect_num, nucleus, header = create_inp_header(out_dir, spec_numbers, el, el_nu,
