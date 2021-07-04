@@ -1,5 +1,6 @@
 import csv
 import os
+import shutil
 import sys
 from shutil import copy
 from subprocess import Popen, PIPE
@@ -30,7 +31,7 @@ def copy_and_run(exe, prefix, out_dir, cwd=".", cmd_in=None, args=""):
         error(out_dir + " not exists")
     copy(exe, out_dir)
     path_to, file_name = os.path.split(exe)
-    cmd = prefix + " " + out_dir + os.path.sep + file_name+" "+args
+    cmd = prefix + " " + out_dir + os.path.sep + file_name + " " + args
     print(cmd)
     code, std_out, std_err = runcommand(cmd, cwd, cmd_in)
     return code, std_out, std_err
@@ -59,4 +60,92 @@ def skip_n_lines(f, num):
 
 def skip_lines(f):
     skip_n_lines(f, 12)
+
+
+def create_level_key(level):
+    l_int = int(level)
+    if l_int > 0:
+        return level.zfill(5)
+    else:
+        return "z" + str(abs(l_int)).zfill(5)
+
+
+def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_level_index, skip_lines,
+                        count_transitions=False):
+    file_path = os.path.join(out_dir, file_name)
+    file_path_not_sorted = os.path.join(out_dir, file_name + ".notsorted")
+    shutil.copyfile(file_path, file_path_not_sorted)
+    lines = {}
+    keys = []
+    spect_num_data_min_level = {}
+    spect_num_data_max_level = {}
+    spect_num_data_num_of_lines = {}
+    warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
+    with open(warnings_file_path, 'ab') as warn_f:
+        with open(file_path, 'wb') as outf:
+            with open(file_path_not_sorted, 'rb') as inf:
+                # read headers
+                for _ in range(skip_lines):
+                    outf.write(inf.readline())
+                # read lines to dict
+                for line in inf:
+                    parts = line.split()
+                    s_num = parts[s_num_index]
+                    from_level = parts[from_level_index]
+                    to_level = parts[to_level_index]
+                    key = s_num.zfill(5) + "-" + create_level_key(from_level) + "-" + create_level_key(to_level)
+                    if key in lines:
+                        print "WARNING: " + file_name + " duplicate line:\n\t" + line
+                        warn_f.write("WARNING: " + file_name + " duplicate line:\n\t" + line)
+                    lines[key] = line
+                    keys.append(key)
+
+                    if s_num in spect_num_data_num_of_lines:
+                        spect_num_data_num_of_lines[s_num] = spect_num_data_num_of_lines[s_num] + 1
+                        spect_num_data_min_level[s_num] = min(spect_num_data_min_level[s_num], int(from_level),
+                                                              int(to_level))
+                        spect_num_data_max_level[s_num] = max(spect_num_data_max_level[s_num], int(from_level),
+                                                              int(to_level))
+                    else:
+                        spect_num_data_num_of_lines[s_num] = 1
+                        spect_num_data_min_level[s_num] = min(int(from_level), int(to_level))
+                        spect_num_data_max_level[s_num] = max(int(from_level), int(to_level))
+
+            keys.sort()
+            for k in keys:
+                outf.write(lines[k])
+
+            for s_num in spect_num_data_num_of_lines:
+                num_of_levels = spect_num_data_max_level[s_num]
+                if spect_num_data_min_level[s_num] < 0:
+                    num_of_levels = num_of_levels + abs(spect_num_data_min_level[s_num])
+                max_num_of_levels = num_of_levels * (num_of_levels - 1) / 2
+                print(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                    max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]))
+                if count_transitions:
+                    if max_num_of_levels < spect_num_data_num_of_lines[s_num]:
+                        print("ERROR")
+                        warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                            max_num_of_levels) + ", actually: " + str(spect_num_data_num_of_lines[s_num]) + os.linesep)
+                        warn_f.close()
+                        exit(1)
+                    else:
+                        warn_f.write(file_name + " Spectroscopic number " + s_num + ": max possible transitions:" + str(
+                            max_num_of_levels) + ", actually: " + str(
+                            spect_num_data_num_of_lines[s_num]) + "... OK" + os.linesep)
+
+
+def read_element(in_dir):
+    in_path = in_dir + os.path.sep + "fac.lev"
+    line_num = 1
+    with open(in_path, 'rb') as inf:
+        for line in inf:
+            parts = line.split()
+            if line_num == 6:
+                el = parts[0]
+                el_num = int(float(parts[3]))
+            if len(parts) > 0 and parts[0] == "NELE":
+                num_of_electrons = int(parts[2])
+                return el, el_num, num_of_electrons
+            line_num += 1
 

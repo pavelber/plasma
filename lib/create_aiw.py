@@ -1,5 +1,7 @@
 import os
 
+from lib.utils import sort_file_by_levels
+
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table):
     for n in spec_numbers:
@@ -22,8 +24,9 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
 
 
 def create_aiw(out_dir, spec_numbers, translation_table):
-    file_path = out_dir + os.path.sep + "AIW.INP"
+    file_path = os.path.join(out_dir,"AIW.INP")
     print("Creation of " + file_path)
     with open(file_path, 'wb') as outf:
         outf.write("  SSi AIQS#  SSf  QSf#       WAI          DE(eV)"+os.linesep)
         copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table)
+    sort_file_by_levels(out_dir, "AIW.INP", 0, 1, 3, 1)

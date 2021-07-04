@@ -1,21 +1,6 @@
 import os
 
-from lib.utils import read_table, skip_n_lines
-
-
-def read_element(in_dir):
-    in_path = in_dir + os.path.sep + "fac.lev"
-    line_num = 1
-    with open(in_path, 'rb') as inf:
-        for line in inf:
-            parts = line.split()
-            if line_num == 6:
-                el = parts[0]
-                el_num = int(float(parts[3]))
-            if len(parts) > 0 and parts[0] == "NELE":
-                num_of_electrons = int(parts[2])
-                return el, el_num, num_of_electrons
-            line_num += 1
+from lib.utils import read_table, skip_n_lines, read_element
 
 
 def create_spectr_header(out_dir, spec_numbers):

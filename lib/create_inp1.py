@@ -1,6 +1,7 @@
 import os
 
 from lib.levels_string import create_levels_string
+from lib.utils import read_element
 
 HEADER1 = "%-2s %d %2s %2s102 2 0-1 2 0 1e+50 0 000 0  0 0 1.0e-02 1 0 0 0.0e+00 1.0    2.0  000010   1.4e-04 0.0e+00 100.0\n"
 HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
@@ -16,23 +17,6 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
          "   or     A / (B + C*t + D*t*t)  D = 0.00000D-03\n" + \
          "Step= 1.0D-09 sec:No of steps=6\n"
 
-
-# Take in1.inp, add last column, translation from row number according to the translation table
-# Drop 3rd column
-
-def read_element(in_dir):
-    in_path = in_dir + os.path.sep + "fac.lev"
-    line_num = 1
-    with open(in_path, 'rb') as inf:
-        for line in inf:
-            parts = line.split()
-            if line_num == 6:
-                el = parts[0]
-                el_num = int(float(parts[3]))
-            if len(parts) > 0 and parts[0] == "NELE":
-                num_of_electrons = int(parts[2])
-                return el, el_num, num_of_electrons
-            line_num += 1
 
 
 def read_nele(in_dir):
@@ -161,7 +145,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
 def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
     last_spect_number = spec_numbers[len(spec_numbers) - 1]
     el, el_nu, num_of_electrons = read_element(os.path.join(out_dir, last_spect_number))
-    file_path = out_dir + os.path.sep + "IN1.INP"
+    file_path = out_dir + os.path.sep + "IN1.INP"s
     print("Creation of " + file_path)
     with open(file_path, 'wb') as outf:
         should_add_next_spect_num, nucleus, header = create_inp_header(out_dir, spec_numbers, el, el_nu,
