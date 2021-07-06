@@ -18,7 +18,6 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
          "Step= 1.0D-09 sec:No of steps=6\n"
 
 
-
 def read_nele(in_dir):
     in_path = in_dir + os.path.sep + "fac.lev"
 
@@ -98,7 +97,11 @@ def choose_better_levels_string(old_levels_string, new_levels_string):
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table,
                                    should_add_next_spect_num, nucleus):
+    min_levels = {}
+    max_levels = {}
     for n in spec_numbers:
+        min_levels[n] = 0
+        max_levels[n] = 0
         outf.write(str(n) + "\n")
         level_to_line = read_fac_lev(out_dir, n)
         in_path = out_dir + os.path.sep + n + os.path.sep + "IN1.INP"
@@ -111,13 +114,13 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
             energy_increment = 0.001
             for line in inf:
                 energy = line[22:34]
-                if (not prev_energy is None) and ( energy == prev_energy or float(energy.strip()) < float(
+                if (not prev_energy is None) and (energy == prev_energy or float(energy.strip()) < float(
                         prev_energy.strip())):
                     energy_with_increment = float(prev_energy.strip()) + energy_increment
                     use_energy = "%12.3f" % energy_with_increment
                 else:
                     use_energy = energy
-                #if n == "8":
+                # if n == "8":
                 #    print(n + " " + str(level_num) + " " + energy + " " + use_energy)
                 levels_string = line[:11]
                 level_num = int(translation_table[n][str(count)])
@@ -138,8 +141,11 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 outf.write(new_line)
                 prev_energy = use_energy
                 count += 1
+                max_levels[n] = max(max_levels[n], int(level_num))
+                min_levels[n] = min(min_levels[n], int(level_num))
     if should_add_next_spect_num:
         outf.write("%d\n  Nucleus           0         0.000     0.00e+00 0.00e+00      1\n" % nucleus)
+    return max_levels, min_levels
 
 
 def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
@@ -153,6 +159,7 @@ def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
         outf.write(header)
         lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, ionization_potential,
                                         should_add_next_spect_num, nucleus)
-        copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, should_add_next_spect_num,
-                                       nucleus)
-    return el, el_nu, num_of_electrons
+        max_levels, min_levels = copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table,
+                                                                should_add_next_spect_num,
+                                                                nucleus)
+    return el, el_nu, max_levels, min_levels
