@@ -165,8 +165,12 @@ if os.path.exists(warnings_file_path):
     os.remove(warnings_file_path)
 
 spec_numbers = run_for_all_numbers()
+
 ionization_potential, translation_table = create_tables(out_dir)
 next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
+if int(next_spec_number) - int(spec_numbers[0])  != len(spec_numbers):
+    error("Missing or redundant spec numbers directories: " + str(spec_numbers))
+
 translation_table[next_spec_number] = {"1": "1"}
 create_aiw(out_dir, spec_numbers, translation_table)
 create_bcfp(out_dir, spec_numbers, translation_table)

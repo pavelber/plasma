@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from lib.utils import skip_n_lines
+from lib.utils import skip_n_lines, info
 
 letter2config_h = {
     "Y": "1s", "R": "2p", "R'": "3p",
@@ -61,8 +61,9 @@ def read_mz(table_name, el_num, letter_2_config):
                 wave_length = parts[WAVE_LENGTH_INDEX_IN_MS]
                 if key is not None:
                     if key in mz:
-                        print "Adding " + str(key) + " in " + table_name + " was " + \
-                              str(mz[key]) + " - " + coeff_eins + '\n' + line
+                        # print "Adding " + str(key) + " in " + table_name + " was " + \
+                        #     str(mz[key]) + " - " + coeff_eins + '\n' + line
+                        pass
                     else:
                         mz[key] = []
                     mz[key].append((line, coeff_eins, wave_length))
@@ -150,9 +151,8 @@ def adjust_eins_weight(python_path, el_num, out_dir):
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_in1 = read_in1_inp(out_dir)
-    warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
     replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1, spectr_path,
-                   warnings_file_path)
+                   out_dir)
 
 
 def map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1):
@@ -184,41 +184,41 @@ def map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he
 
 
 def replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1, spectr_path,
-                   warnings_file_path):
+                   out_dir):
     line_names = map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1)
     replaced_lines = []
-    with open(warnings_file_path, 'ab') as warn_f:
-        warn_f.write("Replaced in SPECTR.INP" + os.linesep)
-        with open(old_spectr_path, "rb") as inf:
-            inf.readline()  # header
-            with open(spectr_path, "wb") as outf:
-                for line in inf:
-                    replaced = False
-                    parts = line.split()
-                    sp_num = int(parts[0])
-                    if sp_num == el_num:  # H - like
-                        key = create_key_spectr(parts, search_table_in1)
-                        if key in search_table_h_iia:
-                            line_name = line_names[str(parts)]
-                            old_einstein, old_wavelength, replaced = \
-                                replace(search_table_h_iia, search_table_in1, parts, 'IIa')
-                    elif sp_num == sp_num == el_num - 1:  # He - like
-                        key = create_key_spectr(parts, search_table_in1)
-                        if key in search_table_he_iib:
-                            line_name = line_names[str(parts)]
-                            old_einstein, old_wavelength, replaced = \
-                                replace(search_table_he_iib, search_table_in1, parts, 'IIb')
-                    outf.write("%2s %4s %4s %7s %13s %12s"
-                               % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
-                    if replaced:
-                        outf.write("  # " + line_name)
-                        warn_f.write(line.rstrip() + "#  " + line_name + " " +
-                                     "einstein coefficient: " + old_einstein + " -> " + parts[
-                                         COEFF_EINS_INDEX_IN_SPECTR] +
-                                     ", wavelength :" + old_wavelength + " -> " + parts[WAVE_LENGTH_INDEX_IN_SPECTR] +
-                                     os.linesep)
-                        replaced_lines.append((str(sp_num), parts[2], parts[1]))
-                    outf.write("\n")
+
+    info(out_dir, "*************************************")
+    info(out_dir, "Replaced in SPECTR.INP")
+    with open(old_spectr_path, "rb") as inf:
+        inf.readline()  # header
+        with open(spectr_path, "wb") as outf:
+            for line in inf:
+                replaced = False
+                parts = line.split()
+                sp_num = int(parts[0])
+                if sp_num == el_num:  # H - like
+                    key = create_key_spectr(parts, search_table_in1)
+                    if key in search_table_h_iia:
+                        line_name = line_names[str(parts)]
+                        old_einstein, old_wavelength, replaced = \
+                            replace(search_table_h_iia, search_table_in1, parts, 'IIa')
+                elif sp_num == sp_num == el_num - 1:  # He - like
+                    key = create_key_spectr(parts, search_table_in1)
+                    if key in search_table_he_iib:
+                        line_name = line_names[str(parts)]
+                        old_einstein, old_wavelength, replaced = \
+                            replace(search_table_he_iib, search_table_in1, parts, 'IIb')
+                outf.write("%2s %4s %4s %7s %13s %12s"
+                           % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
+                if replaced:
+                    outf.write("  # " + line_name)
+                    info(out_dir,line.rstrip() + "#  " + line_name + " " +
+                                 "einstein coefficient: " + old_einstein + " -> " + parts[
+                                     COEFF_EINS_INDEX_IN_SPECTR] +
+                                 ", wavelength :" + old_wavelength + " -> " + parts[WAVE_LENGTH_INDEX_IN_SPECTR] )
+                    replaced_lines.append((str(sp_num), parts[2], parts[1]))
+                outf.write("\n")
     return set(replaced_lines)
 
 
@@ -245,8 +245,7 @@ def replace_from_mz(python_path, el_num, out_dir):
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_in1 = read_in1_inp(out_dir)
-    warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
     replaced_lines = replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1,
                                     spectr_path,
-                                    warnings_file_path)
+                                    out_dir)
     replace_in_excit(out_dir, replaced_lines)
