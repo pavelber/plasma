@@ -23,7 +23,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                                 error("No level " + lev2_search + " in renumeration table for spectroscopic number " + n_next)
                             lev2 = translation_table[n_next][lev2_search]
                             outf.write(
-                                ("%5s%5s%5s%5s%15s%15s" + os.linesep) % (n, lev1, n_next, lev2, parts[5], parts[4]))
+                                ("%5s%5s%5s%5s%15s%13.3f" + os.linesep) % (n, lev1, n_next, lev2, parts[5], float(parts[4])))
                         else:
                             print ("No " + lev1_search + " or " + lev2_search)
 
