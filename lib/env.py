@@ -40,8 +40,8 @@ def env(perl_path):
 
     print("Searching for components:")
     if os_name == "win32":
-        exc_fac_name = "exc_fac.exe"
-        ph_fac_name = "ph_fac.exe"
+        exc_fac_name = "ralchenko_exc_fac.exe"
+        ph_fac_name = "ralchenko_ph_fac.exe"
     else:
         exc_fac_name = "exc_fac"
         ph_fac_name = "ph_fac"
