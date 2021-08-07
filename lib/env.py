@@ -49,6 +49,7 @@ def env(perl_path):
     exc_fac_path = os_path + os.path.sep + exc_fac_name
     ph_fac_path = os_path + os.path.sep + ph_fac_name
     fit_path = my_dir + os.path.sep + "fit.pl"
+    fac_in1_path = my_dir + os.path.sep + "fac_IN1.pl"
     old_path = my_dir + os.path.sep + "old_fac.py"
     qsege_path = my_dir + os.path.sep + "create_qsege2.py"
     check_file(old_path)
@@ -56,5 +57,6 @@ def env(perl_path):
     check_file(exc_fac_path)
     check_file(ph_fac_path)
     check_file(qsege_path)
+    check_file(fac_in1_path)
 
-    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path
+    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path,fac_in1_path

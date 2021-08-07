@@ -45,9 +45,9 @@ def run_for_one_number(spn, in_dir_spn, out_dir_spn):
     run_old_fac(in_dir_spn, out_dir_spn)
     levels = read_nlev(out_dir_spn + os.path.sep + "fac.lev")
     print("Levels from fac.lev: " + levels)
+
+    run_facIn1(spn, levels, out_dir_spn)
     run_fit(spn, levels, out_dir_spn)
-    run_ph_fac(spn, out_dir_spn)
-    run_exc_fac(spn, out_dir_spn)
 
 
 def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn):
@@ -92,36 +92,30 @@ def close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, r
     shutil.move(merge_file_path, merge_file_path + "." + str(count))
 
 
-def run_ph_fac(spn, out_dir_spn):
+def copy_ph_fac(spn, out_dir_spn):
     rec_dir = out_dir_spn + os.path.sep + "REC"
-    code, std_out, std_err = runcommand(wc_path + " -l info_ph.dat", rec_dir)
-    num_of_lines = int(std_out.split()[0])
-    if num_of_lines > MAX_LINES:
-        print "REC NEED SPLIT " + str(num_of_lines)
-        split_and_run(rec_dir, MAX_LINES, ph_fac_path, "info_ph.dat", "output_ph.dat", spn)
-    else:
-        print "REC NOT NEED SPLIT " + str(num_of_lines)
-        code, std_out, std_err = copy_and_run(ph_fac_path, "", rec_dir, rec_dir, spn)
-        print(std_out + " " + std_err)
+    os.mkdir(rec_dir)
+
+    shutil.copy(ph_fac_path, rec_dir)
 
 
-def run_exc_fac(spn, out_dir_spn):
+def copy_exc_fac(spn, out_dir_spn):
     exc_dir = out_dir_spn + os.path.sep + "EXC"
-    code, std_out, std_err = runcommand(wc_path + " -l info_ex.dat", exc_dir)
-    num_of_lines = int(std_out.split()[0])
-    if num_of_lines > MAX_LINES:
-        print "EXC NEED SPLIT " + str(num_of_lines)
-        split_and_run(exc_dir, MAX_LINES, exc_fac_path, "info_ex.dat", "outpp.dat", spn)
-    else:
-        print "EXC NOT NEED SPLIT " + str(num_of_lines)
-        code, std_out, std_err = copy_and_run(exc_fac_path, "", exc_dir, exc_dir, spn)
-        print(std_out + " " + std_err)
+    os.mkdir(exc_dir)
+    shutil.copy(exc_fac_path, exc_dir)
 
 
 def run_fit(spn, levels, out_dir_spn):
     fac_dir = out_dir_spn
     code, std_out, std_err = copy_and_run(fit_path, perl_path, fac_dir, out_dir_spn, spn, " -t " + levels)
     print(std_out + " " + std_out)
+
+
+def run_facIn1(spn, levels, out_dir_spn):
+    fac_dir = out_dir_spn
+    code, std_out, std_err = copy_and_run("fac_IN1.pl", perl_path, fac_dir, out_dir_spn, spn, "-exc "+ exc_fac_path+" -ph "+ph_fac_path)
+    print(std_out + " " + std_out)
+    runcommand("gunzip *.gz",out_dir_spn)
 
 
 def run_old_fac(in_dir_spn, out_dir_spn):
@@ -156,7 +150,7 @@ if len(sys.argv) > 5:
 else:
     perl_exe = None
 
-python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path = env(perl_exe)
+python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path = env(perl_exe)
 if not dont_run_all_tools:
     check_dirs(in_dir, out_dir)
 
@@ -168,7 +162,7 @@ spec_numbers = run_for_all_numbers()
 
 ionization_potential, translation_table = create_tables(out_dir)
 next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
-if int(next_spec_number) - int(spec_numbers[0])  != len(spec_numbers):
+if int(next_spec_number) - int(spec_numbers[0]) != len(spec_numbers):
     error("Missing or redundant spec numbers directories: " + str(spec_numbers))
 
 translation_table[next_spec_number] = {"1": "1"}

@@ -1,0 +1,2 @@
+gfortran -O -mcmodel=large -o ../bin/exc_fac fit_spline.f lmdif1.f
+gfortran -O -mcmodel=large -o ../bin/ph_fac_new ph_fac_new.f lmdif1.f
