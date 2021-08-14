@@ -561,7 +561,7 @@ if (-d 'REC'  and not $norec) {
     chdir '..';
     system "tar cfz rec_exc.tgz REC";
 #exit 0;
-    rmtree('REC');
+   # rmtree('REC');
     
 }
 
