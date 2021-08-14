@@ -542,7 +542,7 @@ if (-d 'EXC' and not $noexc) {
 
     system "sort ../ee > ../EXCIT.INP";
     unlink "../ee";
-    system "gzip -f excit out*";
+    system "gzip -k -f excit out*";
 
     chdir "..";
     
@@ -573,7 +573,7 @@ system "check_all.pl" if $do_check;
 
 
 foreach ($file,$tranfile,$excfile,$recfile,$ionfile,$autofile) {
-    system "gzip -f $_" if -e $_;
+    system "gzip -k -f $_" if -e $_;
 };
 
 exit 0;

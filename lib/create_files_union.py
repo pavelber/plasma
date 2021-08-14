@@ -38,7 +38,7 @@ def create_rrec(out_dir, spec_numbers, translation_table):
 
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
-                 {6: lambda n: translation_table.get(n), 11: lambda n: translation_table[n]}, "EXC", excit_line_improver)
+                 {8: lambda n: translation_table.get(n), 15: lambda n: translation_table[n]}, "EXC", excit_line_improver)
     sort_file_by_levels(out_dir, "EXCIT.INP", 0, 1, 2, 2, True)
 
 
@@ -71,9 +71,10 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_name
             with open(in_path, 'rb') as inf:
                 for line in inf:
-                    new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
-                                                  out_dir, out_file_name)
-                    outf.write(final_line_converter(new_line))
+                    if len(line)>10:
+                        new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
+                                                      out_dir, out_file_name)
+                        outf.write(final_line_converter(new_line))
 
 
 def create_output_line(line, n, position_3_chars_to_translation_table, positions, out_dir, out_file_name):

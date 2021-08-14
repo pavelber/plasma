@@ -115,7 +115,7 @@ def run_facIn1(spn, levels, out_dir_spn):
     fac_dir = out_dir_spn
     code, std_out, std_err = copy_and_run("fac_IN1.pl", perl_path, fac_dir, out_dir_spn, spn, "-exc "+ exc_fac_path+" -ph "+ph_fac_path)
     print(std_out + " " + std_out)
-    runcommand("gunzip *.gz",out_dir_spn)
+    #runcommand("gunzip *.gz",out_dir_spn)
 
 
 def run_old_fac(in_dir_spn, out_dir_spn):
