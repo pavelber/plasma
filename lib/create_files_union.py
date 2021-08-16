@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from lib.utils import skip_n_lines, sort_file_by_levels, warn
+from lib.utils import skip_n_lines, sort_file_by_levels, warn, error
 
 BCFP_HEADER = "  iSS  iQS  fSS  fQS           D              -A               B               C\n" + \
               "-----------------------------------------------------------------------------------\n"
@@ -31,8 +31,8 @@ def create_bcfp(out_dir, spec_numbers, translation_table):
 
 def create_rrec(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, "", "RREC.INP", "output_ph.dat",
-                 {7: lambda n: translation_table.get(n), 14: lambda n: translation_table.get(str(int(n) + 1))},
-                 "REC", rrec_line_improver, False)
+                 {6: lambda n: translation_table.get(n), 13: lambda n: translation_table.get(str(int(n) + 1))},
+                 "REC", rrec_line_improver, False,4)
     sort_file_by_levels(out_dir, "RREC.INP", 0, 1, 2, 0)
 
 
@@ -58,7 +58,7 @@ def copy_from_aiw(out_dir):
 
 
 def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, position_3_chars_to_translation_table,
-                 in_file_dir=None, final_line_converter=lambda x: x, renumerate=True):
+                 in_file_dir=None, final_line_converter=lambda x: x, renumerate=True, field_width=3):
     positions = sorted(position_3_chars_to_translation_table.keys())
     file_path = os.path.join(out_dir, out_file_name)
     print("Creation of " + file_path)
@@ -74,28 +74,32 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                 for line in inf:
                     if len(line) > 10:
                         new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
-                                                      out_dir, out_file_name, renumerate)
+                                                      out_dir, out_file_name, renumerate, field_width)
                         outf.write(final_line_converter(new_line))
 
 
 def create_output_line(line, n, position_3_chars_to_translation_table, positions, out_dir, out_file_name,
-                       renumerate=True):
+                       renumerate=True, field_width=3):
     new_line = ''
     pred_pos = 0
     for pos in positions:
         new_line += line[pred_pos: pos]
-        num = line[pos: pos + 3]
+        num = line[pos: pos + field_width]
         num_stripped = num.strip()
         transition_table = position_3_chars_to_translation_table[pos](n)
-        if renumerate and not num_stripped in transition_table:
-            warn(out_dir,
-                 "ERROR while creating " + out_file_name + ": " + " Can't find level " + num_stripped +
-                 " from the line " + line)
-        if renumerate:
-            new_num = transition_table[num_stripped]
+        if not num_stripped in transition_table:
+            if renumerate:
+                warn(out_dir,
+                     "ERROR while creating " + out_file_name + ": " + " Can't find level " + num_stripped +
+                     " from the line " + line)
+                error("ERROR while creating " + out_file_name + ": " + " Can't find level " + num_stripped +
+                      " from the line " + line)
+            else:
+                new_num = num_stripped
         else:
-            new_num = num_stripped
+            new_num = transition_table[num_stripped]
+
         new_line += "%3s" % new_num
-        pred_pos = pos + 3
+        pred_pos = pos + field_width
     new_line += line[pred_pos:]
     return new_line
