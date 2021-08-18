@@ -245,7 +245,7 @@ def replace_from_mz(python_path, el_num, out_dir):
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_in1 = read_in1_inp(out_dir)
-    replaced_lines = replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1,
-                                    spectr_path,
-                                    out_dir)
-    replace_in_excit(out_dir, replaced_lines)
+    #replaced_lines = replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1,
+     #                               spectr_path,
+     #                               out_dir)
+    #replace_in_excit(out_dir, replaced_lines)

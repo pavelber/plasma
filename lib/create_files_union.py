@@ -23,7 +23,8 @@ def rrec_line_improver(l):
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
-                 {8: lambda n: translation_table.get(n), 20: lambda n: translation_table.get(str(int(n) + 1))})
+                 {9: lambda n: translation_table.get(n), 15: lambda n: translation_table.get(str(int(n) + 1))},
+                 None,lambda x: x,False, 4)
     sort_file_by_levels(out_dir, "BCFP.INP", 0, 1, 3, 2)
     shutil.copyfile(os.path.join(out_dir, "BCFP.INP"), os.path.join(out_dir, "BCFP.INP.before.AIW"))
     copy_from_aiw(out_dir)
@@ -32,7 +33,7 @@ def create_bcfp(out_dir, spec_numbers, translation_table):
 def create_rrec(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, "", "RREC.INP", "output_ph.dat",
                  {6: lambda n: translation_table.get(n), 13: lambda n: translation_table.get(str(int(n) + 1))},
-                 "REC", rrec_line_improver, False,4)
+                 "REC", rrec_line_improver, False, 4)
     sort_file_by_levels(out_dir, "RREC.INP", 0, 1, 2, 0)
 
 

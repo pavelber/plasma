@@ -47,7 +47,7 @@ def run_for_one_number(spn, in_dir_spn, out_dir_spn):
     print("Levels from fac.lev: " + levels)
 
     run_facIn1(spn, levels, out_dir_spn)
-    run_fit(spn, levels, out_dir_spn)
+    #run_fit(spn, levels, out_dir_spn)
 
 
 def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn):
