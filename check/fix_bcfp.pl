@@ -7,12 +7,13 @@ if (shift) {
 	system "check_bcfp";
 }
 
-print "starting fix_bcfp.pl"
+print "starting fix_bcfp.pl\n";
 
 my %check;
 
-if (-e 'check_bcfp') {
-	exit 0 if -z 'check_bcfp';
+if (-e 'check_bcfp.exe') {
+	exit 0 if -z 'check_bcfp.exe';
+	print "starting check_bcfp 2\n";
     open CHECK, 'check_bcfp';
     while (<CHECK>) {
         my @b = split;
@@ -53,7 +54,7 @@ if (-e 'check_bcfp') {
 	
 	close BC;
 	close BB;
-	
+	print "renaming in fix_bcfp\n";
 	rename 'BCFP.INP', 'BCFP.INP.old';
 	system "mv -f bb BCFP.INP";
 	system "gzip -f BCFP.INP.old";

@@ -10,11 +10,11 @@ if ($remove =~ /^-?-h/i) {
     print "Usage: $0 <a>\n  a < 0: remove bad between autoioniz\n  a > 0: remove all bad\n";
     exit 0;
 }
-print "starting fix_excit.pl"
+print "starting fix_excit.pl\n";
 
 
-open CHK,'check_out' or die "check_out: $!\n";
-
+open CHK,'check_out.exe' or die "check_out: $!\n";
+print "opened  check excit\n";
 while (<CHK>) {
     my @a = split;
     $bad{$a[0].'_'.$a[1].'_'.$a[2]} = $a[4];
@@ -51,7 +51,7 @@ while (<EXC>) {
 
 close EXC;
 close OUT;
-
+print "before rename  check excit\n";
 system "mv -f EXCIT.INP EXCIT.INP.old";
 system "gzip -f EXCIT.INP.old; sort ee > EXCIT.INP";
 unlink 'ee';

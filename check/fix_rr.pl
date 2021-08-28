@@ -9,7 +9,7 @@ if ($nonremove = shift) {
 #    $_ = <STDIN>;
 #    undef $nonremove if $_ !~ /^y/i;
 }
-print "starting fix_rr.pl"
+print "starting fix_rr.pl\n";
 open CHK,'check_rout' or die "check_rout: $!\n";
 
 while (<CHK>) {
@@ -51,7 +51,7 @@ while (<EXC>) {
 
 close EXC;
 close OUT;
-
+print "rename fix_rr.pl\n";
 rename 'RREC.INP', 'RREC.INP.old';
 system "gzip -f RREC.INP.old; sort rr > RREC.INP";
 unlink 'rr';
