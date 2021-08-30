@@ -59,4 +59,4 @@ def env(perl_path):
     check_file(qsege_path)
     check_file(fac_in1_path)
 
-    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path,fac_in1_path
+    return python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path,fac_in1_path,my_dir

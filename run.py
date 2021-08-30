@@ -7,7 +7,6 @@ from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
 from lib.create_spect import create_spectr
 from lib.env import env
-from lib.fisher import run_for_fisher
 from lib.process_mz import replace_from_mz
 from lib.renumer import create_tables
 from lib.utils import error, copy_and_run
@@ -47,7 +46,7 @@ def run_for_one_number(spn, in_dir_spn, out_dir_spn):
     print("Levels from fac.lev: " + levels)
 
     run_facIn1(spn, levels, out_dir_spn)
-    #run_fit(spn, levels, out_dir_spn)
+    # run_fit(spn, levels, out_dir_spn)
 
 
 def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn):
@@ -113,9 +112,18 @@ def run_fit(spn, levels, out_dir_spn):
 
 def run_facIn1(spn, levels, out_dir_spn):
     fac_dir = out_dir_spn
-    code, std_out, std_err = copy_and_run("fac_IN1.pl", perl_path, fac_dir, out_dir_spn, spn, "-exc "+ exc_fac_path+" -ph "+ph_fac_path)
+    code, std_out, std_err = copy_and_run("fac_IN1.pl", perl_path, fac_dir, out_dir_spn, spn,
+                                          "-exc " + exc_fac_path + " -ph " + ph_fac_path)
     print(std_out + " " + std_out)
-    #runcommand("gunzip *.gz",out_dir_spn)
+
+
+def check_and_fix(out_dir):
+    check_dir = os.path.join(my_dir, "check")
+    for filename in os.listdir(check_dir):
+        shutil.copy(os.path.join(check_dir, filename), out_dir)
+        for spn in os.listdir(out_dir):
+            shutil.copy(os.path.join(check_dir, filename), os.path.join(out_dir, spn))
+    runcommand("perl check_all.pl -d", out_dir)
 
 
 def run_old_fac(in_dir_spn, out_dir_spn):
@@ -150,7 +158,8 @@ if len(sys.argv) > 5:
 else:
     perl_exe = None
 
-python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path = env(perl_exe)
+python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path, my_dir = env(
+    perl_exe)
 if not dont_run_all_tools:
     check_dirs(in_dir, out_dir)
 
@@ -159,6 +168,8 @@ if os.path.exists(warnings_file_path):
     os.remove(warnings_file_path)
 
 spec_numbers = run_for_all_numbers()
+
+check_and_fix(out_dir)
 
 ionization_potential, translation_table = create_tables(out_dir)
 next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
@@ -172,5 +183,5 @@ create_excit(out_dir, spec_numbers, translation_table)
 create_rrec(out_dir, spec_numbers, translation_table)
 element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
 create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-#run_for_fisher(dont_run_all_tools, python_path, qsege_path, element, out_dir)
+# run_for_fisher(dont_run_all_tools, python_path, qsege_path, element, out_dir)
 replace_from_mz(python_path, el_num, out_dir)
