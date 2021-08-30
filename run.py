@@ -118,11 +118,17 @@ def run_facIn1(spn, levels, out_dir_spn):
 
 
 def check_and_fix(out_dir):
+    print "check_and_fix"
     check_dir = os.path.join(my_dir, "check")
+    print "copy check and fix utils"
     for filename in os.listdir(check_dir):
-        shutil.copy(os.path.join(check_dir, filename), out_dir)
+        check_file = os.path.join(check_dir, filename)
+        shutil.copy(check_file, out_dir)
         for spn in os.listdir(out_dir):
-            shutil.copy(os.path.join(check_dir, filename), os.path.join(out_dir, spn))
+            number_dir = os.path.join(out_dir, spn)
+            if os.path.isdir(number_dir):
+                shutil.copy(check_file, number_dir)
+    print "start check all in " + out_dir
     runcommand("perl check_all.pl -d", out_dir)
 
 
