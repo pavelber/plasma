@@ -129,7 +129,9 @@ def check_and_fix(out_dir):
             if os.path.isdir(number_dir):
                 shutil.copy(check_file, number_dir)
     print "start check all in " + out_dir
-    runcommand("perl check_all.pl -d", out_dir)
+    code, std_out, std_err = runcommand("perl check_all.pl -d", out_dir)
+    print std_err
+    print std_out
 
 
 def run_old_fac(in_dir_spn, out_dir_spn):
