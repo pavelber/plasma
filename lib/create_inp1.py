@@ -18,7 +18,6 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
          "Step= 1.0D-09 sec:No of steps=6\n"
 
 
-
 def read_nele(in_dir):
     in_path = in_dir + os.path.sep + "fac.lev"
 
@@ -109,18 +108,18 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
             first_ai = True
             prev_energy = None
             energy_increment = 0.001
-            skip_n_lines(inf,2)
+            skip_n_lines(inf, 2)
             for line in inf:
                 if line.startswith('Autoionizing states'):
                     continue
                 energy = line[26:35]
-                if (not prev_energy is None) and ( energy == prev_energy or float(energy.strip()) < float(
+                if (not prev_energy is None) and (energy == prev_energy or float(energy.strip()) < float(
                         prev_energy.strip())):
                     energy_with_increment = float(prev_energy.strip()) + energy_increment
                     use_energy = "%12.3f" % energy_with_increment
                 else:
-                    use_energy = energy
-                #if n == "8":
+                    use_energy = "%12.3f" % float(energy)
+                # if n == "8":
                 #    print(n + " " + str(level_num) + " " + energy + " " + use_energy)
                 levels_string = line[:11]
                 level_num = int(translation_table[n][str(count)])
@@ -136,7 +135,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_for_line])
                 levels_string = choose_better_levels_string(levels_string, new_levels_string)
                 new_line = levels_string + "       " + line[18:25] + \
-                           "  " + use_energy + line[34:len(line) - 2] + (
+                           "" + use_energy + "  " + line[36:len(line) - 2] + (
                                    " %6s\n" % level_num)
                 outf.write(new_line)
                 prev_energy = use_energy

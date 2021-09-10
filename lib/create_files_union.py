@@ -20,11 +20,16 @@ def rrec_line_improver(l):
     return " %2s   %4s   %4s   %2s   %10s   %11s   %11s   %11s   %11s   %11s   %11s   %11s   %11s   %11s\n" % (
         s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10], s[11], s[12], s[13])
 
+def bcfp_line_improver(l):
+    s = l.split()
+    return "%5s %5s %5s %5s %15s %15s %15s %15s\n" % (
+        s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7])
+
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
                  {9: lambda n: translation_table.get(n), 23: lambda n: translation_table.get(str(int(n) + 1))},
-                 None, lambda x: x, {9: False, 23: True}, 4)
+                 None, bcfp_line_improver, {9: False, 23: True}, 4)
     sort_file_by_levels(out_dir, "BCFP.INP", 0, 1, 3, 2)
     shutil.copyfile(os.path.join(out_dir, "BCFP.INP"), os.path.join(out_dir, "BCFP.INP.before.AIW"))
     copy_from_aiw(out_dir)
