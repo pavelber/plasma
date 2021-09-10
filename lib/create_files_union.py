@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from lib.utils import skip_n_lines, sort_file_by_levels, warn, error
+from lib.utils import skip_n_lines, sort_file_by_levels
 
 BCFP_HEADER = "  iSS  iQS  fSS  fQS           D              -A               B               C\n" + \
               "-----------------------------------------------------------------------------------\n"
@@ -23,8 +23,8 @@ def rrec_line_improver(l):
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
-                 {9: lambda n: translation_table.get(n), 15: lambda n: translation_table.get(str(int(n) + 1))},
-                 None, lambda x: x, {9: False, 15: True}, 4)
+                 {9: lambda n: translation_table.get(n), 23: lambda n: translation_table.get(str(int(n) + 1))},
+                 None, lambda x: x, {9: False, 23: True}, 4)
     sort_file_by_levels(out_dir, "BCFP.INP", 0, 1, 3, 2)
     shutil.copyfile(os.path.join(out_dir, "BCFP.INP"), os.path.join(out_dir, "BCFP.INP.before.AIW"))
     copy_from_aiw(out_dir)
@@ -90,14 +90,7 @@ def create_output_line(line, n, position_3_chars_to_translation_table, positions
         num_stripped = num.strip()
         transition_table = position_3_chars_to_translation_table[pos](n)
         if not num_stripped in transition_table:
-            if renumerate[pos] and not num_stripped > max_spec_number:
-                warn(out_dir,
-                     "ERROR while creating " + out_file_name + ": " + " Can't find level " + num_stripped +
-                     " from the line " + line)
-                error("ERROR while creating " + out_file_name + ": " + " Can't find level " + num_stripped +
-                      " from the line " + line)
-            else:
-                new_num = num_stripped
+            new_num = num_stripped
         else:
             new_num = transition_table[num_stripped]
 
