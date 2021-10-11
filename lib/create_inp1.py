@@ -113,7 +113,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                 if line.startswith('Autoionizing states'):
                     continue
                 energy = line[24:36]
-                if (not prev_energy is None) and (energy == prev_energy or float(energy.strip()) < float(
+                if (not prev_energy is None) and (("%12.3f" % float(energy)) == ("%12.3f" % float(prev_energy)) or float(energy.strip()) < float(
                         prev_energy.strip())):
                     energy_with_increment = float(prev_energy.strip()) + energy_increment
                     use_energy = "%12.3f" % energy_with_increment
