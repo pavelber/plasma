@@ -1,10 +1,15 @@
 #!/usr/bin/perl
 use File::Spec::Functions 'catfile';
 use Cwd;
+use IO::CaptureOutput qw/capture_exec/;
 
 # EXCIT.INP
 
 $ssh = shift;
+
+print "INC!!!\n";
+print "@INC\n";
+
 
 if ($ssh eq '-d') {
     foreach my $dir (<*>) {
@@ -62,7 +67,7 @@ sub doit {
             my $check_path =  catfile($dir, 'check.exe');
             print "running ${check_path}\n";
             my $check_path_pipe =  "${check_path}|";
-            open EXC, $check_path_pipe or die "Can't start check: $!\n"; #TODO: check exit code!
+            open EXC, $check_path_pipe or die "Can't start check: $!\n";
             my ($totlines, $badx);
             while (<EXC>) {
                 ($totlines, $badx) = /(\d+)  lines with\s+(\d+)\s+bad lines/;
@@ -70,15 +75,15 @@ sub doit {
             }
             close EXC;
             last EXCLOOP if $badx == 0;
-            print "EXCIT before system\n" ;
-            system "perl fix_excit.pl -1", next EXCLOOP if $ind == 1; #TODO: check exit code!
+            run_exec( "perl fix_excit.pl -1");
+            next EXCLOOP if $ind == 1;
             if ($ind == 10 or $badx / $totlines < 0.001) {
-                print "EXCIT before system 1.5\n" ;
-                system "fix_excit.pl 1"; #TODO: check exit code!
+
+                run_exec( "fix_excit.pl 1");
                 last EXCLOOP;
             }
-            print "EXCIT before system 2\n" ;
-            system "perl fix_excit.pl"; #TODO: check exit code!
+
+            run_exec( "perl fix_excit.pl");
         }
         print "done EXC\n";
     }
@@ -118,7 +123,7 @@ sub doit {
             my $check_path =  catfile($dir, 'check_rr.exe');
             print "running ${check_path}\n";
             my $check_path_pipe =  "${check_path}|";
-            open RR, $check_path_pipe or die "Can't start check_rr: $!\n"; #TODO: check exit code!
+            open RR, $check_path_pipe or die "Can't start check_rr: $!\n";
             my ($totlines, $badx);
             while (<RR>) {
                 ($totlines, $badx) = /(\d+)  lines with\s+(\d+)\s+bad lines/;
@@ -127,13 +132,23 @@ sub doit {
             print "RREC BAD = $badx\n";
             last RRLOOP if $badx == 0;
             if ($ind == 50 or $badx / $totlines < 0.001) {
-                system "perl fix_rr.pl"; #TODO: check exit code!
+                run_exec( "perl fix_rr.pl");
                 last RRLOOP;
             }
-            system "perl fix_rr.pl 1"; #TODO: check exit code!
+            run_exec("perl fix_rr.pl 1");
 
         }
         print "done RREC\n";
     }
 
+}
+
+sub run_exec() {
+    my $cmd = shift;
+    print "Running $cmd\n";
+    my ($stdout, $stderr, $success, $exit_code) = capture_exec($cmd);
+    print "($stdout, $stderr, $success, $exit_code)\n";
+    if ($exit_code != 0) {
+        die "BAD EXIT CODE"
+    }
 }
