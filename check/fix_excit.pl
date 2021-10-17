@@ -4,6 +4,9 @@
 # fix EXCIT.INP; uses check_out
 #
 
+use IO::CaptureOutput qw/capture_exec/;
+
+
 $remove = shift;
 
 if ($remove =~ /^-?-h/i) {
@@ -52,7 +55,18 @@ while (<EXC>) {
 close EXC;
 close OUT;
 print "before rename  check excit\n";
-system "mv -f EXCIT.INP EXCIT.INP.old";
-system "gzip -f EXCIT.INP.old; sort ee > EXCIT.INP";
+run_exec "mv -f EXCIT.INP EXCIT.INP.old";
+run_exec("sort ee > EXCIT.INP");
 unlink 'ee';
 exit;
+
+
+sub run_exec() {
+    my $cmd = shift;
+    print "Running $cmd\n";
+    my ($stdout, $stderr, $success, $exit_code) = capture_exec($cmd);
+    print "($stdout, $stderr, $success, $exit_code)\n";
+    if ($exit_code != 0) {
+        die "BAD EXIT CODE"
+    }
+}

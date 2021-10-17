@@ -4,6 +4,9 @@
 # fix RREC.INP; uses check_rout
 #
 
+use IO::CaptureOutput qw/capture_exec/;
+
+
 if ($nonremove = shift) {
 #    print "Do you REALLY want to keep the bad lines [y/n]: ";
 #    $_ = <STDIN>;
@@ -53,6 +56,17 @@ close EXC;
 close OUT;
 print "rename fix_rr.pl\n";
 rename 'RREC.INP', 'RREC.INP.old';
-system "gzip -f RREC.INP.old; sort rr > RREC.INP";
+run_exec("sort rr > RREC.INP");
 unlink 'rr';
 exit;
+
+
+sub run_exec() {
+    my $cmd = shift;
+    print "Running $cmd\n";
+    my ($stdout, $stderr, $success, $exit_code) = capture_exec($cmd);
+    print "($stdout, $stderr, $success, $exit_code)\n";
+    if ($exit_code != 0) {
+        die "BAD EXIT CODE"
+    }
+}

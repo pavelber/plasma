@@ -2,9 +2,12 @@
 
 # removes transitions with A < 0
 
+use IO::CaptureOutput qw/capture_exec/;
+
+
 if (shift) {
 	print "Starting check_bcfp...\n";
-	system "check_bcfp";
+	run_exec("check_bcfp");
 }
 
 print "starting fix_bcfp.pl\n";
@@ -13,7 +16,7 @@ my %check;
 
 if (-e 'check_bcfp.exe') {
 	exit 0 if -z 'check_bcfp.exe';
-	print "starting check_bcfp 2\n";
+
     open CHECK, 'check_bcfp';
     while (<CHECK>) {
         my @b = split;
@@ -56,11 +59,22 @@ if (-e 'check_bcfp.exe') {
 	close BB;
 	print "renaming in fix_bcfp\n";
 	rename 'BCFP.INP', 'BCFP.INP.old';
-	system "mv -f bb BCFP.INP";
-	system "gzip -f BCFP.INP.old";
+	run_exec("mv -f bb BCFP.INP");
+
 	
 	print "---\n",($bad || '0 ')." bad transitions out of $total\n---\n";
 	
 }
 
 exit 0;
+
+
+sub run_exec() {
+    my $cmd = shift;
+    print "Running $cmd\n";
+    my ($stdout, $stderr, $success, $exit_code) = capture_exec($cmd);
+    print "($stdout, $stderr, $success, $exit_code)\n";
+    if ($exit_code != 0) {
+        die "BAD EXIT CODE"
+    }
+}
