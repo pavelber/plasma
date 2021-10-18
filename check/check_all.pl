@@ -119,7 +119,6 @@ sub doit {
         RRLOOP:
         while (1) {
             $ind++;
-            print "check_rr\n";
             my $check_path =  catfile($dir, 'check_rr.exe');
             print "running ${check_path}\n";
             my $check_path_pipe =  "${check_path}|";
@@ -131,7 +130,7 @@ sub doit {
             close RR;
             print "RREC BAD = $badx\n";
             last RRLOOP if $badx == 0;
-            if ($ind == 50 or $badx / $totlines < 0.001) {
+            if ($ind == 100) {
                 run_exec( "perl fix_rr.pl");
                 last RRLOOP;
             }
