@@ -31,7 +31,7 @@ def create_levels_string(num_of_electrons, line):
     holes = {}
     while i < len(columns):
         star_index = columns[i].find("*")
-        if star_index > 0:
+        if 0 < star_index < len(columns[i]) - 1:
             num_to_electrons[columns[i][0:star_index]] = int(columns[i][star_index + 1:])
         else:
             if '+' in columns[i] or '-' in columns[i]:
@@ -41,7 +41,8 @@ def create_levels_string(num_of_electrons, line):
         i += 1
     should_be = sum(num_to_electrons.values())
     if should_be != num_of_electrons:
-        error("Got different electrons number in " + line+". Should be "+str(should_be)+", got "+str(num_of_electrons))
+        error("Got different electrons number in " + line + ". Should be " + str(should_be) + ", got " + str(
+            num_of_electrons))
     # print num_of_electrons
     # print num_to_electrons
     # print holes
@@ -87,6 +88,5 @@ def create_levels_string(num_of_electrons, line):
         error("Remained electrons")
 
     return ' '.join(result)
-
 
 # 1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 4f14 5d10 6s2 6p6 5f3 6d1 7s2
