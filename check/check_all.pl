@@ -111,35 +111,6 @@ sub doit {
         print "done BCFP\n";
     }
 
-    # RREC.INP
-
-    if (-e 'RREC.INP') {
-        $ind = 0;
-
-        RRLOOP:
-        while (1) {
-            $ind++;
-            my $check_path =  catfile($dir, 'check_rr.exe');
-            print "running ${check_path}\n";
-            my $check_path_pipe =  "${check_path}|";
-            open RR, $check_path_pipe or die "Can't start check_rr: $!\n";
-            my ($totlines, $badx);
-            while (<RR>) {
-                ($totlines, $badx) = /(\d+)  lines with\s+(\d+)\s+bad lines/;
-            }
-            close RR;
-            print "RREC BAD = $badx\n";
-            last RRLOOP if $badx == 0;
-            if ($ind == 100) {
-                run_exec( "perl fix_rr.pl");
-                last RRLOOP;
-            }
-            run_exec("perl fix_rr.pl 1");
-
-        }
-        print "done RREC\n";
-    }
-
 }
 
 sub run_exec() {
