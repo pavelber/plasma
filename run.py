@@ -130,6 +130,7 @@ def check_and_fix(out_dir):
                 shutil.copy(check_file, number_dir)
     print "start check all in " + out_dir
     code, std_out, std_err = runcommand("perl check_all.pl -d", out_dir)
+    code, std_out, std_err = runcommand("perl check_all.pl", out_dir)
     print std_err
     print std_out
 
