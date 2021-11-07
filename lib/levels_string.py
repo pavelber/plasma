@@ -30,14 +30,15 @@ def create_levels_string(num_of_electrons, line):
     num_to_electrons = {}
     holes = {}
     while i < len(columns):
-        star_index = columns[i].find("*")
-        if 0 < star_index < len(columns[i]) - 1:
-            num_to_electrons[columns[i][0:star_index]] = int(columns[i][star_index + 1:])
+        column = columns[i].rstrip("*")  # remove trailing stars
+        star_index = column.find("*")
+        if 0 < star_index < len(column) - 1:
+            num_to_electrons[column[0:star_index]] = int(column[star_index + 1:])
         else:
-            if '+' in columns[i] or '-' in columns[i]:
+            if '+' in column or '-' in column:
                 break
             else:
-                holes[columns[i][0:2]] = int(columns[i][2:])
+                holes[column[0:2]] = int(column[2:])
         i += 1
     should_be = sum(num_to_electrons.values())
     if should_be != num_of_electrons:
