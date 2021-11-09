@@ -16,7 +16,7 @@ if ($remove =~ /^-?-h/i) {
 print "starting fix_excit.pl\n";
 
 
-open CHK,'check_out.exe' or die "check_out: $!\n";
+open CHK,'check_out' or die "check_out: $!\n";
 print "opened  check excit\n";
 while (<CHK>) {
     my @a = split;
@@ -55,7 +55,7 @@ while (<EXC>) {
 close EXC;
 close OUT;
 print "before rename  check excit\n";
-run_exec "mv -f EXCIT.INP EXCIT.INP.old";
+run_exec("mv -f EXCIT.INP EXCIT.INP.old");
 run_exec("sort ee > EXCIT.INP");
 unlink 'ee';
 exit;
