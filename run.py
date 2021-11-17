@@ -3,7 +3,7 @@ import shutil
 import sys
 from os.path import isdir
 
-from lib.check_and_fix import check_and_fix_rr
+from lib.check_and_fix import check_and_fix_rr, check_and_fix_old_rr
 from lib.create_aiw import create_aiw
 from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
@@ -147,6 +147,7 @@ def check_and_fix(out_dir):
 def check_and_fix_in_main_dir(out_dir):
     code, std_out, std_err = runcommand("perl check_all.pl", out_dir)
     check_and_fix_rr(out_dir)
+    check_and_fix_old_rr(out_dir)
 
 
 def run_old_fac(in_dir_spn, out_dir_spn):
