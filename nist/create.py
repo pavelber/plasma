@@ -16,12 +16,17 @@ def clean_num(s):
 
 
 def format_configuration(configuration, max_len):
-    configuration_split = configuration.replace(' ', '.').split(".")
+    configuration_split = configuration.split(".")
     s = " ".join(configuration_split)
     if len(s) > max_len:
         return " ".join(filter(lambda c: c[0:1] != '(', configuration_split))
     else:
         return " ".join(configuration_split)
+
+
+def format_term(s):
+    p = s.split(" ")
+    return p[-1]
 
 
 def write_section(elem, outf, spec_num, spec_num_file):
@@ -32,15 +37,15 @@ def write_section(elem, outf, spec_num, spec_num_file):
             parts = line.strip().split(',')
             configuration = nist_strip(parts[0])
             config = format_configuration(configuration, 10)
-            term = nist_strip(parts[1])
+            term = format_term(nist_strip(parts[1]))
             g = nist_strip(parts[2])
             level = float(clean_num(nist_strip(parts[3])))
             if configuration.startswith(elem):
                 outf.write("\n")
                 return level
             else:
-                outf.write("%10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
-                print("%14s%4s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
+                outf.write(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
+                print(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
                 n = n + 1
 
 
