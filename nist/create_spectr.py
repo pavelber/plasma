@@ -54,7 +54,7 @@ def write_section(outf, spec_num, energy_table, spec_num_file):
                 osc = nist_strip(parts[2])
                 up_level = energy_table[spec_num][ek]
                 low_level = energy_table[spec_num][ei]
-                outf.write("%3s %3s %3s 1 %8.3f %8.3f %s\n" % (spec_num, up_level,low_level, float(wave), float(eins), osc))
+                outf.write("%3s %3s %3s 1 %8.3f %8.3e %s\n" % (spec_num, up_level,low_level, float(wave), float(eins), osc))
 
 
 ################## MAIN ######################
