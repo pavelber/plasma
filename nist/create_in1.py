@@ -16,7 +16,7 @@ def clean_num(s):
 
 
 def format_configuration(configuration, max_len):
-    configuration_split = configuration.split(".")
+    configuration_split = configuration.replace(" ", ".").split(".")
     s = " ".join(configuration_split)
     if len(s) > max_len:
         return " ".join(filter(lambda c: c[0:1] != '(', configuration_split))
@@ -29,7 +29,7 @@ def format_term(s):
     return p[-1]
 
 
-def write_section(elem, outf, spec_num, spec_num_file, data_file):
+def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
     with open(spec_num_file, "rb") as inf:
         n = 1
         outf.write(spec_num + '\n')
@@ -45,10 +45,10 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file):
                 outf.write("\n")
                 return level
             else:
-                outf.write(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
-                data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
-                print(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
-                n = n + 1
+                if energy_limits[spec_num] > float(energy_str):
+                    outf.write(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
+                    data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
+                    n = n + 1
 
 
 def read_section(elem, spec_num_file):
@@ -78,6 +78,16 @@ def read_section_pass2(elem, spec_num_file, energy):
                     ai_levels += 1
 
 
+def parse_energy_limits(limits_str):
+    limits = {}
+    sp_nums = limits_str.split(",")
+    for spn in sp_nums:
+        limit = spn.split(":")
+        limits[limit[0].strip()] = float(limit[1].strip())
+
+    return limits
+
+
 def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data):
     in1_inp.write("%2s %2s %2d %2d" % (elem, table[0][elem]["AtomicNumber"], min(i_spectro), max(i_spectro)))
     in1_inp.write("102 2 0-1 2 0 1e+50 0 000 0  0 0 1.0e-02 1 0 0 0.0e+00 1.0    2.0  000010   1.4e-04 0.0e+00 100.0\n")
@@ -96,17 +106,24 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
 
     for n in i_spectro:
         in1_inp.write("%3d %4d %4d  0 %8.2f    12  %8.2f   0.0000   0.0000   0.000\n" % (
-        n, levels_data[n][0], levels_data[n][1], spec_number_energy[n], spec_number_energy[n]))
+            n, levels_data[n][0], levels_data[n][1], spec_number_energy[n], spec_number_energy[n]))
 
 
 ################## MAIN ######################
 if len(sys.argv) < 3:
     error('\nUsage: ' + sys.argv[
-        0] + ' directory-with-nist-csv out-dir element-name')
+        0] + ' directory-with-nist-csv out-dir element-name energy-limits')
 
 in_dir = os.path.abspath(sys.argv[1])
 out_dir = os.path.abspath(sys.argv[2])
 elem = sys.argv[3]
+energy_limits = {}
+
+if len(sys.argv) > 4:
+    energy_limits = parse_energy_limits(sys.argv[4])
+
+print("Got energy limits:")
+print(energy_limits)
 
 if not os.path.isdir(in_dir) or not os.path.exists(in_dir):
     error(in_dir + " does not exists or is not a directory")
@@ -135,4 +152,4 @@ with open(os.path.join(out_dir, "IN1.INP"), 'wb') as in1_inp:
         create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data)
 
         for f in i_spectro:
-            write_section(elem, in1_inp, str(f), os.path.join(in_dir, str(f) + '.csv'),in1_csv)
+            write_section(elem, in1_inp, str(f), os.path.join(in_dir, str(f) + '.csv'), in1_csv, energy_limits)
