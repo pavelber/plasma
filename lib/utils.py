@@ -156,3 +156,7 @@ def read_element(in_dir):
                 num_of_electrons = int(parts[2])
                 return el, el_num, num_of_electrons
             line_num += 1
+
+
+def rreplace(s, old, new, count):
+    return (s[::-1].replace(old[::-1], new[::-1], count))[::-1]
