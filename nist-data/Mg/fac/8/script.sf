@@ -1,0 +1,76 @@
+SetAtom('Mg')
+# SetUTA(0) 
+
+
+# B-like ==========================================================================================
+# groundstate groups
+Config('1s2 2s2 2p1', group='bbl-1')
+# basic groups
+Config('1s2 2s1 2p2', '1s2 2p3', group='bbl-2')
+Config('1s2 2s2 3s1', '1s2 2s2 3p1', '1s2 2s2 3d1', '1s2 2s1 2p1 3s1', '1s2 2s1 2p1 3p1', '1s2 2s1 2p1 3d1', '1s2 2p2 3s1', '1s2 2p2 3p1', '1s2 2p2 3d1', group='bbl-3')
+# doubly-excited groups
+Config('1s1 2s2 2p2', '1s1 2s1 2p3', '1s1 2p4', '2s2 2p3', '2s1 2p4', '2p5', group='bdel-1')
+
+
+# Be-like ==========================================================================================
+# groundstate groups
+Config('bebl-1','1s2 2s2')
+# basic groups
+Config('bebl-2','1s2 2s1 2p1', '1s2 2p2')
+Config('bebl-3', '1s2 2s1 3s1', '1s2 2s1 3p1', '1s2 2s1 3d1', '1s2 2p1 3s1', '1s2 2p1 3p1', '1s2 2p1 3d1')
+# Config('bebl-4','1s2 2s1 4s1', '1s2 2s1 4p1', '1s2 2s1 4d1', '1s2 2s1 4f1')
+# doubly-excited groups
+Config('bedel-1','1s1 2s2 2p1', '1s1 2s1 2p2', '1s1 2p3')
+Config('bedel-2','2s2 2p2', '2s1 2p3', '2p4')
+
+
+# energy optimization
+ConfigEnergy(0)
+OptimizeRadial('bbl-1')
+# OptimizeRadial('bebl-1')
+ConfigEnergy(1)
+
+
+#================================================== Structure ==================================================
+Structure('fac.lev.b',  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] )
+Structure('fac.lev.b',  ['bebl-1', 'bebl-2', 'bebl-3','bedel-1', 'bedel-2'] )
+MemENTable('fac.lev.b')
+PrintTable('fac.lev.b', 'fac.lev', 1)
+
+# Collisional Ionization ====================================================================================================
+SetCIEGrid(15)
+CITable('fac.ci.b',  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] , ['bebl-1', 'bebl-2', 'bebl-3','bedel-1', 'bedel-2']  )
+PrintTable('fac.ci.b', 'fac.ci', 1)
+
+# Photoionization ====================================================================================================
+SetPEGrid(10)
+RRTable('fac.rr.b',   ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] ,['bebl-1', 'bebl-2', 'bebl-3','bedel-1', 'bedel-2'])
+PrintTable('fac.rr.b', 'fac.rr', 1)
+
+
+# Autoionization ====================================================================================================
+AITable('fac.ai.b',  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] , ['bebl-1', 'bebl-2', 'bebl-3','bedel-1', 'bedel-2'] )
+PrintTable('fac.ai.b', 'fac.ai', 1)
+
+
+# Radiative Transitions ====================================================================================================
+
+
+# electric quadrupole
+TransitionTable('fac.tr.b', ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] ,  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] , -2)
+
+# magnetic quadrupole
+TransitionTable('fac.tr.b', ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] ,  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1']  , 2)
+
+# electric dipole
+TransitionTable('fac.tr.b', ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] ,  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1']  , -1)
+
+# magnetic dipole
+TransitionTable('fac.tr.b', ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] ,  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1']  , 1)
+
+PrintTable('fac.tr.b', 'fac.tr', 1)
+
+# Excitation ====================================================================================================
+SetCEGrid(15)
+CETable('fac.ce.b', ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1'] ,  ['bbl-1', 'bbl-2', 'bbl-3', 'bdel-1']  )
+PrintTable('fac.ce.b', 'fac.ce', 1)

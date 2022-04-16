@@ -160,3 +160,10 @@ def read_element(in_dir):
 
 def rreplace(s, old, new, count):
     return (s[::-1].replace(old[::-1], new[::-1], count))[::-1]
+
+
+def nist_strip(s):
+    if s.startswith('"=""'):
+        return s[4:-3].strip()
+    else:
+        return s.strip()
