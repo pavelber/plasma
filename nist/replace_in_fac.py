@@ -146,6 +146,21 @@ def recreate_fac_lev(old, new, levels, next_levels):
     return energy_to_levels_list
 
 
+def create_fn(fac_lev_file, fn_file):
+    nele_counter = 0
+    second_section = False
+    for line in fac_lev_file:
+        data = line.split()
+        if line.startswith("NELE"):
+            nele_counter = nele_counter + 1
+        if nele_counter == 2:
+            second_section = True
+        elif len(data) >= 9 and not second_section:
+            conf = line[85:-1]
+            energy = float(data[2])
+            fn_file.write("%-40s  %4.4f\n" % (conf+",",energy ))
+
+
 def renumerate_fac_lev(old, new, old_to_new_level_list, old_to_new_level_list_next):
     current_old_to_new = old_to_new_level_list
     nele_counter = 0
@@ -278,6 +293,7 @@ for fac_dir_name in listdir(fac_nums_dir):
     fac_lev_new = os.path.join(fac_dir, "fac-new.lev")
     fac_out_dir = os.path.join(fac_nums_out_dir, fac_dir_name)
     fac_out_lev = os.path.join(fac_out_dir, "fac.lev")
+    fn = os.path.join(fac_out_dir, "fn.corr")
     with open(fac_lev_tmp, 'rb') as fac_lev_tmp_file:
         with open(fac_out_lev, 'wb') as fac_lev_new_file:
             if next_num in old_2_new:
@@ -285,3 +301,7 @@ for fac_dir_name in listdir(fac_nums_dir):
             else:
                 old_to_new_next = None
             renumerate_fac_lev(fac_lev_tmp_file, fac_lev_new_file, old_2_new[num], old_to_new_next)
+
+    with open(fac_out_lev, 'rb') as fac_lev_file:
+        with open(fn, 'wb') as fn_file:
+            create_fn(fac_lev_file, fn_file)
