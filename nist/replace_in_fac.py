@@ -1,10 +1,11 @@
-################## MAIN ######################
 import copy
 import os
 import sys
+import tempfile
+import urllib
 from os import listdir
 
-from lib.utils import error, nist_strip, skip_n_lines
+from lib.utils import error, nist_strip, skip_n_lines, dec_to_roman
 
 
 def compute_2j(j_str):
@@ -158,7 +159,7 @@ def create_fn(fac_lev_file, fn_file):
         elif len(data) >= 9 and not second_section:
             conf = line[85:-1]
             energy = float(data[2])
-            fn_file.write("%-40s  %4.4f\n" % (conf+",",energy ))
+            fn_file.write("%-40s  %4.4f\n" % (conf + ",", energy))
 
 
 def renumerate_fac_lev(old, new, old_to_new_level_list, old_to_new_level_list_next):
@@ -242,16 +243,46 @@ def recreate_fac_tr(old, new, level_to_energy):
             new.write(line.replace(data[4], diff_energy))
 
 
+def extract_element(fac_nums_dir):
+    any_num = listdir(fac_nums_dir)[0]
+    any_fac_lev_name = os.path.join(fac_nums_dir, any_num, "fac.lev")
+    with open(any_fac_lev_name, 'rb') as fac_lev_file:
+        for i in range(0,5):
+            fac_lev_file.readline()
+        el = fac_lev_file.readline().split()[0]
+    return el
+
+def download_nist(elemnt, spec_nums, nist_dir_name):
+    for n in spec_nums:
+        num = dec_to_roman(int(n))
+        url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum="+elemnt+"+"+num+"&units=1&format=2&output=0&page_size=100&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=1&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
+        testfile = urllib.URLopener()
+        testfile.retrieve(url, os.path.join(nist_dir_name,n+".csv"))
+
+
 ################################# MAIN ################################################################
 
 if len(sys.argv) < 3:
-    error('\nUsage: ' + sys.argv[0] + ' file-with-nist-levels-csv directory-with-fac')
+    error('\nUsage: ' + sys.argv[0] + ' directory-with-fac output-directory')
 
-nist_file = os.path.abspath(sys.argv[1])
-fac_nums_dir = os.path.abspath(sys.argv[2])
-fac_nums_out_dir = os.path.abspath(sys.argv[3])
+fac_nums_dir = os.path.abspath(sys.argv[1])
+fac_nums_out_dir = os.path.abspath(sys.argv[2])
 
-levels_per_num = read_nist(nist_file)
+elemnt = extract_element(fac_nums_dir)
+
+spec_nums = listdir(fac_nums_dir)
+
+nist_dir_name = "nist-"+elemnt
+
+
+
+
+if not os.path.exists(nist_dir_name):
+        os.mkdir(nist_dir_name)
+        download_nist(elemnt, spec_nums, nist_dir_name)
+
+
+levels_per_num = read_nist(nist_dir_name)
 old_energy_to_levels = {}
 old_2_new = {}
 
