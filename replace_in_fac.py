@@ -106,7 +106,7 @@ def renumerate(energy_to_levels_list):
 
 
 def no_4_in_config(config):
-    return len(config[0]) > 0 and '4' != config[0][0] and len(config[1]) > 0 and '4' != config[1][0]
+    return len(config[0]) > 0 and '4' != config[0][0] and '5' != config[0][0] and (len(config[1]) == 0 or ('4' != config[1][0] and '5' != config[1][0]))
 
 
 def recreate_fac_lev(old, new, levels, next_levels):
