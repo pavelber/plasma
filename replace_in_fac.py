@@ -1,7 +1,6 @@
 import copy
 import os
 import sys
-import tempfile
 import urllib
 from os import listdir
 
@@ -34,20 +33,20 @@ def read_nist(levels_dir):
                     break
                 j = compute_2j(nist_strip(data[2]))
                 eV = nist_strip(data[3])
-                c1 = config[0]
-                if len(c1) > 0:
-                    if len(config) < 2:
-                        c2 = ''
-                    else:
-                        c2 = config[1]
+                if len(config) < 2:
+                    c1 = config[0]
+                    c2 = ''
+                else:
+                    c1 = config[-2]
+                    c2 = config[-1]
 
-                    if c1[-1].isalpha():
-                        c1 = c1 + '1'
-                    if len(c2) > 0 and c2[-1].isalpha():
-                        c2 = c2 + '1'
-                    if (c1, c2, j) not in configs:
-                        configs[(c1, c2, j)] = []
-                    configs[(c1, c2, j)].append(eV)
+                if len(c1) > 0 and c1[-1].isalpha():
+                    c1 = c1 + '1'
+                if len(c2) > 0 and c2[-1].isalpha():
+                    c2 = c2 + '1'
+                if (c1, c2, j) not in configs:
+                    configs[(c1, c2, j)] = []
+                configs[(c1, c2, j)].append(eV)
     return configs_per_num
 
 
@@ -106,7 +105,8 @@ def renumerate(energy_to_levels_list):
 
 
 def no_4_in_config(config):
-    return len(config[0]) > 0 and '4' != config[0][0] and '5' != config[0][0] and (len(config[1]) == 0 or ('4' != config[1][0] and '5' != config[1][0]))
+    return len(config[0]) > 0 and '4' != config[0][0] and '5' != config[0][0] and (
+                len(config[1]) == 0 or ('4' != config[1][0] and '5' != config[1][0]))
 
 
 def recreate_fac_lev(old, new, levels, next_levels):
