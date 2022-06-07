@@ -29,7 +29,7 @@ def read_nist(levels_dir):
             skip_n_lines(levels_file, 1)
             for line in levels_file:
                 data = line.split(',')
-                config = nist_strip(data[0]).split('.')
+                config = filter(lambda l: '(' not in l, nist_strip(data[0]).split('.'))
                 if nist_strip(data[2]) == '---':
                     break
                 j = compute_2j(nist_strip(data[2]))
@@ -106,7 +106,7 @@ def renumerate(energy_to_levels_list):
 
 
 def no_4_in_config(config):
-    return '4' not in config[0] and '4' not in config[1]
+    return len(config[0]) > 0 and '4' != config[0][0] and len(config[1]) > 0 and '4' != config[1][0]
 
 
 def recreate_fac_lev(old, new, levels, next_levels):
@@ -135,12 +135,13 @@ def recreate_fac_lev(old, new, levels, next_levels):
 
             level_num = data[0]
             energy = data[2]
-            levels_adjusted = create_levels_string(electrons,line).split()
-            if len(levels_adjusted)>2:
+            levels_adjusted = create_levels_string(electrons, line).split()
+            if len(levels_adjusted) > 2:
                 levels_config = (levels_adjusted[-2], levels_adjusted[-1], config[2])
             else:
                 levels_config = (levels_adjusted[-1], '', config[2])
-            if levels_config in current_levels and no_4_in_config(config) and len(current_levels[levels_config]) > 0:
+            if levels_config in current_levels and no_4_in_config(levels_config) and len(
+                    current_levels[levels_config]) > 0:
                 eV = current_levels[levels_config].pop(0)
                 energy_str = "%.8E" % float(clean_energy_for_fac(eV))
                 new.write(line.replace(energy, energy_str))
@@ -209,7 +210,6 @@ def renumerate_fac_lev(old, new, old_to_new_level_list, old_to_new_level_list_ne
     sorted_lines = sorted(lines, key=lambda x: int(x[0:7]))
     for l in sorted_lines:
         new.write(l)
-
 
 
 def extract_element(fac_nums_dir):
