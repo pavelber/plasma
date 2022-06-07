@@ -5,6 +5,7 @@ import tempfile
 import urllib
 from os import listdir
 
+from lib.levels_string import create_levels_string
 from lib.utils import error, nist_strip, skip_n_lines, dec_to_roman
 
 
@@ -118,9 +119,13 @@ def recreate_fac_lev(old, new, levels, next_levels):
         data = line.split()
         if line.startswith("NELE"):
             nele_counter = nele_counter + 1
-        if nele_counter == 2:
-            second_section = True
-            current_levels = copy.deepcopy(next_levels)
+            if nele_counter == 2:
+                second_section = True
+                current_levels = copy.deepcopy(next_levels)
+            else:
+                electrons = int(data[2])
+        if second_section:
+            continue
         if len(data) < 9:
             new.write(line)
             energy_to_levels = {}
@@ -130,8 +135,13 @@ def recreate_fac_lev(old, new, levels, next_levels):
 
             level_num = data[0]
             energy = data[2]
-            if config in current_levels and no_4_in_config(config) and len(current_levels[config]) > 0:
-                eV = current_levels[config].pop(0)
+            levels_adjusted = create_levels_string(electrons,line).split()
+            if len(levels_adjusted)>2:
+                levels_config = (levels_adjusted[-2], levels_adjusted[-1], config[2])
+            else:
+                levels_config = (levels_adjusted[-1], '', config[2])
+            if levels_config in current_levels and no_4_in_config(config) and len(current_levels[levels_config]) > 0:
+                eV = current_levels[levels_config].pop(0)
                 energy_str = "%.8E" % float(clean_energy_for_fac(eV))
                 new.write(line.replace(energy, energy_str))
             else:
@@ -201,63 +211,23 @@ def renumerate_fac_lev(old, new, old_to_new_level_list, old_to_new_level_list_ne
         new.write(l)
 
 
-def recreate_fac_ai(old, new, level_to_energy):
-    for line in old:
-        data = line.split()
-        if len(data) < 6:
-            new.write(line)
-        else:
-            low = data[0]
-            high = data[2]
-            low_energy = float(level_to_energy[low])
-            high_energy = float(level_to_energy[high])
-            diff_energy = "%.4E" % (- high_energy + low_energy)
-            new.write(line.replace(data[4], diff_energy))
-
-
-def recreate_fac_ce_ci(old, new, level_to_energy):
-    for line in old:
-        data = line.split()
-        if len(data) != 6:
-            new.write(line)
-        else:
-            low = data[0]
-            high = data[2]
-            low_energy = float(level_to_energy[low])
-            high_energy = float(level_to_energy[high])
-            diff_energy = "%.4E" % (high_energy - low_energy)
-            new.write(line.replace(data[4], diff_energy))
-
-
-def recreate_fac_tr(old, new, level_to_energy):
-    for line in old:
-        data = line.split()
-        if len(data) != 9:
-            new.write(line)
-        else:
-            low = data[0]
-            high = data[2]
-            low_energy = float(level_to_energy[low])
-            high_energy = float(level_to_energy[high])
-            diff_energy = "%.6E" % (- high_energy + low_energy)
-            new.write(line.replace(data[4], diff_energy))
-
 
 def extract_element(fac_nums_dir):
     any_num = listdir(fac_nums_dir)[0]
     any_fac_lev_name = os.path.join(fac_nums_dir, any_num, "fac.lev")
     with open(any_fac_lev_name, 'rb') as fac_lev_file:
-        for i in range(0,5):
+        for i in range(0, 5):
             fac_lev_file.readline()
         el = fac_lev_file.readline().split()[0]
     return el
 
+
 def download_nist(elemnt, spec_nums, nist_dir_name):
     for n in spec_nums:
         num = dec_to_roman(int(n))
-        url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum="+elemnt+"+"+num+"&units=1&format=2&output=0&page_size=100&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=1&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
+        url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum=" + elemnt + "+" + num + "&units=1&format=2&output=0&page_size=100&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=1&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
         testfile = urllib.URLopener()
-        testfile.retrieve(url, os.path.join(nist_dir_name,n+".csv"))
+        testfile.retrieve(url, os.path.join(nist_dir_name, n + ".csv"))
 
 
 ################################# MAIN ################################################################
@@ -272,15 +242,11 @@ elemnt = extract_element(fac_nums_dir)
 
 spec_nums = listdir(fac_nums_dir)
 
-nist_dir_name = "nist-"+elemnt
-
-
-
+nist_dir_name = "nist-" + elemnt
 
 if not os.path.exists(nist_dir_name):
-        os.mkdir(nist_dir_name)
-        download_nist(elemnt, spec_nums, nist_dir_name)
-
+    os.mkdir(nist_dir_name)
+    download_nist(elemnt, spec_nums, nist_dir_name)
 
 levels_per_num = read_nist(nist_dir_name)
 old_energy_to_levels = {}
