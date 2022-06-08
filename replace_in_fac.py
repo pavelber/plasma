@@ -136,7 +136,7 @@ def recreate_fac_lev(old, new, levels, next_levels):
             level_num = data[0]
             energy = data[2]
             levels_adjusted = create_levels_string(electrons, line).split()
-            if len(levels_adjusted) > 2:
+            if len(levels_adjusted) > 1:
                 levels_config = (levels_adjusted[-2], levels_adjusted[-1], config[2])
             else:
                 levels_config = (levels_adjusted[-1], '', config[2])
