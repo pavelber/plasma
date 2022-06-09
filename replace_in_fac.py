@@ -1,4 +1,3 @@
-import copy
 import os
 import sys
 import urllib
@@ -46,7 +45,8 @@ def read_nist(levels_dir):
                     c2 = c2 + '1'
                 if (c1, c2, j) not in configs:
                     configs[(c1, c2, j)] = []
-                configs[(c1, c2, j)].append(eV)
+                if eV != '':
+                    configs[(c1, c2, j)].append(eV)
     return configs_per_num
 
 
@@ -77,59 +77,54 @@ def format_energy_for_fac(eV):
 def clean_energy_for_fac(eV):
     l = len(eV)
 
+    energy = eV
     if l == 0:
         energy = '0.000'
-    elif eV[0] == '[' or eV[0] == '(':
-        energy = eV[1: l - 1]
-    elif '+x' in eV:
-        energy = eV.replace('+x', '')
-    elif '?' in eV:
-        energy = eV.replace('?', '')
     else:
-        energy = eV
+        if energy[0] == '[' or energy[0] == '(':
+            energy = energy[1: l - 1]
+        if '+x' in energy:
+            energy = energy.replace('+x', '')
+        if '?' in energy:
+            energy = energy.replace('?', '')
+
     return energy
 
 
-def renumerate(energy_to_levels_list):
+def renumerate(energy_levels):
     i = 0
     old_level_to_new_level_list = []
-    for energy_to_levels in energy_to_levels_list:
-        old_level_to_new_level = {}
-        old_level_to_new_level_list.append(old_level_to_new_level)
-        energies = energy_to_levels.items()
-        energies = sorted(energies, key=lambda x: float(x[0]))
-        for e in energies:
-            old_level_to_new_level[energy_to_levels[e[0]]] = str(i)
-            i = i + 1
-    return old_level_to_new_level_list
+    old_level_to_new_level = {}
+    old_level_to_new_level_list.append(old_level_to_new_level)
+    energies = sorted(energy_levels, key=lambda x: float(x[0]))
+    for e in energies:
+        old_level_to_new_level[e[1]] = str(i)
+        i = i + 1
+    return old_level_to_new_level
 
 
 def no_4_in_config(config):
     return len(config[0]) > 0 and '4' != config[0][0] and '5' != config[0][0] and (
-                len(config[1]) == 0 or ('4' != config[1][0] and '5' != config[1][0]))
+            len(config[1]) == 0 or ('4' != config[1][0] and '5' != config[1][0]))
 
 
-def recreate_fac_lev(old, new, levels, next_levels):
-    current_levels = levels
+def recreate_fac_lev(old, new, nist_level_to_energy, snp):
+    current_levels = nist_level_to_energy
     nele_counter = 0
-    second_section = False
+    energy_levels = []
 
-    energy_to_levels_list = []
     for line in old:
         data = line.split()
         if line.startswith("NELE"):
             nele_counter = nele_counter + 1
             if nele_counter == 2:
-                second_section = True
-                current_levels = copy.deepcopy(next_levels)
+                break
             else:
                 electrons = int(data[2])
-        if second_section:
-            continue
         if len(data) < 9:
             new.write(line)
-            energy_to_levels = {}
-            energy_to_levels_list.append(energy_to_levels)
+            if len(energy_levels) > 0:
+                return energy_levels
         else:
             config = extract_config_and_j(data)
 
@@ -149,13 +144,9 @@ def recreate_fac_lev(old, new, levels, next_levels):
                 new.write(line)
                 energy_str = energy
 
-            if energy_str in energy_to_levels:
-                print("We replace " + energy_to_levels[
-                    energy_str] + " for " + level_num + " with energy " + energy_str)
-            if not second_section:
-                energy_to_levels[energy_str] = level_num
+            energy_levels.append((energy_str,level_num))
 
-    return energy_to_levels_list
+    return energy_levels
 
 
 def create_fn(fac_lev_file, fn_file):
@@ -173,8 +164,7 @@ def create_fn(fac_lev_file, fn_file):
             fn_file.write("%-40s  %4.4f\n" % (conf + ",", energy))
 
 
-def renumerate_fac_lev(old, new, old_to_new_level_list, old_to_new_level_list_next):
-    current_old_to_new = old_to_new_level_list
+def renumerate_fac_lev(old, new, old_to_new_level):
     nele_counter = 0
     second_section = False
 
@@ -185,13 +175,9 @@ def renumerate_fac_lev(old, new, old_to_new_level_list, old_to_new_level_list_ne
         if line.startswith("NELE"):
             nele_counter = nele_counter + 1
         if nele_counter == 2:
-            second_section = True
-            current_old_to_new = old_to_new_level_list_next
-        if current_old_to_new is None or second_section:
-            new.write(line)
+            break
         elif len(data) < 9:
             i = i + 1
-            old_to_new_level = current_old_to_new[i]
             sorted_lines = sorted(lines, key=lambda x: int(x[0:7]))
             for l in sorted_lines:
                 new.write(l)
@@ -248,7 +234,7 @@ if not os.path.exists(nist_dir_name):
     os.mkdir(nist_dir_name)
     download_nist(elemnt, spec_nums, nist_dir_name)
 
-levels_per_num = read_nist(nist_dir_name)
+nist_levels_per_num = read_nist(nist_dir_name)
 old_energy_to_levels = {}
 old_2_new = {}
 
@@ -269,16 +255,11 @@ for fac_dir_name in listdir(fac_nums_dir):
     if os.path.isdir(fac_lev) or not os.path.exists(fac_lev):
         error(fac_lev + " does not exists or is a directory")
 
-    levels = levels_per_num[num]
-    next_num = str(int(num) + 1)
-    if next_num in levels_per_num:
-        next_levels = levels_per_num[next_num]
-    else:
-        next_levels = []
+    levels = nist_levels_per_num[num]
 
     with open(fac_lev, 'rb') as fac_lev_file:
         with open(fac_lev_tmp, 'wb') as fac_lev_tmp_file:
-            old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, next_levels)
+            old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, num)
 
     old_2_new[num] = renumerate(old_energy_to_levels[num])
 
@@ -293,11 +274,7 @@ for fac_dir_name in listdir(fac_nums_dir):
     fn = os.path.join(fac_out_dir, "fn.corr")
     with open(fac_lev_tmp, 'rb') as fac_lev_tmp_file:
         with open(fac_out_lev, 'wb') as fac_lev_new_file:
-            if next_num in old_2_new:
-                old_to_new_next = old_2_new[next_num]
-            else:
-                old_to_new_next = None
-            renumerate_fac_lev(fac_lev_tmp_file, fac_lev_new_file, old_2_new[num], old_to_new_next)
+            renumerate_fac_lev(fac_lev_tmp_file, fac_lev_new_file, old_2_new[num])
 
     with open(fac_out_lev, 'rb') as fac_lev_file:
         with open(fn, 'wb') as fn_file:
