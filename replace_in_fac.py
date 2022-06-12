@@ -103,12 +103,12 @@ def renumerate(energy_levels):
     return old_level_to_new_level
 
 
-def no_4_in_config(config):
-    return len(config[0]) > 0 and '4' != config[0][0] and '5' != config[0][0] and (
-            len(config[1]) == 0 or ('4' != config[1][0] and '5' != config[1][0]))
+def no_4_in_config(config, max_n):
+    return len(config[0]) > 0 and int(config[0][0]) < max_n and (
+            len(config[1]) == 0 or int(config[1][0]) < max_n)
 
 
-def recreate_fac_lev(old, new, nist_level_to_energy, snp):
+def recreate_fac_lev(old, new, nist_level_to_energy, max_n):
     current_levels = nist_level_to_energy
     nele_counter = 0
     energy_levels = []
@@ -135,7 +135,7 @@ def recreate_fac_lev(old, new, nist_level_to_energy, snp):
                 levels_config = (levels_adjusted[-2], levels_adjusted[-1], config[2])
             else:
                 levels_config = (levels_adjusted[-1], '', config[2])
-            if levels_config in current_levels and no_4_in_config(levels_config) and len(
+            if levels_config in current_levels and no_4_in_config(levels_config, max_n) and len(
                     current_levels[levels_config]) > 0:
                 eV = current_levels[levels_config].pop(0)
                 energy_str = "%.8E" % float(clean_energy_for_fac(eV))
@@ -144,7 +144,7 @@ def recreate_fac_lev(old, new, nist_level_to_energy, snp):
                 new.write(line)
                 energy_str = energy
 
-            energy_levels.append((energy_str,level_num))
+            energy_levels.append((energy_str, level_num))
 
     return energy_levels
 
@@ -223,6 +223,9 @@ if len(sys.argv) < 3:
 
 fac_nums_dir = os.path.abspath(sys.argv[1])
 fac_nums_out_dir = os.path.abspath(sys.argv[2])
+max_n = 4
+if len(sys.argv) >= 3:
+    max_n = int(sys.argv[3])
 
 elemnt = extract_element(fac_nums_dir)
 
@@ -259,7 +262,7 @@ for fac_dir_name in listdir(fac_nums_dir):
 
     with open(fac_lev, 'rb') as fac_lev_file:
         with open(fac_lev_tmp, 'wb') as fac_lev_tmp_file:
-            old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, num)
+            old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, max_n)
 
     old_2_new[num] = renumerate(old_energy_to_levels[num])
 
