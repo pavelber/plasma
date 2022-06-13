@@ -224,7 +224,7 @@ if len(sys.argv) < 3:
 fac_nums_dir = os.path.abspath(sys.argv[1])
 fac_nums_out_dir = os.path.abspath(sys.argv[2])
 max_n = 4
-if len(sys.argv) >= 3:
+if len(sys.argv) >= 4:
     max_n = int(sys.argv[3])
 
 elemnt = extract_element(fac_nums_dir)
