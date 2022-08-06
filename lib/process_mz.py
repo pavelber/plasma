@@ -2,18 +2,20 @@ import os
 import shutil
 
 from lib.utils import skip_n_lines, info
+from lib.satellites_names import read_satellites_names
 
 letter2config_h = {
     "Y": "1s", "R": "2p", "R'": "3p",
-    # "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "1s3s", "P'": "1s3p",
-    # "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
+    "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "1s3s", "P'": "1s3p",
+    "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
 }
 
-# TODO: change
 letter2config_he = {
     "Y": "1s2", "R": "1s2p", "R'": "1s3p",
-    # "C": "2s2p", "E": "2s2s", "F": "2p2p", "P": "1s2p", "S": "1s2s", "S'": "ls3s", "P'": "1s3p",
-    # "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "D'": "1s3d"
+    "C": "2s2p", "E": "1s2s2", "F": "1s2p2", "M": "1s2p2", "K": "2p1s", "P": "1s22p", "S": "1s22s", "S'": "1s23s",
+    "P'": "1s23p",
+    "A'": "2p3d", "B'": "2p3s", "C'": "2s3p", "F'": "2p3p", "G'": "2s3d", "E'": "2s3s", "I'": "2p3d",
+    "J'": "2p3s", "K'": "2s3p", "L'": "2s3s", "M'": "2p3p", "N'": "2s3d"
 }
 
 he_lines_names = {
@@ -155,7 +157,7 @@ def adjust_eins_weight(python_path, el_num, out_dir):
                    out_dir)
 
 
-def map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1):
+def map_lines_names(el_num, old_spectr_path, search_table, search_table_in1):
     line_names = {}
     he_lines = {(('1s2p', '3'), ('1s2', '1')): [], (('1s3p', '3'), ('1s2', '1')): []}
     with open(old_spectr_path, "rb") as inf:
@@ -183,9 +185,10 @@ def map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he
     return line_names
 
 
-def replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1, spectr_path,
+def replace_values(el_num, old_spectr_path, search_table, search_table_in1, spectr_path,
                    out_dir):
-    line_names = map_lines_names(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1)
+    line_names = map_lines_names(el_num, old_spectr_path, search_table, search_table_in1)
+    satellites_names = read_satellites_names(el_num)
     replaced_lines = []
 
     info(out_dir, "*************************************")
@@ -197,26 +200,27 @@ def replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_
                 replaced = False
                 parts = line.split()
                 sp_num = int(parts[0])
-                if sp_num == el_num:  # H - like
+                wavelength = parts[4]
+                if sp_num == el_num or sp_num == el_num - 1 or sp_num == el_num - 2:
                     key = create_key_spectr(parts, search_table_in1)
-                    if key in search_table_h_iia:
-                        line_name = line_names[str(parts)]
+                    if key in search_table:
+                        if str(parts) in line_names:
+                            line_name = line_names[str(parts)]
+                        elif wavelength in satellites_names:
+                            line_name = satellites_names[wavelength][10]
+                        else:
+                            line_name = "Name not found"
                         old_einstein, old_wavelength, replaced = \
-                            replace(search_table_h_iia, search_table_in1, parts, 'IIa')
-                elif sp_num == sp_num == el_num - 1:  # He - like
-                    key = create_key_spectr(parts, search_table_in1)
-                    if key in search_table_he_iib:
-                        line_name = line_names[str(parts)]
-                        old_einstein, old_wavelength, replaced = \
-                            replace(search_table_he_iib, search_table_in1, parts, 'IIb')
-                outf.write("%2s %4s %4s %7s %13s %12s"
-                           % (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]))
+                            replace(search_table, search_table_in1, parts, 'MZ')
+
+                outf.write("%2s %4s %4s %7s %13s %.5e"
+                           % (parts[0], parts[1], parts[2], parts[3], parts[4], float(parts[5])))
                 if replaced:
                     outf.write("  # " + line_name)
-                    info(out_dir,line.rstrip() + "#  " + line_name + " " +
-                                 "einstein coefficient: " + old_einstein + " -> " + parts[
-                                     COEFF_EINS_INDEX_IN_SPECTR] +
-                                 ", wavelength :" + old_wavelength + " -> " + parts[WAVE_LENGTH_INDEX_IN_SPECTR] )
+                    info(out_dir, line.rstrip() + "#  " + line_name + " " +
+                         "einstein coefficient: " + old_einstein + " -> " + parts[
+                             COEFF_EINS_INDEX_IN_SPECTR] +
+                         ", wavelength :" + old_wavelength + " -> " + parts[WAVE_LENGTH_INDEX_IN_SPECTR])
                     replaced_lines.append((str(sp_num), parts[2], parts[1]))
                 outf.write("\n")
     return set(replaced_lines)
@@ -239,13 +243,17 @@ def replace_in_excit(out_dir, replaced_lines):
 def replace_from_mz(python_path, el_num, out_dir):
     spectr_path = os.path.join(out_dir, "SPECTR.INP")
     old_spectr_path = os.path.join(out_dir, "SPECTR.INP.UPD")
+    satellites_names = read_satellites_names(el_num)
 
     print "Creation of " + spectr_path + " with updated Einstein weights"
     shutil.move(spectr_path, old_spectr_path)
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
+    search_table_he_ia = read_mz("Ia", el_num, letter2config_h)
+    search_table_he_ib = read_mz("Ib", el_num, letter2config_he)
+    search_table = dict(search_table_he_ib.items() + search_table_he_ia.items() + search_table_h_iia.items() + search_table_he_iib.items())
     search_table_in1 = read_in1_inp(out_dir)
-    replaced_lines = replace_values(el_num, old_spectr_path, search_table_h_iia, search_table_he_iib, search_table_in1,
+    replaced_lines = replace_values(el_num, old_spectr_path, search_table, search_table_in1,
                                     spectr_path,
                                     out_dir)
     replace_in_excit(out_dir, replaced_lines)
