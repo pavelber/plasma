@@ -26,9 +26,15 @@ with open(os.path.join(out_dir, "IN1.INP"), 'rb') as in1_inp:
                 sp_nums_started = True
                 spec_num = parts[0]
             else:
-                if sp_nums_started and len(parts) > 2 and len(parts) > 7:
+                if sp_nums_started and len(parts) > 7:
                     n = parts[7]
                     config = parts[0] + "." + parts[1]
                     config_1 = parts[2]
                     energy_str = parts[4]
+                    in1_csv.write("%s,%s,%s,%s,%s\n" % (spec_num, n, energy_str, config, config_1))
+                elif sp_nums_started and len(parts) == 7:
+                    n = parts[6]
+                    config = parts[0]
+                    config_1 = parts[1]
+                    energy_str = parts[3]
                     in1_csv.write("%s,%s,%s,%s,%s\n" % (spec_num, n, energy_str, config, config_1))

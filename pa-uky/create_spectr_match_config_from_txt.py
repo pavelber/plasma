@@ -4,6 +4,10 @@ import sys
 from lib.utils import error, read_table, skip_n_lines
 
 
+def normalize_energy(energy):
+    return str(round(float(energy), 4))
+
+
 def nist_strip(s):
     if s.startswith('"=""'):
         return s[4:-3].strip()
@@ -65,33 +69,33 @@ def create_header_ecxit(table, elem, file):
 
 def write_spectr_section(outf, spec_num, config_table, spec_num_file):
     with open(spec_num_file, "rb") as inf:
-        skip_n_lines(inf, 5)
+        skip_n_lines(inf, 18)
         for line in inf:
-            parts = line.strip().split('|')
-            conf = parts[1].strip().split(" - ")
-            terms = parts[2].strip().split(" - ")
-            wave = parts[5].strip()
-            energy = parts[8].strip().split(" - ")
-            eins = parts[10].strip()
-            osc = parts[11].strip()
-            if len(conf) == 2:
-                conf_low = format_configuration(conf[0].strip())
-                conf_up = format_configuration(conf[1].strip())
-            if len(terms) == 2:
-                term_low = strip_temp(terms[0].strip())
-                term_up = strip_temp(terms[1].strip())
-            else:
-                continue
-            if len(energy) == 2:
-                ei = energy[0].strip()
-                ek = energy[1].strip()
+            if not line.startswith('***'):
+                parts = line.strip().split('|')
+                if len(parts) == 14:
+                    conf = parts[3].strip().split(" - ")
+                    terms = parts[4].strip().split(" - ")
+                    ek = normalize_energy(parts[12])
+                    ei = normalize_energy(parts[10])
+                    wave = parts[0]
+                    eins = parts[8]
+                    osc = '0.0'
+                    if len(conf) == 2:
+                        conf_low = format_configuration(conf[0].strip())
+                        conf_up = format_configuration(conf[1].strip())
+                    if len(terms) == 2:
+                        term_low = strip_temp(terms[0].strip())
+                        term_up = strip_temp(terms[1].strip())
+                    else:
+                        continue
 
-            if (conf_low, term_low) in config_table[spec_num] and (conf_up, term_up) in config_table[spec_num] \
-                    and wave != '' and eins != '':
-                up_level = config_table[spec_num][(conf_up, term_up)]
-                low_level = config_table[spec_num][(conf_low, term_low)]
-                outf.write("%3s %3s %3s 1 %8.3f %8.3e %s\n" % (
-                    spec_num, up_level, low_level, float(wave), float(eins), osc))
+                    if (conf_low, term_low) in config_table[spec_num] and (conf_up, term_up) in config_table[spec_num] \
+                            and wave != '' and eins != '':
+                        up_level = config_table[spec_num][(conf_up, term_up)]
+                        low_level = config_table[spec_num][(conf_low, term_low)]
+                        outf.write("%3s %3s %3s 1 %8.3f %8.3e %s\n" % (
+                            spec_num, up_level, low_level, float(wave), float(eins), osc))
 
 
 def write_excit_section(outf, spec_num, lines):
@@ -108,26 +112,18 @@ def read_section(spec_num, energy_table, spec_num_file):
     lines = []
     with open(spec_num_file, "rb") as inf:
         skip_n_lines(inf, 5)
+
         for line in inf:
-            parts = line.strip().split('|')
-            conf = parts[1].strip().split(" - ")
-            terms = parts[2].strip().split(" - ")
-            wave = parts[5].strip()
-            energy = parts[8].strip().split(" - ")
-            eins = parts[10].strip()
-            osc = parts[11].strip()
-            if len(conf) == 2:
-                conf_low = conf[0].strip()
-                term_low = terms[0].strip()
-                conf_up = conf[1].strip()
-                term_up = terms[1].strip()
-            if len(energy) == 2:
-                ei = energy[0].strip()
-                ek = energy[1].strip()
-                if ek in energy_table[spec_num] and ei in energy_table[spec_num]:
-                    up_level = energy_table[spec_num][ek]
-                    low_level = energy_table[spec_num][ei]
-                    lines.append((low_level, up_level, osc))
+            if not line.startswith('***'):
+                parts = line.strip().split('|')
+                if len(parts) == 14:
+                    ek = normalize_energy(parts[12])
+                    ei = normalize_energy(parts[10])
+                    osc = '0.0'
+                    if ek in energy_table[spec_num] and ei in energy_table[spec_num]:
+                        up_level = energy_table[spec_num][ek]
+                        low_level = energy_table[spec_num][ei]
+                        lines.append((low_level, up_level, osc))
     return lines
 
 
