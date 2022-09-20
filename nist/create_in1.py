@@ -1,6 +1,7 @@
 import os
 import sys
 
+from lib.databases import download_nist_for_in1
 from lib.utils import error, read_table
 
 
@@ -12,7 +13,7 @@ def nist_strip(s):
 
 
 def clean_num(s):
-    return s.rstrip("?")
+    return s.rstrip("?").strip('[]')
 
 
 def format_configuration(configuration, max_len):
@@ -31,51 +32,52 @@ def format_term(s):
 
 def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
     with open(spec_num_file, "rb") as inf:
+        inf.readline()
         n = 1
         outf.write(spec_num + '\n')
         for line in inf:
-            parts = line.strip().split(',')
-            configuration = nist_strip(parts[0])
-            config = format_configuration(configuration, 10)
-            term = format_term(nist_strip(parts[1]))
-            g = nist_strip(parts[2])
-            energy_str = clean_num(nist_strip(parts[3]))
-            level = float(energy_str)
-            if configuration.startswith(elem):
-                outf.write("\n")
-                return level
-            else:
-                if energy_limits[spec_num] > float(energy_str):
-                    outf.write(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
-                    data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
-                    n = n + 1
+            if not line.startswith('"=""' + elem):
+                parts = line.strip().split(',')
+                configuration = nist_strip(parts[0])
+                config = format_configuration(configuration, 10)
+                term = format_term(nist_strip(parts[1]))
+                g = nist_strip(parts[3])
+                energy_str = clean_num(nist_strip(parts[4]))
+                level = float(energy_str)
+                if configuration.startswith(elem):
+                    outf.write("\n")
+                    return level
+                else:
+                    if energy_limits[spec_num] > float(energy_str):
+                        outf.write(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
+                        data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
+                        n = n + 1
 
 
 def read_section(elem, spec_num_file):
     with open(spec_num_file, "rb") as inf:
+        inf.readline()
         for line in inf:
-            parts = line.strip().split(',')
-            configuration = nist_strip(parts[0])
-            level = float(clean_num(nist_strip(parts[3])))
-            if configuration.startswith(elem):
-                return level
+            if not line.startswith('"=""' + elem):
+                parts = line.strip().split(',')
+                level = float(clean_num(nist_strip(parts[3])))
+        return level
 
 
 def read_section_pass2(elem, spec_num_file, energy):
     with open(spec_num_file, "rb") as inf:
+        inf.readline()
         levels = 0
         ai_levels = 0
         for line in inf:
-            parts = line.strip().split(',')
-            configuration = nist_strip(parts[0])
-            level = float(clean_num(nist_strip(parts[3])))
-            if configuration.startswith(elem):
-                return levels, ai_levels
-            else:
+            if not line.startswith('"=""' + elem):
+                parts = line.strip().split(',')
+                level = float(clean_num(nist_strip(parts[3])))
                 if level < energy:
                     levels += 1
                 else:
                     ai_levels += 1
+        return levels, ai_levels
 
 
 def parse_energy_limits(limits_str):
@@ -115,9 +117,11 @@ if len(sys.argv) < 3:
         0] + ' directory-with-nist-csv out-dir element-name energy-limits')
 
 in_dir = os.path.abspath(sys.argv[1])
-out_dir = os.path.abspath(sys.argv[2])
+data_dir = os.path.abspath(sys.argv[2])
 elem = sys.argv[3]
 energy_limits = {}
+
+out_dir = os.path.join(data_dir, elem)
 
 if len(sys.argv) > 4:
     energy_limits = parse_energy_limits(sys.argv[4])
@@ -130,6 +134,8 @@ if not os.path.isdir(in_dir) or not os.path.exists(in_dir):
 
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
+
+#download_nist_for_in1("Fe", data_dir)
 
 with open(os.path.join(out_dir, "IN1.INP"), 'wb') as in1_inp:
     with open(os.path.join(out_dir, "IN1.csv"), 'wb') as in1_csv:
