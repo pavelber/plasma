@@ -1,0 +1,77 @@
+SetAtom('Mg')
+# SetUTA(0)
+# Li-like ==========================================================================================
+# groundstate groups
+Config('libl-1','1s2 2s1')
+# basic groups
+Config('libl-2','1s2 2p1')
+Config('libl-3','1s2 3s1', '1s2 3p1', '1s2 3d1')
+Config('libl-4','1s2 4s1', '1s2 4p1', '1s2 4d1', '1s2 4f1')
+# doubly-excited groups
+Config('lidel-1','1s1 2s2', '1s1 2s1 2p1', '1s1 2p2')
+Config('lidel-2','2s2 2p1', '2s1 2p2', '2p3')
+Config('lidel-3','1s1 2s1 3s1', '1s1 2s1 3p1', '1s1 2s1 3d1', '1s1 2p1 3s1', '1s1 2p1 3p1', '1s1 2p1 3d1')
+Config('lidel-4','1s1 3s2', '1s1 3p2', '1s1 3d2', '1s1 3s1 3p1', '1s1 3s1 3d1', '1s1 3p1 3d1')
+
+
+# He-like ==========================================================================================
+# groundstate groups
+Config('hebl-1','1s2')
+# basic groups
+Config('hebl-2','1s1 2s1', '1s1 2p1')
+Config('hebl-3','1s1 3s1', '1s1 3p1', '1s1 3d1')
+Config('hebl-4','1s1 4s1', '1s1 4p1', '1s1 4d1', '1s1 4f1')
+# doubly-excited groups
+Config('hedel-1','2s2', '2p2', '2s1 2p1')
+Config('hedel-2','2s1 3s1', '2s1 3p1', '2s1 3d1', '2p1 3s1', '2p1 3p1', '2p1 3d1')
+Config('hedel-3','3s2', '3s1 3p1', '3s1 3d1', '3p2', '3p1 3d1', '3d2')
+
+# energy optimization
+ConfigEnergy(0)
+OptimizeRadial('libl-1')
+# OptimizeRadial('hebl-1')
+ConfigEnergy(1)
+
+
+#================================================== Structure ==================================================
+Structure('fac.lev.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'] )
+Structure('fac.lev.b',  ['hebl-1', 'hebl-2', 'hebl-3', 'hebl-4', 'hedel-1', 'hedel-2', 'hedel-3'] )
+MemENTable('fac.lev.b')
+PrintTable('fac.lev.b', 'fac.lev', 1)
+# Collisional Ionization ====================================================================================================
+SetCIEGrid(15)
+CITable('fac.ci.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['hebl-1', 'hebl-2', 'hebl-3', 'hebl-4', 'hedel-1', 'hedel-2', 'hedel-3'] )
+PrintTable('fac.ci.b', 'fac.ci', 1)
+
+# Photoionization ====================================================================================================
+SetPEGrid(10)
+RRTable('fac.rr.b', ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['hebl-1', 'hebl-2', 'hebl-3', 'hebl-4', 'hedel-1', 'hedel-2', 'hedel-3'])
+PrintTable('fac.rr.b', 'fac.rr', 1)
+
+
+# Autoionization ====================================================================================================
+AITable('fac.ai.b', ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['hebl-1', 'hebl-2', 'hebl-3', 'hebl-4', 'hedel-1', 'hedel-2', 'hedel-3'] )
+PrintTable('fac.ai.b', 'fac.ai', 1)
+
+
+# Radiative Transitions ====================================================================================================
+# SetTransitionCut(1e-10)
+
+# electric quadrupole
+TransitionTable('fac.tr.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'] , -2)
+
+# magnetic quadrupole
+TransitionTable('fac.tr.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'] , 2)
+
+# electric dipole
+TransitionTable('fac.tr.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'] , -1)
+
+# magnetic dipole
+TransitionTable('fac.tr.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'] , 1)
+
+PrintTable('fac.tr.b', 'fac.tr', 1)
+
+# Excitation ====================================================================================================
+SetCEGrid(15)
+CETable('fac.ce.b',  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'],  ['libl-1', 'libl-2', 'libl-3', 'libl-4', 'lidel-1', 'lidel-2', 'lidel-3', 'lidel-4'] )
+PrintTable('fac.ce.b', 'fac.ce', 1)

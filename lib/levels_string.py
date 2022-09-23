@@ -1,6 +1,6 @@
 from lib.utils import error
 
-levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f", "6s", "6p", "6d"]
+levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f","5g", "6s", "6p", "6d",'6f','6g','6h']
 level_to_electrons = {
     "1s": 2,
     "2s": 2,
@@ -13,9 +13,13 @@ level_to_electrons = {
     "4d": 10,
     "4f": 14,
     "5s": 2,
+    "5g": 18,
     "5p": 6,
     "5d": 10,
     "5f": 14,
+    "6f": 14,
+    "6g": 18,
+    "6h": 22,
     "6s": 2,
     "6p": 6,
     "6d": 10
@@ -89,6 +93,5 @@ def create_levels_string(num_of_electrons, line):
         error("Remained electrons")
 
     return ' '.join(result)
-
 
 # 1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 4f14 5d10 6s2 6p6 5f3 6d1 7s2

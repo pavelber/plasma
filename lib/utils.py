@@ -163,3 +163,34 @@ def read_element(in_dir):
                 num_of_electrons = int(parts[2])
                 return el, el_num, num_of_electrons
             line_num += 1
+
+
+def rreplace(s, old, new, count):
+    return (s[::-1].replace(old[::-1], new[::-1], count))[::-1]
+
+
+def nist_strip(s):
+    if s.startswith('"=""'):
+        return s[4:-3].strip()
+    else:
+        return s.strip()
+
+
+def dec_to_roman(number):
+    num = [1, 4, 5, 9, 10, 40, 50, 90,
+           100, 400, 500, 900, 1000]
+    sym = ["I", "IV", "V", "IX", "X", "XL",
+           "L", "XC", "C", "CD", "D", "CM", "M"]
+    i = 12
+
+    res = ""
+
+    while number:
+        div = number // num[i]
+        number %= num[i]
+
+        while div:
+            res = res + sym[i]
+            div -= 1
+        i -= 1
+    return res
