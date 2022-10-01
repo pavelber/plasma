@@ -25,6 +25,13 @@ def info(out_dir, s):
         # print("INFO: " + s)
 
 
+def runcommand_print(cmd, cwd=".", cmd_in=None):
+    code, std_out, std_err = runcommand(cmd, cwd, cmd_in)
+    print(std_out)
+    print(std_err)
+    return code, std_out, std_err
+
+
 def runcommand(cmd, cwd=".", cmd_in=None):
     proc = Popen(cmd,
                  stdout=PIPE,

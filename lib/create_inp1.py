@@ -1,7 +1,7 @@
 import os
 
 from lib.levels_string import create_levels_string
-from lib.utils import read_element
+from lib.utils import read_element, skip_n_lines
 
 HEADER1 = "%-2s %d %2s %2s102 2 0-1 2 0 1e+50 0 000 0  0 0 1.0e-02 1 0 0 0.0e+00 1.0    2.0  000010   1.4e-04 0.0e+00 100.0\n"
 HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
@@ -108,15 +108,18 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
             first_ai = True
             prev_energy = None
             energy_increment = 0.001
+            skip_n_lines(inf, 2)
             for line in inf:
-                energy = line[22:34]
+                if line.startswith('Autoionizing states'):
+                    continue
+                energy = line[24:36]
                 if (not prev_energy is None) and (
                         ("%12.3f" % float(energy)) == ("%12.3f" % float(prev_energy)) or float(energy.strip()) < float(
                         prev_energy.strip())):
                     energy_with_increment = float(prev_energy.strip()) + energy_increment
                     use_energy = "%12.3f" % energy_with_increment
                 else:
-                    use_energy = energy
+                    use_energy = "%12.3f" % float(energy)
                 # if n == "8":
                 #    print(n + " " + str(level_num) + " " + energy + " " + use_energy)
                 levels_string = line[:11]
@@ -132,8 +135,8 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                     level_for_line = level_num
                 new_levels_string = create_levels_string(num_of_electrons, level_to_line[level_for_line])
                 levels_string = choose_better_levels_string(levels_string, new_levels_string)
-                new_line = levels_string + "       " + line[17:22] + \
-                           "  " + use_energy + line[34:len(line) - 2] + (
+                new_line = levels_string + "       " + line[18:25] + \
+                           "" + use_energy + "  " + line[36:len(line) - 2] + (
                                    " %6s\n" % level_num)
                 outf.write(new_line)
                 prev_energy = use_energy

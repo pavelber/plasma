@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from lib.utils import skip_n_lines, sort_file_by_levels, warn
+from lib.utils import skip_n_lines, sort_file_by_levels
 
 BCFP_HEADER = "  iSS  iQS  fSS  fQS           D              -A               B               C\n" + \
               "-----------------------------------------------------------------------------------\n"
@@ -20,10 +20,16 @@ def rrec_line_improver(l):
     return " %2s   %4s   %4s   %2s   %10s   %11s   %11s   %11s   %11s   %11s   %11s   %11s   %11s   %11s\n" % (
         s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], s[10], s[11], s[12], s[13])
 
+def bcfp_line_improver(l):
+    s = l.split()
+    return "%5s %5s %5s %5s %15s %15s %15s %15s\n" % (
+        s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7])
+
 
 def create_bcfp(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, BCFP_HEADER, "BCFP.INP", "BCFP.INP",
-                 {8: lambda n: translation_table.get(n), 20: lambda n: translation_table.get(str(int(n) + 1))})
+                 {9: lambda n: translation_table.get(n), 23: lambda n: translation_table.get(str(int(n) + 1))},
+                 None, bcfp_line_improver, {9: False, 23: True}, 4)
     sort_file_by_levels(out_dir, "BCFP.INP", 0, 1, 3, 2)
     shutil.copyfile(os.path.join(out_dir, "BCFP.INP"), os.path.join(out_dir, "BCFP.INP.before.AIW"))
     copy_from_aiw(out_dir)
@@ -31,14 +37,15 @@ def create_bcfp(out_dir, spec_numbers, translation_table):
 
 def create_rrec(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, "", "RREC.INP", "output_ph.dat",
-                 {5: lambda n: translation_table.get(n), 10: lambda n: translation_table.get(str(int(n) + 1))},
-                 "REC", rrec_line_improver)
+                 {6: lambda n: translation_table.get(n), 13: lambda n: translation_table.get(str(int(n) + 1))},
+                 "REC", rrec_line_improver, {6: False, 13: False}, 4)
     sort_file_by_levels(out_dir, "RREC.INP", 0, 1, 2, 0)
 
 
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
-                 {6: lambda n: translation_table.get(n), 11: lambda n: translation_table[n]}, "EXC", excit_line_improver)
+                 {8: lambda n: translation_table.get(n), 15: lambda n: translation_table[n]}, "EXC",
+                 excit_line_improver, {8: True, 15: True})
     sort_file_by_levels(out_dir, "EXCIT.INP", 0, 1, 2, 2, True)
 
 
@@ -57,13 +64,14 @@ def copy_from_aiw(out_dir):
 
 
 def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, position_3_chars_to_translation_table,
-                 in_file_dir=None, final_line_converter=lambda x: x):
+                 in_file_dir, final_line_converter, renumerate, field_width=3):
     positions = sorted(position_3_chars_to_translation_table.keys())
     file_path = os.path.join(out_dir, out_file_name)
     print("Creation of " + file_path)
 
     with open(file_path, 'wb') as outf:
         outf.write(header)
+        max_spec_number = spec_numbers[-1]
         for n in spec_numbers:
             if in_file_dir:
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_dir + os.path.sep + in_file_name
@@ -71,25 +79,27 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_name
             with open(in_path, 'rb') as inf:
                 for line in inf:
-                    new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
-                                                  out_dir, out_file_name)
-                    outf.write(final_line_converter(new_line))
+                    if len(line) > 10:
+                        new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
+                                                      out_dir, out_file_name, renumerate, max_spec_number, field_width)
+                        outf.write(final_line_converter(new_line))
 
 
-def create_output_line(line, n, position_3_chars_to_translation_table, positions, out_dir, out_file_name):
+def create_output_line(line, n, position_3_chars_to_translation_table, positions, out_dir, out_file_name,
+                       renumerate, max_spec_number, field_width=3):
     new_line = ''
     pred_pos = 0
     for pos in positions:
         new_line += line[pred_pos: pos]
-        num = line[pos: pos + 3]
+        num = line[pos: pos + field_width]
         num_stripped = num.strip()
         transition_table = position_3_chars_to_translation_table[pos](n)
         if not num_stripped in transition_table:
-            warn(out_dir,
-                 "ERROR while creating " + out_file_name + ": " + " Can't find level " + num_stripped +
-                 " from the line " + line)
-        new_num = transition_table[num_stripped]
+            new_num = num_stripped
+        else:
+            new_num = transition_table[num_stripped]
+
         new_line += "%3s" % new_num
-        pred_pos = pos + 3
+        pred_pos = pos + field_width
     new_line += line[pred_pos:]
     return new_line

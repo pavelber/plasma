@@ -1,0 +1,17 @@
+gfortran -O -mcmodel=large -o ../bin/exc_fac fit_spline.f lmdif1.f
+gfortran -O -mcmodel=large -o ../bin/ph_fac_new ph_fac_new.f lmdif1.f
+
+gfortran -c -o check.o -O -mcmodel=large check.f
+
+ld -o ./fort_sample -no_compact_unwind \
+-arch x86_64 -macosx_version_min 10.12.0 \
+-lSystem \
+/usr/local/gfortran/lib/libgfortran.a \
+/usr/local/gfortran/lib/libquadmath.a \
+/usr/local/gfortran/lib/gcc/x86_64-apple-darwin16/6.3.0/libgcc.a \
+fort_sample.o
+
+
+ld  -o ./check.exe  -no_compact_unwind  "C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\lib\gcc\i686-w64-mingw32\8.1.0\libgfortran.a" "C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\lib\gcc\i686-w64-mingw32\8.1.0\libquadmath.a" "C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\lib\gcc\i686-w64-mingw32\8.1.0\libgcc.a" check.o
+
+ld -o ./check.exe -lSystem "C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\lib\gcc\i686-w64-mingw32\8.1.0\libgfortran.a" "C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\lib\gcc\i686-w64-mingw32\8.1.0\libquadmath.a" "C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\lib\gcc\i686-w64-mingw32\8.1.0\libgcc.a" check.o
