@@ -61,6 +61,3 @@ def download_nist_for_in1(element, dir):
         with open(outf, 'wb') as out:
             out.write(data)
         conn.close()
-
-
-#download_nist_for_in1("Fe", 'C:\\work4\\plasma\\nist-data\\')

@@ -111,15 +111,15 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
                                           os.listdir(dir))))
             table = read_table()
 
-        spec_number_energy = {}
-        levels_data = {}
-        for f in i_spectro:
-            spec_number_energy[f] = read_section(elem, os.path.join(in_dir, str(f) + '.csv'))
+            spec_number_energy = {}
+            levels_data = {}
+            for f in i_spectro:
+                spec_number_energy[f] = read_section(elem, os.path.join(dir, str(f) + '.csv'))
 
-        for f in i_spectro:
-            levels_data[f] = read_section_pass2(elem, os.path.join(in_dir, str(f) + '.csv'), spec_number_energy[f])
+            for f in i_spectro:
+                levels_data[f] = read_section_pass2(elem, os.path.join(dir, str(f) + '.csv'), spec_number_energy[f])
 
-        create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data)
+            create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data)
 
-        for f in i_spectro:
-            write_section(elem, in1_inp, str(f), os.path.join(in_dir, str(f) + '.csv'), in1_csv, energy_limits)
+            for f in i_spectro:
+                write_section(elem, in1_inp, str(f), os.path.join(dir, str(f) + '.csv'), in1_csv, energy_limits)
