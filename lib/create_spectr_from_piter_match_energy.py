@@ -100,37 +100,26 @@ def read_section(spec_num, energy_table, spec_num_file):
     return lines
 
 
-################## MAIN ######################
-if len(sys.argv) < 3:
-    error('\nUsage: ' + sys.argv[
-        0] + ' directory-with-nist-csv out-dir element-name')
+def create_spectr_from_piter_match_energy(out_dir, elem):
+    with open(os.path.join(out_dir, "SPECTR.INP"), 'wb') as spectr_inp:
+        with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as exit_inp:
+            i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
+                                   filter(lambda f:
+                                          os.path.splitext(
+                                              os.path.basename(f))[0].isdigit() and
+                                          os.path.splitext(os.path.basename(f))[
+                                              1] == '.txt',
+                                          os.listdir(out_dir))))
+            table = read_table()
+            energies = read_energies(out_dir)
 
-in_dir = os.path.abspath(sys.argv[1])
-out_dir = os.path.abspath(sys.argv[2])
-elem = sys.argv[3]
+            create_header(table, elem, spectr_inp)
+            create_header_ecxit(table, elem, exit_inp)
 
-if not os.path.isdir(in_dir) or not os.path.exists(in_dir):
-    error(in_dir + " does not exists or is not a directory")
+            for f in i_spectro:
+                write_spectr_section(spectr_inp, str(f), energies, os.path.join(out_dir, str(f) + '.txt'))
+                section_lines = read_section(str(f), energies, os.path.join(out_dir, str(f) + '.txt'))
+                sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0]), int(l[1])))
+                write_excit_section(exit_inp, str(f), sorted_lines)
 
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
 
-with open(os.path.join(out_dir, "SPECTR.INP"), 'wb') as spectr_inp:
-    with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as exit_inp:
-        i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
-                               filter(lambda f:
-                                      os.path.splitext(
-                                          os.path.basename(f))[0].isdigit() and os.path.splitext(os.path.basename(f))[
-                                          1] == '.txt',
-                                      os.listdir(in_dir))))
-        table = read_table()
-        energies = read_energies(out_dir)
-
-        create_header(table, elem, spectr_inp)
-        create_header_ecxit(table, elem, exit_inp)
-
-        for f in i_spectro:
-            write_spectr_section(spectr_inp, str(f), energies, os.path.join(in_dir, str(f) + '.txt'))
-            section_lines = read_section(str(f), energies, os.path.join(in_dir, str(f) + '.txt'))
-            sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d"%(int(l[0]),int(l[1])))
-            write_excit_section(exit_inp, str(f), sorted_lines)

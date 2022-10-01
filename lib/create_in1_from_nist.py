@@ -1,8 +1,6 @@
 import os
-import sys
 
-from lib.databases import download_nist_for_in1
-from lib.utils import error, read_table
+from lib.utils import read_table
 
 
 def nist_strip(s):
@@ -80,16 +78,6 @@ def read_section_pass2(elem, spec_num_file, energy):
         return levels, ai_levels
 
 
-def parse_energy_limits(limits_str):
-    limits = {}
-    sp_nums = limits_str.split(",")
-    for spn in sp_nums:
-        limit = spn.split(":")
-        limits[limit[0].strip()] = float(limit[1].strip())
-
-    return limits
-
-
 def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data):
     in1_inp.write("%2s %2s %2d %2d" % (elem, table[0][elem]["AtomicNumber"], min(i_spectro), max(i_spectro)))
     in1_inp.write("102 2 0-1 2 0 1e+50 0 000 0  0 0 1.0e-02 1 0 0 0.0e+00 1.0    2.0  000010   1.4e-04 0.0e+00 100.0\n")
@@ -111,41 +99,17 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
             n, levels_data[n][0], levels_data[n][1], spec_number_energy[n], spec_number_energy[n]))
 
 
-################## MAIN ######################
-if len(sys.argv) < 3:
-    error('\nUsage: ' + sys.argv[
-        0] + ' directory-with-nist-csv out-dir element-name energy-limits')
-
-in_dir = os.path.abspath(sys.argv[1])
-data_dir = os.path.abspath(sys.argv[2])
-elem = sys.argv[3]
-energy_limits = {}
-
-out_dir = os.path.join(data_dir, elem)
-
-if len(sys.argv) > 4:
-    energy_limits = parse_energy_limits(sys.argv[4])
-
-print("Got energy limits:")
-print(energy_limits)
-
-if not os.path.isdir(in_dir) or not os.path.exists(in_dir):
-    error(in_dir + " does not exists or is not a directory")
-
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
-
-#download_nist_for_in1("Fe", data_dir)
-
-with open(os.path.join(out_dir, "IN1.INP"), 'wb') as in1_inp:
-    with open(os.path.join(out_dir, "IN1.csv"), 'wb') as in1_csv:
-        i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
-                               filter(lambda f:
-                                      os.path.splitext(
-                                          os.path.basename(f))[0].isdigit() and os.path.splitext(os.path.basename(f))[
-                                          1] == '.csv',
-                                      os.listdir(in_dir))))
-        table = read_table()
+def create_in1_inp_from_nist(dir, elem, energy_limits):
+    with open(os.path.join(dir, "IN1.INP"), 'wb') as in1_inp:
+        with open(os.path.join(dir, "IN1.csv"), 'wb') as in1_csv:
+            i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
+                                   filter(lambda f:
+                                          os.path.splitext(
+                                              os.path.basename(f))[0].isdigit() and
+                                          os.path.splitext(os.path.basename(f))[
+                                              1] == '.csv',
+                                          os.listdir(dir))))
+            table = read_table()
 
         spec_number_energy = {}
         levels_data = {}
