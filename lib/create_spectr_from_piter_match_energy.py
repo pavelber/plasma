@@ -110,6 +110,7 @@ def create_spectr_from_piter_match_energy(out_dir, elem):
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.txt',
                                           os.listdir(out_dir))))
+            print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
             energies = read_energies(out_dir)
 
