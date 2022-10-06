@@ -100,6 +100,7 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
 
 
 def create_in1_inp_from_nist(dir, elem, energy_limits):
+    print("Create IN1 from NIST in " + dir)
     with open(os.path.join(dir, "IN1.INP"), 'wb') as in1_inp:
         with open(os.path.join(dir, "IN1.csv"), 'wb') as in1_csv:
             i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),

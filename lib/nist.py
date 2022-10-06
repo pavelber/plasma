@@ -25,6 +25,7 @@ from lib.roman import roman_to_int
 
 
 def download_nist_for_in1(element, dir):
+    print("Download NIST")
     for sp_num in ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']:
         values = {
             'spectrum': element + ' ' + sp_num
