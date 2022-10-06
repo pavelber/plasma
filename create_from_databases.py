@@ -2,7 +2,9 @@ import os
 import sys
 
 from lib.create_in1_from_nist import create_in1_inp_from_nist
+
 from lib.create_spectr_from_piter_match_energy import create_spectr_from_piter_match_energy
+from lib.download_parse_pa_uky import download_piter
 from lib.nist import download_nist_for_in1
 from lib.utils import error
 
@@ -38,5 +40,6 @@ if not os.path.exists(out_dir):
 
 elem_dir = os.path.join(out_dir,elem)
 download_nist_for_in1(elem, out_dir)
+download_piter(elem, out_dir)
 create_in1_inp_from_nist(elem_dir, elem, energy_limits)
 create_spectr_from_piter_match_energy(elem_dir, elem)

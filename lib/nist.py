@@ -2,7 +2,6 @@ import httplib
 import os
 import urllib
 
-
 # For IN1.INP
 # curl 'https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum=Fe+I&units=1&format=2&output=0&page_size=100&multiplet_ordered=1&conf_out=on&term_out=on&level_out=on&j_out=on&g_out=on&temp=&submit=Retrieve+Data' \
 #   -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
@@ -23,9 +22,11 @@ import urllib
 #   --compressed
 from lib.roman import roman_to_int
 
+sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+
 
 def download_nist_for_in1(element, dir):
-    for sp_num in ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']:
+    for sp_num in sp_nums_to_use:
         values = {
             'spectrum': element + ' ' + sp_num
         }
@@ -56,7 +57,7 @@ def download_nist_for_in1(element, dir):
         print response.status, response.reason
 
         data = response.read()
-        outf = os.path.join(os.path.join(dir,element), str(roman_to_int(sp_num)) + '.csv')
+        outf = os.path.join(os.path.join(dir, element), str(roman_to_int(sp_num)) + '.csv')
         print(outf)
         with open(outf, 'wb') as out:
             out.write(data)
