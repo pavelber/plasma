@@ -55,7 +55,7 @@ def download_piter_one_spnum(file, elem, sp_num_roman):
         'radv': '',
         'rvtp': 'vrad',
         'wacc': '',
-        'akival': '',
+        'akival': '1e5',
         'akitype': 'Aki',
         'akizero': 'incl',
         'abun': '',
