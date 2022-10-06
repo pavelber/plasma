@@ -110,12 +110,15 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.csv',
                                           os.listdir(dir))))
+            print("Gits spectroscopic numbers "+i_spectro)
             table = read_table()
 
             spec_number_energy = {}
             levels_data = {}
             for f in i_spectro:
-                spec_number_energy[f] = read_section(elem, os.path.join(dir, str(f) + '.csv'))
+                csv_path = os.path.join(dir, str(f) + '.csv')
+                print("Reading from "+csv_path)
+                spec_number_energy[f] = read_section(elem, csv_path)
 
             for f in i_spectro:
                 levels_data[f] = read_section_pass2(elem, os.path.join(dir, str(f) + '.csv'), spec_number_energy[f])
