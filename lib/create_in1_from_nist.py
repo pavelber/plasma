@@ -54,6 +54,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
 
 def read_section(elem, spec_num_file):
     with open(spec_num_file, "rb") as inf:
+        print("Reading from "+spec_num_file+" pass 1")
         inf.readline()
         for line in inf:
             if not line.startswith('"=""' + elem):
@@ -64,6 +65,7 @@ def read_section(elem, spec_num_file):
 
 def read_section_pass2(elem, spec_num_file, energy):
     with open(spec_num_file, "rb") as inf:
+        print("Reading from " + spec_num_file + " pass 2")
         inf.readline()
         levels = 0
         ai_levels = 0
@@ -110,7 +112,7 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.csv',
                                           os.listdir(dir))))
-            print("Gits spectroscopic numbers "+i_spectro)
+            print("Gits spectroscopic numbers "+str(i_spectro))
             table = read_table()
 
             spec_number_energy = {}
