@@ -54,22 +54,25 @@ def create_header_ecxit(table, elem, file):
 
 
 def write_spectr_section(outf, spec_num, energy_table, spec_num_file):
+    lines = []
     with open(spec_num_file, "rb") as inf:
         skip_n_lines(inf, 18)
         for line in inf:
             if not line.startswith('***'):
                 parts = line.strip().split()
-                if len(parts) == 14:
-                    ek = normalize_energy(parts[12])
-                    ei = normalize_energy(parts[10])
+                if len(parts) == 15:
+                    ek = normalize_energy(parts[13])
+                    ei = normalize_energy(parts[11])
                     wave = parts[0]
                     eins = parts[8]
-                    osc = '0.0'
+                    osc = parts[9]
                     if ek in energy_table[spec_num] and ei in energy_table[spec_num]:
                         up_level = energy_table[spec_num][ek]
                         low_level = energy_table[spec_num][ei]
-                        outf.write("%3s %3s %3s 1 %8.3f %8.3e %s\n" % (
-                            spec_num, up_level, low_level, float(wave), float(eins), osc))
+                        outf.write("%3s %3s %3s 1 %8.3f %8.3e %8.3e\n" % (
+                            spec_num, up_level, low_level, float(wave), float(eins), float(osc)))
+                        lines.append((low_level, up_level, osc))
+        return lines
 
 
 def write_excit_section(outf, spec_num, lines):
@@ -82,22 +85,6 @@ def write_excit_section(outf, spec_num, lines):
                 spec_num, low_level, up_level, osc))
 
 
-def read_section(spec_num, energy_table, spec_num_file):
-    lines = []
-    with open(spec_num_file, "rb") as inf:
-        for line in inf:
-            if line.startswith('"'):
-                parts = line.strip().split(',')
-                ek = nist_strip(parts[5])
-                ei = nist_strip(parts[4])
-                wave = nist_strip(parts[0])
-                eins = nist_strip(parts[1])
-                osc = nist_strip(parts[2])
-                if ek in energy_table[spec_num] and ei in energy_table[spec_num]:
-                    up_level = energy_table[spec_num][ek]
-                    low_level = energy_table[spec_num][ei]
-                    lines.append((low_level, up_level, osc))
-    return lines
 
 
 def create_spectr_from_piter_match_energy(out_dir, elem):
@@ -118,8 +105,7 @@ def create_spectr_from_piter_match_energy(out_dir, elem):
             create_header_ecxit(table, elem, exit_inp)
 
             for f in i_spectro:
-                write_spectr_section(spectr_inp, str(f), energies, os.path.join(out_dir, str(f) + '.txt'))
-                section_lines = read_section(str(f), energies, os.path.join(out_dir, str(f) + '.txt'))
+                section_lines = write_spectr_section(spectr_inp, str(f), energies, os.path.join(out_dir, str(f) + '.txt'))
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0]), int(l[1])))
                 write_excit_section(exit_inp, str(f), sorted_lines)
 
