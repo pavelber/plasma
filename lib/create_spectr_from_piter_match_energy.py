@@ -81,7 +81,7 @@ def write_excit_section(outf, spec_num, lines):
         up_level = line[1]
         osc = line[2]
         outf.write(
-            "%3s   %3s  %3s    00     0.000E+00    0.000E+00    0.000E+00    0.000E+00    0.000E+00    0.000E+00      -%s\n" % (
+            "%3s   %3s  %3s     0     0.000E+00    0.000E+00    0.000E+00    0.000E+00    0.000E+00    0.000E+00      -%s\n" % (
                 spec_num, low_level, up_level, osc))
 
 
