@@ -231,7 +231,7 @@ elemnt = extract_element(fac_nums_dir)
 
 spec_nums = listdir(fac_nums_dir)
 
-nist_dir_name = "nist-" + elemnt
+nist_dir_name = os.path.join(fac_nums_out_dir,"nist-" + elemnt)
 
 if not os.path.exists(nist_dir_name):
     os.mkdir(nist_dir_name)
