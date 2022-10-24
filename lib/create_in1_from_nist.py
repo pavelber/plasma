@@ -30,7 +30,8 @@ def format_term(s):
 
 def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
     with open(spec_num_file, "rb") as inf:
-        inf.readline()
+        headers = inf.readline().strip().split(',')
+        eVColumn = headers.index("Level (eV)")
         n = 1
         outf.write(spec_num + '\n')
         for line in inf:
@@ -40,7 +41,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 config = format_configuration(configuration, 10)
                 term = format_term(nist_strip(parts[1]))
                 g = nist_strip(parts[3])
-                energy_str = clean_num(nist_strip(parts[4]))
+                energy_str = clean_num(nist_strip(parts[eVColumn]))
                 level = float(energy_str)
                 if configuration.startswith(elem):
                     outf.write("\n")
