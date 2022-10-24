@@ -24,14 +24,15 @@ def read_nist(levels_dir):
         num = os.path.splitext(nist_file)[0]
         configs_per_num[num] = configs
         with open(os.path.join(levels_dir, nist_file), 'rb') as levels_file:
-            skip_n_lines(levels_file, 1)
+            headers = levels_file.readline().strip().split(',')
+            eVColumn = headers.index("Level (eV)")
             for line in levels_file:
                 data = line.split(',')
                 config = filter(lambda l: '(' not in l, nist_strip(data[0]).split('.'))
                 if nist_strip(data[2]) == '---':
                     break
                 j = compute_2j(nist_strip(data[2]))
-                eV = nist_strip(data[3])
+                eV = nist_strip(data[eVColumn])
                 if len(config) < 2:
                     c1 = config[0]
                     c2 = ''
