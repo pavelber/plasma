@@ -45,7 +45,7 @@ def read_nist(levels_dir):
                     c2 = c2 + '1'
                 if (c1, c2, j) not in configs:
                     configs[(c1, c2, j)] = []
-                if eV != '':
+                if eV != '' and eV != '[':
                     configs[(c1, c2, j)].append(eV)
     return configs_per_num
 
