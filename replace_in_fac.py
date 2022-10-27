@@ -1,10 +1,12 @@
+import copy
 import os
 import sys
 import urllib
 from os import listdir
 
+from lib.get_ionization_energy import get_ionization_energy_ev
 from lib.levels_string import create_levels_string
-from lib.utils import error, nist_strip, skip_n_lines, dec_to_roman
+from lib.utils import error, nist_strip, dec_to_roman
 
 
 def compute_2j(j_str):
@@ -109,23 +111,19 @@ def no_4_in_config(config, max_n):
             len(config[1]) == 0 or int(config[1][0]) < max_n)
 
 
-def recreate_fac_lev(old, new, nist_level_to_energy, max_n):
-    current_levels = nist_level_to_energy
-    nele_counter = 0
+def recreate_fac_lev(old, new, nist_level_to_energy, max_n, element, num):
+    nele_counter = -1
     energy_levels = []
-
+    ionization_energy = get_ionization_energy_ev(element, num)
     for line in old:
         data = line.split()
         if line.startswith("NELE"):
             nele_counter = nele_counter + 1
-            if nele_counter == 2:
-                break
-            else:
-                electrons = int(data[2])
+            current_levels = copy.deepcopy(nist_level_to_energy[nele_counter])
+
+            electrons = int(data[2])
         if len(data) < 9:
             new.write(line)
-            if len(energy_levels) > 0:
-                return energy_levels
         else:
             config = extract_config_and_j(data)
 
@@ -141,7 +139,10 @@ def recreate_fac_lev(old, new, nist_level_to_energy, max_n):
             if levels_config in current_levels and no_4_in_config(levels_config, max_n) and len(
                     current_levels[levels_config]) > 0:
                 eV = current_levels[levels_config].pop(0)
-                energy_str = "%.8E" % float(clean_energy_for_fac(eV))
+                float_energy = float(clean_energy_for_fac(eV))
+                if nele_counter == 1:
+                    float_energy = float_energy + ionization_energy
+                energy_str = "%.8E" % float_energy
                 new.write(line.replace(energy, energy_str))
             else:
                 new.write(line)
@@ -169,7 +170,6 @@ def create_fn(fac_lev_file, fn_file):
 
 def renumerate_fac_lev(old, new, old_to_new_level):
     nele_counter = 0
-    second_section = False
 
     lines = []
     i = -1
@@ -177,8 +177,6 @@ def renumerate_fac_lev(old, new, old_to_new_level):
         data = line.split()
         if line.startswith("NELE"):
             nele_counter = nele_counter + 1
-        if nele_counter == 2:
-            break
         elif len(data) < 9:
             i = i + 1
             sorted_lines = sorted(lines, key=lambda x: int(x[0:7]))
@@ -234,7 +232,7 @@ elemnt = extract_element(fac_nums_dir)
 
 spec_nums = listdir(fac_nums_dir)
 
-nist_dir_name = os.path.join(fac_nums_out_dir,"nist-" + elemnt)
+nist_dir_name = os.path.join(fac_nums_out_dir, "nist-" + elemnt)
 
 if not os.path.exists(nist_dir_name):
     os.mkdir(nist_dir_name)
@@ -261,11 +259,17 @@ for fac_dir_name in listdir(fac_nums_dir):
     if os.path.isdir(fac_lev) or not os.path.exists(fac_lev):
         error(fac_lev + " does not exists or is a directory")
 
-    levels = nist_levels_per_num[num]
+    next_sp = str(int(num) + 1)
+    if next_sp in nist_levels_per_num:
+        next_sp_nist = nist_levels_per_num[next_sp]
+    else:
+        next_sp_nist = {}
+    levels = [nist_levels_per_num[num], next_sp_nist]
 
     with open(fac_lev, 'rb') as fac_lev_file:
         with open(fac_lev_tmp, 'wb') as fac_lev_tmp_file:
-            old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, max_n)
+            old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, max_n, elemnt,
+                                                         int(num))
 
     old_2_new[num] = renumerate(old_energy_to_levels[num])
 
