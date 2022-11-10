@@ -120,7 +120,6 @@ def recreate_fac_lev(old, new, nist_level_to_energy, max_n, element, num):
         if line.startswith("NELE"):
             nele_counter = nele_counter + 1
             current_levels = copy.deepcopy(nist_level_to_energy[nele_counter])
-
             electrons = int(data[2])
         if len(data) < 9:
             new.write(line)
@@ -176,6 +175,7 @@ def renumerate_fac_lev(old, new, old_to_new_level):
     for line in old:
         data = line.split()
         if line.startswith("NELE"):
+            new.write(line)
             nele_counter = nele_counter + 1
         elif len(data) < 9:
             i = i + 1
