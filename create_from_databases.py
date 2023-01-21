@@ -22,7 +22,7 @@ def parse_energy_limits(limits_str):
 ################## MAIN ######################
 if len(sys.argv) < 2:
     error('\nUsage: ' + sys.argv[
-        0] + ' out-dir element-name')
+        0] + ' out-dir element-name energy-limits')
 
 out_dir = os.path.abspath(sys.argv[1])
 elem = sys.argv[2]

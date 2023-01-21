@@ -23,23 +23,24 @@ def get_num_of_electrons_last_level(c):
         return int(last_letter)  # TODO: assumption - single digit!!!!!
 
 
-def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0):
-    e = e_n0l0
+def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, file):
+    e = 2 * e_n0l0
     step = 2 * e_n0l0
     n = 0
-    while n < 100:
+    while n < 50:
+        e_relative = e / e_n0l0
         u = (e - e_n0l0) / (z_tilda * z_tilda * ry)
         sigma = (pi_a0_2 / (z_eff * z_eff)) * \
-                (2.0 * m / (2.0 * l0 + 1.0)) * \
-                p1[last_level_without_num] * \
+                (2.0 * m / (2.0 * l0 + 1.0)) * p1[last_level_without_num] * \
                 ((u + p2[last_level_without_num]) / (u + p3[last_level_without_num])) * \
-                (1.0 / math.pow(u + p4[last_level_without_num], 7.0 / 2.0 + l0))
+                (1.0 / math.pow(u + p4[last_level_without_num], 7.0 / 2.0 + l0)) * stat_weights_part
 
-        print e, ",", sigma
+        file.write(" %.3e   %.3e   %.3e\n" % (e_relative, sigma, e))
         e = e + step
+        n = n + 1
 
 
-def compute_and_iterate(config, e_n0l0, z_n, z):
+def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, file):
     last_level = config[-1]
     last_level_without_num = last_level[0:2]
     n0 = get_n0(last_level)
@@ -55,7 +56,7 @@ def compute_and_iterate(config, e_n0l0, z_n, z):
         z_tilda = z_eff + (z_eff - z)
     else:
         z_tilda = z_n - n_bound + n_nl_greater_n0l0
-    iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0)
+    iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, file)
 
 
 p1 = {

@@ -1,4 +1,6 @@
+import os
 import sys
+from os.path import join, exists
 
 from lib.iterate_photo_cross import compute_and_iterate
 from lib.utils import error
@@ -21,7 +23,7 @@ def read_n0l0(in1):
 
 def last_config_wo_one_electron(config_1, config_2):
     last_digit = config_2[-1]
-    if last_digit.isdigit():
+    if last_digit.isdigit() and not last_digit == '1':
         return config_2[:-1] + str(int(last_digit) - 1)
     return config_1
 
@@ -51,20 +53,22 @@ def read_sp_nums(elem, atomic_number, n0l0, in1):
             level_num = int(l[6])
             config_1 = l[0]
             config_2 = l[1]
+            stat_weight = float(l[2])
             e = float(l[3])
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
                 error("Less than 0 e_n0l0")
-            level = (level_num, config_1, config_2, e, e_n0l0)
+            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
             sp_num_to_level[sp_num].append(level)
     return sp_num_to_level
 
 
 ################## MAIN ######################
-if len(sys.argv) < 1:
-    error('\nUsage: ' + sys.argv[0] + 'in1.inp')
+if len(sys.argv) < 3:
+    error('\nUsage: ' + sys.argv[0] + ' in1.inp out_dir')
 
 in1_inp_path = sys.argv[1]
+out_dir = sys.argv[2]
 
 with open(in1_inp_path, "r") as in1_inp:
     el, atomic_number = read_element(in1_inp)
@@ -75,17 +79,35 @@ with open(in1_inp_path, "r") as in1_inp:
 sp_nums = sorted(map(lambda x: int(x), n0l0.keys()))
 
 for s_n in sp_nums:
-    print "---------------" + str(s_n) + "-----------------"
-    levels = levels_by_sp_num[str(s_n)]
-    for level in levels:
-        level_num = level[0]
-        config_1 = level[1]
-        config_2 = level[2]
-        e = level[3]
-        e_n0l0 = level[4]
-        config = last_config_wo_one_electron(config_1, config_2)
-        next_levels = filter(lambda x: x[2] == config, levels_by_sp_num[str(s_n + 1)])
-        for lvl in next_levels:
-            print "%4s  %4s" % (lvl[0], level_num)
-            compute_and_iterate([config_1,config_2], e_n0l0, atomic_number, s_n)
-        print "--"
+    sp_dir = join(out_dir, str(s_n))
+    if not exists(sp_dir):
+        os.mkdir(sp_dir)
+    with open(join(sp_dir, "rrec"), "w") as o_f:
+        print(s_n)
+        levels = levels_by_sp_num[str(s_n)]
+        next_sn = s_n + 1
+        next_sp_levels = levels_by_sp_num[str(next_sn)]
+        for level in levels:
+            level_num = level[0]
+            config_1 = level[1]
+            config_2 = level[2]
+            e = level[3]
+            e_n0l0 = level[4]
+
+            if next_sn == atomic_number + 1:
+                next_levels = [(1, None, None, None, None, 1.0)]
+            else:
+                config = last_config_wo_one_electron(config_1, config_2)
+                next_levels = filter(lambda x:
+                                     (x[2][-1] == '0' and x[1] == config) or x[2] == config,
+                                     next_sp_levels)
+            sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
+            for lvl in next_levels:
+                print(str(level[0]) + ", " + str(lvl[0]))
+                stat_weight = level[5]
+                o_f.write("%4s  %4s\n" % (level_num, lvl[0],))
+                #                o_f.write("%4s  %4s\n" % (lvl[0], level_num))
+                compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
+                                    stat_weight / sum_of_stat_weights,
+                                    o_f)
+                o_f.write("--\n")
