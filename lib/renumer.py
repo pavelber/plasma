@@ -17,7 +17,6 @@ def read_ion_potential_from_fac_lev(fac_lev):
             if ion_num == 2:
                 return float(parts[2])
 
-
 def create_translation_table(out_dir, spectral_num, potential):
     # print("+++++++++++++++++++"+spectral_num)
     fac_lev = out_dir + os.path.sep + spectral_num + os.path.sep + 'fac.lev'

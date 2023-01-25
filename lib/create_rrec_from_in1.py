@@ -33,7 +33,7 @@ def skip_n_lines(in1, n):
         in1.readline()
 
 
-def read_sp_nums(elem, atomic_number, n0l0, in1):
+def read_sp_nums(n0l0, in1):
     sp_num_to_level = {}
     sp_num = in1.readline().split()[0]
     sp_num_to_level[sp_num] = []
@@ -68,7 +68,7 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
         el, atomic_number = read_element(in1_inp)
         skip_n_lines(in1_inp, 12)
         n0l0 = read_n0l0(in1_inp, sp_nums)
-        levels_by_sp_num = read_sp_nums(el, atomic_number, n0l0, in1_inp)
+        levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
     for s_n in sp_nums:
         sp_dir = join(out_dir, str(s_n))
         if not exists(sp_dir):

@@ -2,6 +2,7 @@ use File::Path;
 use IO::CaptureOutput qw/capture_exec/;
 
 $spch = $1;
+$ph_exe = $2;
 
 print "Working on REC...\n";
 my $output = `echo $spch | $ph_exe`;
