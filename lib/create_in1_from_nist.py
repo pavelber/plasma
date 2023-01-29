@@ -116,7 +116,7 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
     in1_inp.write("   or     A / (B + C*t + D*t*t)  D = 0.00000D+00\n")
     in1_inp.write("EDens (cm-3) = A + B*t + C*t*t : A = 5.00000D+20; B = 0.00000D+00; C = 0.00000D+15\n")
     in1_inp.write("   or     A / (B + C*t + D*t*t)  D = 0.00000D-03\n")
-    in1_inp.write("Step= 1.0D-09 sec:No of steps=6\n")
+    in1_inp.write("Step= 1.0D-09 sec:No of steps="+str(len(i_spectro))+"\n")
 
     for n in i_spectro:
         in1_inp.write("%3d %4d %4d  0 %8.2f    12  %8.2f   0.0000   0.0000   0.000\n" % (

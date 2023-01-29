@@ -63,6 +63,13 @@ def read_sp_nums(n0l0, in1):
     return sp_num_to_level
 
 
+def add_one_to_config(c):
+    if not c[-1].isdigit():
+        return c+"1"
+    else:
+        return c
+
+
 def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
@@ -92,7 +99,9 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                     else:
                         config = last_config_wo_one_electron(config_1, config_2)
                         next_levels = filter(lambda x:
-                                             (x[2][-1] == '0' and x[1] == config) or x[2] == config,
+                                             (x[2][-1] == '0' and
+                                              add_one_to_config(x[1]) == add_one_to_config(config)) or
+                                             add_one_to_config(x[2]) == add_one_to_config(config),
                                              next_sp_levels)
                     sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
                     for lvl in next_levels:

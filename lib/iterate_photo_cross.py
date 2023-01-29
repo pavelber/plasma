@@ -75,6 +75,7 @@ p1 = {
     '5d': 5.846e-2,  # duplication
     '5f': 5.846e-2,  # duplication
     '5g': 5.846e-2,  # duplication
+    '6s': 5.846e-2,  # duplication
 }
 
 p2 = {
@@ -93,6 +94,7 @@ p2 = {
     '5d': 5.846e-2,  # duplication
     '5f': 5.846e-2,  # duplication
     '5g': 5.846e-2,  # duplication
+    '6s': 5.846e-2,  # duplication
 }
 
 p3 = {
@@ -111,6 +113,7 @@ p3 = {
     '5d': 8.651,  # duplication
     '5f': 8.651,  # duplication
     '5g': 8.651,  # duplication
+    '6s': 8.651,  # duplication
 }
 
 p4 = {
@@ -129,6 +132,7 @@ p4 = {
     '5d': 5.846e-2,  # duplication
     '5f': 5.846e-2,  # duplication
     '5g': 5.846e-2,  # duplication
+    '6s': 5.846e-2,  # duplication
 }
 #
 # config = ['2s2', '2p6']
