@@ -38,7 +38,7 @@ sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 def download_piter(elem, dir):
     for sp_num in sp_nums_to_use:
-        outf = os.path.join(os.path.join(dir, elem), str(roman_to_int(sp_num)) + '.txt')
+        outf = os.path.join(dir, str(roman_to_int(sp_num)) + '.txt')
         download_piter_one_spnum(outf, elem, sp_num)
 
 
