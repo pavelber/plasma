@@ -46,6 +46,11 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 elem_dir = os.path.join(out_dir, elem)
+
+
+if not os.path.exists(elem_dir):
+    os.makedirs(elem_dir)
+
 sp_nums = create_in1_from_databases(elem_dir, elem, energy_limits, download)
 create_rrec_from_in1(os.path.join(elem_dir, "IN1.INP"), elem_dir, sp_nums)
 create_rrec_inp(elem_dir)

@@ -58,7 +58,7 @@ def download_nist_for_in1(element, dir):
         print response.status, response.reason
 
         data = response.read()
-        outf = os.path.join(os.path.join(dir, element), str(roman_to_int(sp_num)) + '.csv')
+        outf = os.path.join(dir, str(roman_to_int(sp_num)) + '.csv')
         print(outf)
         with open(outf, 'wb') as out:
             out.write(data)
