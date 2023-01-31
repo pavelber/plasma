@@ -70,6 +70,13 @@ def add_one_to_config(c):
         return c
 
 
+def remove_num_electrones(c):
+    if c[-1].isdigit():
+        return c[0:-1]
+    else:
+        return c
+
+
 def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
@@ -94,14 +101,14 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                     e = level[3]
                     e_n0l0 = level[4]
 
-                    if add_one_to_config(config_2) not in supported_configs:
+                    if remove_num_electrones(config_2) not in supported_configs:
                         continue
 
                     if next_sn == atomic_number + 1:
                         next_levels = [(1, None, None, None, None, 1.0)]
                     else:
                         config = add_one_to_config(last_config_wo_one_electron(config_1, config_2))
-                        if config not in supported_configs:
+                        if remove_num_electrones(config) not in supported_configs:
                             continue
                         next_levels = filter(lambda x:
                                              (x[2][-1] == '0' and
