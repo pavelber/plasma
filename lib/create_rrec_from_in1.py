@@ -1,7 +1,7 @@
 import os
 from os.path import join, exists
 
-from lib.iterate_photo_cross import compute_and_iterate
+from lib.iterate_photo_cross import compute_and_iterate, supported_configs
 from lib.utils import error
 
 
@@ -94,14 +94,19 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                     e = level[3]
                     e_n0l0 = level[4]
 
+                    if add_one_to_config(config_2) not in supported_configs:
+                        continue
+
                     if next_sn == atomic_number + 1:
                         next_levels = [(1, None, None, None, None, 1.0)]
                     else:
-                        config = last_config_wo_one_electron(config_1, config_2)
+                        config = add_one_to_config(last_config_wo_one_electron(config_1, config_2))
+                        if config not in supported_configs:
+                            continue
                         next_levels = filter(lambda x:
                                              (x[2][-1] == '0' and
-                                              add_one_to_config(x[1]) == add_one_to_config(config)) or
-                                             add_one_to_config(x[2]) == add_one_to_config(config),
+                                              add_one_to_config(x[1]) == config) or
+                                             add_one_to_config(x[2]) == config,
                                              next_sp_levels)
                     sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
                     for lvl in next_levels:
