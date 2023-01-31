@@ -44,6 +44,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
         eV_column = headers.index("Level (eV)")
         n = 1
         outf.write(spec_num + '\n')
+        prev_energy_str = None
         for line in inf:
             if not line.startswith('"=""' + elem):
                 parts = line.strip().split(',')
@@ -56,15 +57,23 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 term = format_term(nist_strip(parts[1]))
                 g = nist_strip(parts[3])
                 energy_str = clean_num(nist_strip(parts[eV_column]))
-                level = float(energy_str)
+                energy = float(energy_str)
+                energy_str = "%10.3f" % energy
+
+                if energy_str == prev_energy_str:
+                    energy = energy + 0.001
+                    energy_str = "%10.3f" % energy
+
                 if configuration.startswith(elem):
                     outf.write("\n")
-                    return level
+                    return energy
                 else:
                     if energy_limits > float(energy_str):
-                        outf.write("%4s %4s  %-8s%3s%12.3f    0.00e+00 0.00e+00% 6d\n" % (configs[0], configs[1], term, g, level, n))
+                        outf.write("%4s %4s  %-8s%3s%12.3f    0.00e+00 0.00e+00% 6d\n" % (
+                        configs[0], configs[1], term, g, energy, n))
                         data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
                         n = n + 1
+                        prev_energy_str = energy_str
 
 
 def read_section(elem, spec_num_file):
