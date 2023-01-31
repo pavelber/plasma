@@ -51,10 +51,8 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 if len(configuration) == 0:
                     continue
                 configs = format_configuration(configuration, 10)
-                if len(configs) == 2:
-                    config = " ".join(configs)
-                else:
-                    config = find_previous(configs[0]) + " " + configs[0]
+                if len(configs) == 1:
+                    configs = [find_previous(configs[0]), configs[0]]
                 term = format_term(nist_strip(parts[1]))
                 g = nist_strip(parts[3])
                 energy_str = clean_num(nist_strip(parts[eV_column]))
@@ -64,7 +62,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                     return level
                 else:
                     if energy_limits > float(energy_str):
-                        outf.write(" %-10s%8s%3s%14.3f    0.00e+00 0.00e+00% 6d\n" % (config, term, g, level, n))
+                        outf.write("%4s %4s  %-8s%3s%12.3f    0.00e+00 0.00e+00% 6d\n" % (configs[0], configs[1], term, g, level, n))
                         data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
                         n = n + 1
 
