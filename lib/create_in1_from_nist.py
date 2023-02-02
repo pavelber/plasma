@@ -4,6 +4,13 @@ from lib.levels_string import levels_order, level_to_electrons
 from lib.utils import read_table, error
 
 
+def add_one_to_config(c):
+    if not c[-1].isdigit():
+        return c+"1"
+    else:
+        return c
+
+
 def nist_strip(s):
     if s.startswith('"=""'):
         return s[4:-3].strip()
@@ -54,6 +61,8 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 configs = format_configuration(configuration, 10)
                 if len(configs) == 1:
                     configs = [find_previous(configs[0]), configs[0]]
+                configs[0] = add_one_to_config(configs[0])
+                configs[1] = add_one_to_config(configs[1])
                 term = format_term(nist_strip(parts[1]))
                 g = nist_strip(parts[3])
                 energy_str = clean_num(nist_strip(parts[eV_column]))
@@ -70,7 +79,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 else:
                     if energy_limits > float(energy_str):
                         outf.write("%4s %4s  %-8s%3s%12.3f    0.00e+00 0.00e+00% 6d\n" % (
-                        configs[0], configs[1], term, g, energy, n))
+                            configs[0], configs[1], term, g, energy, n))
                         data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
                         n = n + 1
                         prev_energy_str = energy_str
