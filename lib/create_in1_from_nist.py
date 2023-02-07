@@ -69,8 +69,8 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 energy = float(energy_str)
                 energy_str = "%10.3f" % energy
 
-                if energy_str == prev_energy_str:
-                    energy = energy + 0.001
+                if prev_energy_str is not None and float(energy_str) <= float(prev_energy_str):
+                    energy = energy + float(prev_energy_str) - float(energy_str) + 0.001
                     energy_str = "%10.3f" % energy
 
                 if configuration.startswith(elem):
