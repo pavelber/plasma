@@ -6,7 +6,7 @@ from lib.utils import read_table, error
 
 def add_one_to_config(c):
     if not c[-1].isdigit():
-        return c+"1"
+        return c + "1"
     else:
         return c
 
@@ -72,6 +72,9 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 if prev_energy_str is not None and float(energy_str) <= float(prev_energy_str):
                     energy = energy + float(prev_energy_str) - float(energy_str) + 0.001
                     energy_str = "%10.3f" % energy
+
+                if len(term) > 6:
+                    term = term[0:6]
 
                 if configuration.startswith(elem):
                     outf.write("\n")
