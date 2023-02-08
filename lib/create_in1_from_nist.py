@@ -45,6 +45,10 @@ def find_previous(c):
     return levels_order[index + 1] + str(level_to_electrons[levels_order[index + 1]])
 
 
+def remove_braces(param):
+    return param.replace("(","").replace(")","")
+
+
 def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
     with open(spec_num_file, "rb") as inf:
         headers = inf.readline().strip().split(',')
@@ -82,7 +86,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 else:
                     if energy_limits > float(energy_str):
                         outf.write("%4s %4s  %-8s%3s%12.3f    0.00e+00 0.00e+00% 6d\n" % (
-                            configs[0], configs[1], term, g, energy, n))
+                            configs[0], remove_braces(configs[1]), term, g, energy, n))
                         data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
                         n = n + 1
                         prev_energy_str = energy_str
