@@ -1,7 +1,21 @@
+import os
 import re
+import shutil
 
 from lib.utils import runcommand_print
 
+
+
+def copy_checks(my_dir, out_dir):
+    check_dir = os.path.join(my_dir, "check")
+    print "copy check and fix utils"
+    for filename in os.listdir(check_dir):
+        check_file = os.path.join(check_dir, filename)
+        shutil.copy(check_file, out_dir)
+        for spn in os.listdir(out_dir):
+            number_dir = os.path.join(out_dir, spn)
+            if os.path.isdir(number_dir):
+                shutil.copy(check_file, number_dir)
 
 def check_and_fix_rr(dir):
     print("Fixing RREC in "+dir+"\n")

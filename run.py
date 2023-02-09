@@ -3,7 +3,7 @@ import shutil
 import sys
 from os.path import isdir
 
-from lib.check_and_fix import check_and_fix_rr, check_and_fix_old_rr
+from lib.check_and_fix import check_and_fix_rr, check_and_fix_old_rr, copy_checks
 from lib.create_aiw import create_aiw
 from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
@@ -123,17 +123,9 @@ def run_facIn1(spn, levels, out_dir_spn):
         error("Exit code = " + str(code))
 
 
-def check_and_fix(out_dir):
+def check_and_fix(my_dir, out_dir):
     print "check_and_fix"
-    check_dir = os.path.join(my_dir, "check")
-    print "copy check and fix utils"
-    for filename in os.listdir(check_dir):
-        check_file = os.path.join(check_dir, filename)
-        shutil.copy(check_file, out_dir)
-        for spn in os.listdir(out_dir):
-            number_dir = os.path.join(out_dir, spn)
-            if os.path.isdir(number_dir):
-                shutil.copy(check_file, number_dir)
+    copy_checks(my_dir, out_dir)
     print "start check all in " + out_dir
     code, std_out, std_err = runcommand_print("perl check_all.pl -d", out_dir)
 
@@ -195,7 +187,7 @@ if os.path.exists(warnings_file_path):
 
 spec_numbers = run_for_all_numbers()
 
-check_and_fix(out_dir)
+check_and_fix(my_dir, out_dir)
 
 ionization_potential, translation_table = create_tables(out_dir)
 next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
