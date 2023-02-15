@@ -23,6 +23,7 @@ def create_rrec_inp(elem_dir):
         if code != 0:
             error("Exit code = " + str(code))
 
+        print("Running " + "sort  output_ph.dat>RREC.INP" + " in " + dir)
         code, std_out, std_err = runcommand("sort  output_ph.dat>RREC.INP", dir)
         print(std_out + " " + std_out)
         if code != 0:
