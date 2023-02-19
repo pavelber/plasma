@@ -34,10 +34,13 @@ def check_and_fix_rr(dir):
     print("Fixing RREC in " + dir + "\n")
     max_iter = 100
     i = 0
-    bad = run_check_rr(dir)
-    while bad > 0 and i < max_iter:
-        run_fix_rr(dir)
+    good_checks = 0
+    while good_checks < 10 and i < max_iter:
         bad = run_check_rr(dir)
+        if bad == 0:
+            good_checks = good_checks + 1
+        else:
+            run_fix_rr(dir)
         i = i + 1
 
 
@@ -45,10 +48,13 @@ def check_and_fix_old_rr(dir):
     print("Fixing RREC in " + dir + "\n")
     max_iter = 100
     i = 0
-    bad = run_check_old_rr(dir)
-    while bad > 0 and i < max_iter:
-        run_fix_old_rr(dir)
+    good_checks = 0
+    while good_checks < 10 and i < max_iter:
         bad = run_check_old_rr(dir)
+        if bad == 0:
+            good_checks = good_checks + 1
+        else:
+            run_fix_old_rr(dir)
         i = i + 1
 
 
@@ -78,14 +84,21 @@ sp_nums = create_in1_from_databases(elem_dir, elem, energy_limits, download)
 create_rrec_from_in1(os.path.join(elem_dir, "IN1.INP"), elem_dir, sp_nums)
 create_rrec_inp(elem_dir)
 
+my_dir = dirname(abspath(__file__))
+
 with open(os.path.join(elem_dir, "RREC.INP"), "w") as rrec:
     for sp in sp_nums:
-        with open(os.path.join(elem_dir, str(sp), "RREC.INP"), "r") as sp_rrec:
-            for line in sp_rrec:
-                rrec.write(line)
+        sp_path = os.path.join(elem_dir, str(sp))
+        rrec_path = os.path.join(sp_path, "RREC.INP")
+        if os.path.getsize(rrec_path) > 0:
+            copy_checks(my_dir, sp_path)
+            check_and_fix_rr(sp_path)
+            check_and_fix_old_rr(sp_path)
 
-my_dir = dirname(abspath(__file__))
+            with open(rrec_path, "r") as sp_rrec:
+                for line in sp_rrec:
+                    rrec.write(line)
+
 copy_checks(my_dir, elem_dir)
-
 check_and_fix_rr(elem_dir)
 check_and_fix_old_rr(elem_dir)
