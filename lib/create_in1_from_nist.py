@@ -85,7 +85,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                     return energy
                 else:
                     if energy_limits > float(energy_str):
-                        outf.write("%4s %4s  %-8s%3s%12.3f    0.00e+00 0.00e+00% 6d\n" % (
+                        outf.write("%4s %4s %-8s%3s%15.3f    0.00e+00 0.00e+00  % 6d\n" % (
                             configs[0], remove_braces(configs[1]), term, g, energy, n))
                         data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
                         n = n + 1
