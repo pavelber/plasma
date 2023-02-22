@@ -49,7 +49,7 @@ def read_sp_nums(n0l0, in1):
             process = True
         elif line.startswith("Auto"):
             process = False
-        elif process and len(l) >7:
+        elif process and len(l) > 7:
             level_num = int(l[7])
             config_1 = l[0]
             config_2 = l[1]
@@ -65,7 +65,7 @@ def read_sp_nums(n0l0, in1):
 
 def add_one_to_config(c):
     if not c[-1].isdigit():
-        return c+"1"
+        return c + "1"
     else:
         return c
 
@@ -116,11 +116,15 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                                              add_one_to_config(x[2]) == config,
                                              next_sp_levels)
                     sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
+                    print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
+                        next_sn) + " " + config)
+                    print("*** Got levels " + str(next_levels))
                     for lvl in next_levels:
-                        print(str(level[0]) + ", " + str(lvl[0]))
                         stat_weight = level[5]
+                        print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(next_sn) + " level " + str(
+                            lvl[0]) + " with weight " + str(stat_weight / sum_of_stat_weights))
+
                         o_f.write("%4s  %4s\n" % (level_num, lvl[0],))
-                        #                o_f.write("%4s  %4s\n" % (lvl[0], level_num))
                         compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
                                             stat_weight / sum_of_stat_weights,
                                             o_f)
