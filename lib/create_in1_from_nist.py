@@ -1,3 +1,4 @@
+import csv
 import os
 
 from lib.levels_string import levels_order, level_to_electrons
@@ -14,6 +15,13 @@ def add_one_to_config(c):
 def nist_strip(s):
     if s.startswith('"=""'):
         return s[4:-3].strip()
+    else:
+        return s.strip()
+
+
+def nist_strip_csv_lib(s):
+    if s.startswith('="'):
+        return s[2:-1].strip()
     else:
         return s.strip()
 
@@ -37,7 +45,9 @@ def format_term(s):
 
 
 def find_previous(c):
-    if c[-1].isdigit():
+    if c[-1].isdigit() and c[-2].isdigit():
+        config_wo_electrons = c[0:-2]
+    elif c[-1].isdigit():
         config_wo_electrons = c[0:-1]
     else:
         config_wo_electrons = c
@@ -46,7 +56,7 @@ def find_previous(c):
 
 
 def remove_braces(param):
-    return param.replace("(","").replace(")","")
+    return param.replace("(", "").replace(")", "")
 
 
 def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
@@ -56,10 +66,10 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
         n = 1
         outf.write(spec_num + '\n')
         prev_energy_str = None
-        for line in inf:
-            if not line.startswith('"=""' + elem):
-                parts = line.strip().split(',')
-                configuration = nist_strip(parts[0])
+        for parts in csv.reader(inf, quotechar='"', delimiter=',',
+                                quoting=csv.QUOTE_ALL, skipinitialspace=True):
+            if not parts[0].startswith('=""' + elem):
+                configuration = nist_strip_csv_lib(parts[0])
                 if len(configuration) == 0:
                     continue
                 configs = format_configuration(configuration, 10)
@@ -69,7 +79,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 configs[1] = add_one_to_config(configs[1])
                 term = format_term(nist_strip(parts[1]))
                 g = nist_strip(parts[3])
-                energy_str = clean_num(nist_strip(parts[eV_column]))
+                energy_str = clean_num(nist_strip_csv_lib(parts[eV_column]))
                 energy = float(energy_str)
                 energy_str = "%10.3f" % energy
 
@@ -102,22 +112,35 @@ def read_section(elem, spec_num_file):
             index += 1
         if index == len(headers):
             error("Can't find energy column in headers " + str(headers) + " in file " + spec_num_file)
-        for line in inf:
-            if not line.startswith('"=""' + elem):
-                parts = line.strip().split(',')
-                level = float(clean_num(nist_strip(parts[index])))
+        for parts in csv.reader(inf, quotechar='"', delimiter=',',
+                                quoting=csv.QUOTE_ALL, skipinitialspace=True):
+            # for line in inf:
+            if not parts[0].startswith('=""' + elem):
+            #                parts = line.strip().split(',')
+                level = float(clean_num(nist_strip_csv_lib(parts[index])))
         return level
 
 
 def read_section_pass2(elem, spec_num_file, energy, max_energy):
     with open(spec_num_file, "rb") as inf:
-        inf.readline()
+        headers = inf.readline().split(",")
+        index = 0
+        while index < len(headers):
+            if headers[index] == 'Level (eV)':
+                break
+            index += 1
+        if index == len(headers):
+            error("Can't find energy column in headers " + str(headers) + " in file " + spec_num_file)
+
         levels = 0
         ai_levels = 0
-        for line in inf:
-            if not line.startswith('"=""' + elem) and not line.startswith('"="""""'):
-                parts = line.strip().split(',')
-                level_energy = float(clean_num(nist_strip(parts[5])))
+        for parts in csv.reader(inf, quotechar='"', delimiter=',',
+                                quoting=csv.QUOTE_ALL, skipinitialspace=True):
+
+            # for line in inf:
+            if not parts[0].startswith('=""' + elem) and not parts[0].startswith('=""""'):
+                # parts = line.strip().split(',')
+                level_energy = float(clean_num(nist_strip_csv_lib(parts[5])))
                 if level_energy < max_energy:
                     if level_energy < energy:
                         levels += 1
@@ -149,6 +172,7 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
 
 def create_in1_inp_from_nist(dir, elem, energy_limits):
     print("Create IN1 from NIST in " + dir)
+    nist_dir = os.path.join(dir, "NIST")
     with open(os.path.join(dir, "IN1.INP"), 'wb') as in1_inp:
         with open(os.path.join(dir, "IN1.csv"), 'wb') as in1_csv:
             i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
@@ -157,22 +181,24 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
                                               os.path.basename(f))[0].isdigit() and
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.csv',
-                                          os.listdir(dir))))
+                                          os.listdir(nist_dir))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
 
             spec_number_energy = {}
             levels_data = {}
             for f in i_spectro:
-                csv_path = os.path.join(dir, str(f) + '.csv')
+                csv_path = os.path.join(nist_dir, str(f) + '.csv')
                 spec_number_energy[f] = read_section(elem, csv_path)
 
             for f in i_spectro:
-                levels_data[f] = read_section_pass2(elem, os.path.join(dir, str(f) + '.csv'), spec_number_energy[f],
+                levels_data[f] = read_section_pass2(elem, os.path.join(nist_dir, str(f) + '.csv'),
+                                                    spec_number_energy[f],
                                                     energy_limits[str(f)])
 
             create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data)
 
             for f in i_spectro:
-                write_section(elem, in1_inp, str(f), os.path.join(dir, str(f) + '.csv'), in1_csv, energy_limits[str(f)])
+                write_section(elem, in1_inp, str(f), os.path.join(nist_dir, str(f) + '.csv'), in1_csv,
+                              energy_limits[str(f)])
             return i_spectro

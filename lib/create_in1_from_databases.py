@@ -16,10 +16,8 @@ def parse_energy_limits(limits_str):
     return limits
 
 
-def create_in1_from_databases(out_dir, elem, energy_limits, download):
-    if download:
-        download_nist_for_in1(elem, out_dir)
-        download_piter(elem, out_dir)
+def create_in1_from_databases(out_dir, elem, energy_limits):
+
     sp_nums = create_in1_inp_from_nist(out_dir, elem, energy_limits)
     create_spectr_from_piter_match_energy(out_dir, elem)
     return sp_nums

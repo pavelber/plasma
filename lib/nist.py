@@ -1,5 +1,6 @@
 import httplib
 import os
+import ssl
 import urllib
 
 # For IN1.INP
@@ -27,6 +28,10 @@ sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 def download_nist_for_in1(element, dir):
     print("Download NIST")
+    nist_dir = os.path.join(dir, "NIST")
+    if not os.path.exists(nist_dir):
+        os.mkdir(nist_dir)
+
     for sp_num in sp_nums_to_use:
         values = {
             'spectrum': element + ' ' + sp_num
@@ -52,13 +57,13 @@ def download_nist_for_in1(element, dir):
             'sec-gpc': '1',
 
         }
-        conn = httplib.HTTPSConnection("physics.nist.gov")
+        conn = httplib.HTTPSConnection(host="physics.nist.gov", timeout=5, context=ssl._create_unverified_context())
         conn.request("GET", "/cgi-bin/ASD/energy1.pl" + '?' + params, "", headers)
         response = conn.getresponse()
         print response.status, response.reason
 
         data = response.read()
-        outf = os.path.join(dir, str(roman_to_int(sp_num)) + '.csv')
+        outf = os.path.join(nist_dir, str(roman_to_int(sp_num)) + '.csv')
         print(outf)
         with open(outf, 'wb') as out:
             out.write(data)

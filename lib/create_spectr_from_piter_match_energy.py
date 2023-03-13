@@ -1,7 +1,6 @@
 import os
-import sys
 
-from lib.utils import error, read_table, skip_n_lines
+from lib.utils import read_table, skip_n_lines
 
 
 def nist_strip(s):
@@ -40,6 +39,8 @@ def read_energies(dir):
 
 
 def normalize_energy(energy):
+    if energy[-1] == '?':
+        energy = energy[:-1]
     return str(round(float(energy), 3))
 
 
@@ -64,6 +65,8 @@ def write_spectr_section(outf, spec_num, energy_table, spec_num_file):
                     ek = normalize_energy(parts[13])
                     ei = normalize_energy(parts[11])
                     wave = parts[0]
+                    if wave[-1] == '?':
+                        wave = wave[:-1]
                     eins = parts[8]
                     osc = parts[9]
                     if ek in energy_table[spec_num] and ei in energy_table[spec_num]:
@@ -85,9 +88,8 @@ def write_excit_section(outf, spec_num, lines):
                 spec_num, low_level, up_level, osc))
 
 
-
-
 def create_spectr_from_piter_match_energy(out_dir, elem):
+    piter_dir = os.path.join(out_dir, "piter")
     with open(os.path.join(out_dir, "SPECTR.INP"), 'wb') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as exit_inp:
             i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
@@ -96,7 +98,7 @@ def create_spectr_from_piter_match_energy(out_dir, elem):
                                               os.path.basename(f))[0].isdigit() and
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.txt',
-                                          os.listdir(out_dir))))
+                                          os.listdir(piter_dir))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
             energies = read_energies(out_dir)
@@ -105,8 +107,7 @@ def create_spectr_from_piter_match_energy(out_dir, elem):
             create_header_ecxit(table, elem, exit_inp)
 
             for f in i_spectro:
-                section_lines = write_spectr_section(spectr_inp, str(f), energies, os.path.join(out_dir, str(f) + '.txt'))
+                section_lines = write_spectr_section(spectr_inp, str(f), energies,
+                                                     os.path.join(piter_dir, str(f) + '.txt'))
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0]), int(l[1])))
                 write_excit_section(exit_inp, str(f), sorted_lines)
-
-
