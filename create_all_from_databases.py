@@ -89,11 +89,14 @@ elem_dir = os.path.join(out_dir, elem)
 if not os.path.exists(elem_dir):
     os.makedirs(elem_dir)
 
-if download:
-    download_nist_for_in1(elem, out_dir)
-    download_piter(elem, out_dir)
-
 my_dir = dirname(abspath(__file__))
+nist_downloaded = os.path.join(my_dir, "db", elem, "NIST")
+piter_downloaded = os.path.join(my_dir, "db", elem, "piter")
+
+if download:
+    download_nist_for_in1(elem, nist_downloaded)
+    download_piter(elem, piter_downloaded)
+
 
 nist = os.path.join(elem_dir, "NIST")
 if os.path.exists(nist):
@@ -102,8 +105,8 @@ piter = os.path.join(elem_dir, "piter")
 if os.path.exists(piter):
     shutil.rmtree(piter)
 
-shutil.copytree(os.path.join(my_dir, "db", elem, "NIST"), nist)
-shutil.copytree(os.path.join(my_dir, "db", elem, "piter"), piter)
+shutil.copytree(nist_downloaded, nist)
+shutil.copytree(piter_downloaded, piter)
 
 sp_nums = create_in1_from_databases(elem_dir, elem, energy_limits)
 create_rrec_from_in1(os.path.join(elem_dir, "IN1.INP"), elem_dir, sp_nums)

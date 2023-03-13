@@ -12,13 +12,6 @@ def add_one_to_config(c):
         return c
 
 
-def nist_strip(s):
-    if s.startswith('"=""'):
-        return s[4:-3].strip()
-    else:
-        return s.strip()
-
-
 def nist_strip_csv_lib(s):
     if s.startswith('="'):
         return s[2:-1].strip()
@@ -77,8 +70,8 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                     configs = [find_previous(configs[0]), configs[0]]
                 configs[0] = add_one_to_config(configs[0])
                 configs[1] = add_one_to_config(configs[1])
-                term = format_term(nist_strip(parts[1]))
-                g = nist_strip(parts[3])
+                term = format_term(nist_strip_csv_lib(parts[1]))
+                g = nist_strip_csv_lib(parts[3])
                 energy_str = clean_num(nist_strip_csv_lib(parts[eV_column]))
                 energy = float(energy_str)
                 energy_str = "%10.3f" % energy
@@ -115,8 +108,7 @@ def read_section(elem, spec_num_file):
         for parts in csv.reader(inf, quotechar='"', delimiter=',',
                                 quoting=csv.QUOTE_ALL, skipinitialspace=True):
             # for line in inf:
-            if not parts[0].startswith('=""' + elem):
-            #                parts = line.strip().split(',')
+            if "Limit" in parts[1]:
                 level = float(clean_num(nist_strip_csv_lib(parts[index])))
         return level
 

@@ -26,9 +26,7 @@ from lib.roman import roman_to_int
 sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 
-def download_nist_for_in1(element, dir):
-    print("Download NIST")
-    nist_dir = os.path.join(dir, "NIST")
+def download_nist_for_in1(element, nist_dir):
     if not os.path.exists(nist_dir):
         os.mkdir(nist_dir)
 

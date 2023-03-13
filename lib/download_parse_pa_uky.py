@@ -36,8 +36,7 @@ from lib.roman import roman_to_int
 sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 
-def download_piter(elem, dir):
-    piter_dir = os.path.join(dir, "piter")
+def download_piter(elem, piter_dir):
     if not os.path.exists(piter_dir):
          os.mkdir(piter_dir)
     for sp_num in sp_nums_to_use:
