@@ -1,0 +1,18 @@
+Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+
+Request: 1
+
+Wavelength range: 1 - 9000   Unit: Angstrom   Type: Vacuum
+Radial velocity: 0 km/s
+Wavelength accuracy upper limit: 5%
+Element/Spectrum: Mn V
+Minimum line strength: 0.001   Type: f_ik
+Include lines without atomic data: false
+Minimum abundance: no minimum
+Lower level energy range: 0 - 100000   Unit: eV
+Upper level energy range: 0 - 100000
+Maximum for principal quantum number n: no restrictions
+Transition types included: all
+Transitions from auto-ionizing levels: included
+
+*** no lines were found

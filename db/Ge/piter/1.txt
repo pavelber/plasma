@@ -1,0 +1,44 @@
+Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+
+Request: 1
+
+Wavelength range: 1 - 9000   Unit: Angstrom   Type: Vacuum
+Radial velocity: 0 km/s
+Wavelength accuracy upper limit: 5%
+Element/Spectrum: Ge I
+Minimum line strength: 0.001   Type: f_ik
+Include lines without atomic data: false
+Minimum abundance: no minimum
+Lower level energy range: 0 - 100000   Unit: eV
+Upper level energy range: 0 - 100000
+Maximum for principal quantum number n: no restrictions
+Transition types included: all
+Transitions from auto-ionizing levels: included
+
+-LAB-WAVL-ANG-VAC-|-SPC--|TT|-TERM--|J_i-J_k|--A_ki---|--f_ik---|-TPF-|-LEVEL-ENERGY--EV--|-REF---|
+   1944.7302        Ge I  E1  3P-3Po  1 - 0  7.000e+07 1.323e-02   ASD 0.069076 - 6.444469 ASD
+   1955.11502       Ge I  E1  3P-3Po  1 - 1  2.800e+07 1.605e-02   ASD 0.069076 - 6.410605 ASD
+   1988.26688       Ge I  E1  3P-3Po  2 - 1  2.500e+07 8.890e-03   ASD 0.174813 - 6.410605 ASD
+   1998.88698       Ge I  E1  3P-3Po  2 - 2  5.500e+07 3.295e-02   ASD 0.174813 - 6.377474 ASD
+   2042.36757       Ge I  E1  3P-3Do  0 - 1  1.100e+08 2.064e-01   ASD 0.000000 - 6.070611 ASD
+   2065.87459       Ge I  E1  3P-3Do  1 - 1  8.500e+07 5.439e-02   ASD 0.069076 - 6.070611 ASD
+   2069.31678       Ge I  E1  3P-3Do  1 - 2  1.200e+08 1.284e-01   ASD 0.069076 - 6.060628 ASD
+   2086.68447       Ge I] E1  3P-1Do  1 - 2  4.000e+07 4.352e-02   ASD 0.069076 - 6.010759 ASD
+   2094.92367       Ge I  E1  3P-3Do  2 - 3  9.700e+07 8.935e-02   ASD 0.174813 - 6.093128 ASD
+   2106.49148       Ge I  E1  3P-3Do  2 - 2  1.700e+07 1.131e-02   ASD 0.174813 - 6.060628 ASD
+   2256.6994        Ge I] E1  1D-3Po  2 - 2  3.200e+06 2.443e-03   ASD 0.883424 - 6.377474 ASD
+   2418.1020        Ge I  E1  1D-1Do  2 - 2  9.600e+07 8.416e-02   ASD 0.883424 - 6.010759 ASD
+   2498.71564       Ge I] E1  3P-1Po  0 - 1  1.300e+07 3.651e-02   ASD 0.000000 - 4.961917 ASD
+   2533.99183       Ge I] E1  3P-1Po  1 - 1  1.000e+07 9.627e-03   ASD 0.069076 - 4.961917 ASD
+   2589.96238       Ge I] E1  3P-1Po  2 - 1  5.100e+06 3.077e-03   ASD 0.174813 - 4.961917 ASD
+   2593.30934       Ge I  E1  3P-3Po  1 - 2  7.100e+07 1.193e-01   ASD 0.069076 - 4.850001 ASD
+   2651.96128       Ge I  E1  3P-3Po  2 - 2  2.000e+08 2.109e-01   ASD 0.174813 - 4.850001 ASD
+   2652.35770       Ge I  E1  3P-3Po  0 - 1  8.500e+07 2.689e-01   ASD 0.000000 - 4.674490 ASD
+   2692.13996       Ge I  E1  3P-3Po  1 - 1  6.100e+07 6.628e-02   ASD 0.069076 - 4.674490 ASD
+   2710.42704       Ge I  E1  3P-3Po  1 - 0  2.800e+08 1.028e-01   ASD 0.069076 - 4.643417 ASD
+   2755.40204       Ge I  E1  3P-3Po  2 - 1  1.100e+08 7.512e-02   ASD 0.174813 - 4.674490 ASD
+   3039.95151       Ge I  E1  1D-1Po  2 - 1  2.800e+08 2.328e-01   ASD 0.883424 - 4.961917 ASD
+   3125.72251       Ge I] E1  1D-3Po  2 - 2  3.100e+06 4.541e-03   ASD 0.883424 - 4.850001 ASD
+   3270.43133       Ge I] E1  1D-3Po  2 - 1  2.900e+07 2.790e-02   ASD 0.883424 - 4.674490 ASD
+   4227.75290       Ge I  E1  1S-1Po  0 - 1  2.100e+07 1.688e-01   ASD 2.029290 - 4.961917 ASD
+   4687.13993       Ge I] E1  1S-3Po  0 - 1  9.500e+06 9.387e-02   ASD 2.029290 - 4.674490 ASD

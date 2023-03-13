@@ -1,0 +1,38 @@
+Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+
+Request: 1
+
+Wavelength range: 1 - 9000   Unit: Angstrom   Type: Vacuum
+Radial velocity: 0 km/s
+Wavelength accuracy upper limit: 5%
+Element/Spectrum: Ge II
+Minimum line strength: 0.001   Type: f_ik
+Include lines without atomic data: false
+Minimum abundance: no minimum
+Lower level energy range: 0 - 100000   Unit: eV
+Upper level energy range: 0 - 100000
+Maximum for principal quantum number n: no restrictions
+Transition types included: all
+Transitions from auto-ionizing levels: included
+
+-LAB-WAVL-ANG-VAC-|-SPC--|TT|-TERM--|-J_i-J_k-|--A_ki---|--f_ik---|-TPF-|--LEVEL-ENERGY--EV---|-REF---|
+    999.10111       Ge II E1 2Po-2D  1/2 - 3/2 1.900e+08 5.687e-02   ASD  0.000000 - 12.409573 ASD
+   1016.63773       Ge II E1 2Po-2D  3/2 - 5/2 2.100e+08 4.881e-02   ASD  0.219124 - 12.414637 ASD
+   1017.06003       Ge II E1 2Po-2D  3/2 - 3/2 3.500e+07 5.428e-03   ASD  0.219124 - 12.409573 ASD
+   1055.02614       Ge II E1 2Po-2S  1/2 - 1/2 6.900e+07 1.151e-02   ASD  0.000000 - 11.751764 ASD
+   1075.07202       Ge II E1 2Po-2S  3/2 - 1/2 1.300e+08 1.126e-02   ASD  0.219124 - 11.751764 ASD
+   1237.05912       Ge II E1 2Po-2D  1/2 - 3/2 1.900e+09 8.718e-01   ASD  0.000000 - 10.022495 ASD
+   1261.90543       Ge II E1 2Po-2D  3/2 - 5/2 2.200e+09 7.878e-01   ASD  0.219124 - 10.044281 ASD
+   1264.70979       Ge II E1 2Po-2D  3/2 - 3/2 3.500e+08 8.393e-02   ASD  0.219124 - 10.022495 ASD
+   1602.48634       Ge II E1 2Po-2S  1/2 - 1/2 3.400e+08 1.309e-01   ASD  0.000000 -  7.736989 ASD
+   1649.19425       Ge II E1 2Po-2S  3/2 - 1/2 6.500e+08 1.325e-01   ASD  0.219124 -  7.736989 ASD
+   4743.1317        Ge II E1 2Po-2D  1/2 - 3/2 4.600e+07 3.103e-01   ASD  9.795600 - 12.409573 ASD
+   4815.9540        Ge II E1 2Po-2D  3/2 - 5/2 5.100e+07 2.660e-01   ASD  9.840190 - 12.414637 ASD
+   4825.4453        Ge II E1 2Po-2D  3/2 - 3/2 8.600e+06 3.002e-02   ASD  9.840190 - 12.409573 ASD
+   5133.1814        Ge II E1  2D-2Fo 3/2 - 5/2 1.900e+08 1.126e+00   ASD 10.022495 - 12.437843 ASD
+   5179.9038        Ge II E1  2D-2Fo 5/2 - 5/2 1.300e+07 5.229e-02   ASD 10.044281 - 12.437843 ASD
+   5180.0897        Ge II E1  2D-2Fo 5/2 - 7/2 2.000e+08 1.073e+00   ASD 10.044281 - 12.437757 ASD
+   5895.022         Ge II E1  2S-2Po 1/2 - 3/2 9.200e+07 9.586e-01   ASD  7.736989 -  9.840190 ASD
+   6022.709         Ge II E1  2S-2Po 1/2 - 1/2 8.400e+07 4.568e-01   ASD  7.736989 -  9.795600 ASD
+   6338.129         Ge II E1 2Po-2S  1/2 - 1/2 4.400e+07 2.650e-01   ASD  9.795600 - 11.751764 ASD
+   6485.973         Ge II E1 2Po-2S  3/2 - 1/2 8.500e+07 2.680e-01   ASD  9.840190 - 11.751764 ASD

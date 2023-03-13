@@ -1,0 +1,63 @@
+Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+
+Request: 1
+
+Wavelength range: 1 - 9000   Unit: Angstrom   Type: Vacuum
+Radial velocity: 0 km/s
+Wavelength accuracy upper limit: 5%
+Element/Spectrum: Cr V
+Minimum line strength: 0.001   Type: f_ik
+Include lines without atomic data: false
+Minimum abundance: no minimum
+Lower level energy range: 0 - 100000   Unit: eV
+Upper level energy range: 0 - 100000
+Maximum for principal quantum number n: no restrictions
+Transition types included: all
+Transitions from auto-ionizing levels: included
+
+-LAB-WAVL-ANG-VAC-|-SPC--|TT|-TERM--|J_i-J_k|--A_ki---|--f_ik---|-TPF-|--LEVEL-ENERGY--EV---|-REF---|
+    434.3083        Cr V  E1  3F-3Fo  4 - 4  1.500e+09 4.242e-02   ASD  0.141550 - 28.689060 ASD
+    435.1457        Cr V  E1  3F-3Fo  3 - 3  2.900e+08 8.232e-03   ASD  0.063010 - 28.555580 ASD
+    435.6317        Cr V  E1  3F-3Fo  2 - 2  2.800e+08 7.966e-03   ASD  0.000000 - 28.460780 ASD
+    436.3485        Cr V  E1  3F-3Fo  4 - 3  2.400e+09 5.328e-02   ASD  0.141550 - 28.555580 ASD
+    436.5983        Cr V  E1  3F-3Fo  3 - 2  2.100e+09 4.287e-02   ASD  0.063010 - 28.460780 ASD
+    437.4212        Cr V  E1  3F-3Do  3 - 3  1.400e+09 4.016e-02   ASD  0.063010 - 28.407360 ASD
+    437.6576        Cr V  E1  3F-3Do  2 - 2  1.300e+09 3.733e-02   ASD  0.000000 - 28.329040 ASD
+    441.0542        Cr V  E1  1D-1Po  2 - 1  2.300e+09 4.025e-02   ASD  1.635100 - 29.745980 ASD
+    445.7490        Cr V  E1  1D-1Fo  2 - 3  1.900e+08 7.924e-03   ASD  1.635100 - 29.449900 ASD
+    456.2672        Cr V  E1  3P-3Po  1 - 2  6.700e+08 3.485e-02   ASD  1.943650 - 29.117240 ASD
+    456.3572        Cr V  E1  3P-3Po  0 - 1  9.500e+08 8.898e-02   ASD  1.920740 - 29.088970 ASD
+    456.6379        Cr V  E1  3P-3Po  1 - 0  3.300e+09 3.439e-02   ASD  1.943650 - 29.095180 ASD
+    456.7424        Cr V  E1  3P-3Po  1 - 1  9.200e+08 2.877e-02   ASD  1.943650 - 29.088970 ASD
+    457.0271        Cr V  E1  3P-3Po  2 - 2  2.700e+09 8.455e-02   ASD  1.988830 - 29.117240 ASD
+    457.5038        Cr V  E1  3P-3Po  2 - 1  1.200e+09 2.259e-02   ASD  1.988830 - 29.088970 ASD
+    464.0149        Cr V  E1  1G-1Fo  4 - 3  3.600e+09 9.038e-02   ASD  2.730030 - 29.449900 ASD
+    469.3077        Cr V  E1  3P-3Do  2 - 3  3.900e+08 1.803e-02   ASD  1.988830 - 28.407360 ASD
+    469.6339        Cr V  E1  1D-1Do  2 - 2  2.300e+09 7.605e-02   ASD  1.635100 - 28.035280 ASD
+    469.8972        Cr V  E1  3P-3Do  1 - 2  4.900e+08 2.703e-02   ASD  1.943650 - 28.329040 ASD
+    470.5661        Cr V  E1  3P-3Do  0 - 1  4.900e+08 4.880e-02   ASD  1.920740 - 28.268620 ASD
+   1103.387         Cr V] E1 3Do-3G   2 - 3  2.400e+08 6.133e-02   ASD 28.329040 - 39.565720 ASD
+   1106.244         Cr V] E1 3Do-3G   3 - 4  1.200e+09 2.831e-01   ASD 28.407360 - 39.615030 ASD
+   1121.070         Cr V  E1 3Fo-3G   3 - 4  2.100e+09 5.087e-01   ASD 28.555580 - 39.615030 ASD
+   1126.091         Cr V  E1 3Fo-3G   3 - 3  6.100e+08 1.160e-01   ASD 28.555580 - 39.565720 ASD
+   1127.631         Cr V  E1 3Fo-3G   4 - 5  3.500e+09 8.155e-01   ASD 28.689060 - 39.684160 ASD
+   1134.766         Cr V  E1 3Fo-3G   4 - 4  2.000e+08 3.861e-02   ASD 28.689060 - 39.615030 ASD
+   1465.859         Cr V  E1  1D-1Po  2 - 1  1.100e+09 2.126e-01   ASD 21.287850 - 29.745980 ASD
+   1481.655         Cr V  E1  3D-3Po  1 - 0  1.000e+09 1.097e-01   ASD 20.727230 - 29.095180 ASD
+   1482.756         Cr V  E1  3D-3Po  1 - 1  3.500e+08 1.154e-01   ASD 20.727230 - 29.088970 ASD
+   1484.662         Cr V  E1  3D-3Po  2 - 2  2.200e+08 7.270e-02   ASD 20.766240 - 29.117240 ASD
+   1489.705         Cr V  E1  3D-3Po  2 - 1  6.600e+08 1.318e-01   ASD 20.766240 - 29.088970 ASD
+   1497.972         Cr V  E1  3D-3Po  3 - 2  7.500e+08 1.802e-01   ASD 20.840440 - 29.117240 ASD
+   1519.032         Cr V  E1  1D-1Fo  2 - 3  9.500e+08 4.601e-01   ASD 21.287850 - 29.449900 ASD
+   1579.694         Cr V  E1  3D-3Fo  3 - 4  8.600e+08 4.137e-01   ASD 20.840440 - 28.689060 ASD
+   1591.715         Cr V  E1  3D-3Fo  2 - 3  7.300e+08 3.882e-01   ASD 20.766240 - 28.555580 ASD
+   1603.199         Cr V  E1  3D-3Fo  1 - 2  7.000e+08 4.496e-01   ASD 20.727230 - 28.460780 ASD
+   1607.025         Cr V  E1  3D-3Fo  3 - 3  8.300e+07 3.214e-02   ASD 20.840440 - 28.555580 ASD
+   1611.326         Cr V  E1  3D-3Fo  2 - 2  2.300e+07 8.953e-03   ASD 20.766240 - 28.460780 ASD
+   1622.592         Cr V  E1  3D-3Do  2 - 3  7.400e+07 4.089e-02   ASD 20.766240 - 28.407360 ASD
+   1638.504         Cr V  E1  3D-3Do  3 - 3  6.800e+08 2.737e-01   ASD 20.840440 - 28.407360 ASD
+   1639.395         Cr V  E1  3D-3Do  2 - 2  4.900e+08 1.974e-01   ASD 20.766240 - 28.329040 ASD
+   1644.050         Cr V  E1  3D-3Do  1 - 1  5.000e+08 2.026e-01   ASD 20.727230 - 28.268620 ASD
+   1652.598         Cr V  E1  3D-3Do  2 - 1  2.500e+08 6.142e-02   ASD 20.766240 - 28.268620 ASD
+   1655.640         Cr V  E1  3D-3Do  3 - 2  1.600e+08 4.697e-02   ASD 20.840440 - 28.329040 ASD
+   1837.50          Cr V  E1  1D-1Do  2 - 2  4.300e+08 2.177e-01   ASD 21.287850 - 28.035280 ASD
