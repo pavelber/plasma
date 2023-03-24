@@ -23,13 +23,13 @@ def create_rrec_inp(elem_dir):
     for sn in i_spectro:
         dir = os.path.join(elem_dir, sn)
         code, std_out, std_err = runcommand(ph_fac_path, dir, sn)
-        print(std_out + " " + std_out)
+        print(std_out + " " + std_err)
         if code != 0:
             error("Exit code = " + str(code))
 
-        print("Running " + "sort  output_ph.dat>RREC.INP" + " in " + dir)
-        code, std_out, std_err = runcommand("sort  output_ph.dat>RREC.INP", dir)
-        print(std_out + " " + std_out)
+        print("Running " + "type output_ph.dat|sort>RREC.INP" + " in " + dir)
+        code, std_out, std_err = runcommand("type output_ph.dat|sort>RREC.INP", dir)
+        print(std_out + " " + std_err)
         if code != 0:
             error("Exit code = " + str(code))
 
