@@ -1,6 +1,6 @@
 import os
 
-from lib.utils import read_table, skip_n_lines
+from lib.utils import read_table, skip_n_lines, error
 
 
 def nist_strip(s):
@@ -54,7 +54,7 @@ def create_header_ecxit(table, elem, file):
         "------------------------------------------------------------------------------------------------------------------\n")
 
 
-def write_spectr_section(outf, spec_num, energy_table, spec_num_file):
+def write_spectr_section_from_piter(outf, spec_num, energy_table, spec_num_file):
     lines = []
     with open(spec_num_file, "rb") as inf:
         skip_n_lines(inf, 18)
@@ -107,7 +107,10 @@ def create_spectr_from_piter_match_energy(out_dir, elem):
             create_header_ecxit(table, elem, exit_inp)
 
             for f in i_spectro:
-                section_lines = write_spectr_section(spectr_inp, str(f), energies,
-                                                     os.path.join(piter_dir, str(f) + '.txt'))
+                sp_num_str = str(f)
+                section_lines = write_spectr_section_from_piter(spectr_inp, sp_num_str, energies,
+                                                                os.path.join(piter_dir, sp_num_str + '.txt'))
+                if len(section_lines) == 0:
+                    error("No lines for " + elem + " " + sp_num_str)
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0]), int(l[1])))
-                write_excit_section(exit_inp, str(f), sorted_lines)
+                write_excit_section(exit_inp, sp_num_str, sorted_lines)
