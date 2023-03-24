@@ -6,7 +6,7 @@ from os.path import dirname, abspath
 from lib.check_and_fix import run_check_old_rr, run_fix_old_rr, copy_checks, run_new_fix, \
     run_check_rr_return_lines
 from lib.create_in1_from_databases import create_in1_from_databases, parse_energy_limits
-from lib.create_rrec_from_in1 import create_rrec_from_in1
+from lib.create_rrec_from_in1 import create_rrec_from_in1, create_rrec_for_bad_lines
 from lib.download_parse_pa_uky import download_piter
 from lib.env import env
 from lib.nist import download_nist_for_in1
@@ -97,7 +97,6 @@ if download:
     download_nist_for_in1(elem, nist_downloaded)
     download_piter(elem, piter_downloaded)
 
-
 nist = os.path.join(elem_dir, "NIST")
 if os.path.exists(nist):
     shutil.rmtree(nist)
@@ -109,7 +108,8 @@ shutil.copytree(nist_downloaded, nist)
 shutil.copytree(piter_downloaded, piter)
 
 sp_nums = create_in1_from_databases(elem_dir, elem, energy_limits)
-create_rrec_from_in1(os.path.join(elem_dir, "IN1.INP"), elem_dir, sp_nums)
+in1 = os.path.join(elem_dir, "IN1.INP")
+create_rrec_from_in1(in1, elem_dir, sp_nums)
 create_rrec_inp(elem_dir)
 
 with open(os.path.join(elem_dir, "RREC.INP"), "w") as rrec:
@@ -128,6 +128,9 @@ with open(os.path.join(elem_dir, "RREC.INP"), "w") as rrec:
             with open(rrec_path, "r") as sp_rrec:
                 for line in sp_rrec:
                     rrec.write(line)
+            if len(bad) > 0:
+                create_rrec_for_bad_lines(in1, elem_dir, sp_nums, sp, bad)
+
 for sp in sp_nums:
     print("**********************")
     print(sp)
