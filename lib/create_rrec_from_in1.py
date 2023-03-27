@@ -119,13 +119,13 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                                                  add_one_to_config(x[2]) == config,
                                                  next_sp_levels)
                         sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
-                        #print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
+                        # print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
                         #    next_sn) + " " + config)
-                        #print("*** Got levels " + str(next_levels))
+                        # print("*** Got levels " + str(next_levels))
                         for lvl in next_levels:
                             stat_weight = level[5]
                             relative_weight = stat_weight / sum_of_stat_weights
-                            #print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
+                            # print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
                             #    next_sn) + " level " + str(
                             #    lvl[0]) + " with weight " + str(relative_weight))
 
@@ -137,16 +137,31 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                                                 o_f)
                             o_f.write("--\n")
 
+
 def create_rrec_for_bad_lines(in1_inp_path, out_dir, sp_nums, s_n, bad_lines):
+    level_2_bad = {}
+    for bad in bad_lines:
+        from_level = bad[1]
+        to_level = bad[2]
+        if from_level not in level_2_bad:
+            levels = []
+            level_2_bad[from_level] = levels
+        else:
+            levels = level_2_bad[from_level]
+        levels.append(to_level)
+
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
         skip_n_lines(in1_inp, 12)
         n0l0 = read_n0l0(in1_inp, sp_nums)
         levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
-        sp_dir = join(out_dir, str(s_n))
-    if not exists(sp_dir):
-        os.mkdir(sp_dir)
-    with open(join(sp_dir, "rrec-bad"), "w") as o_f:
+
+    sp_dir = join(out_dir, str(s_n))
+    bad_dir = join(sp_dir, "bad_lines")
+    if not exists(bad_dir):
+        os.mkdir(bad_dir)
+
+    with open(join(bad_dir, "rrec"), "w") as o_f:
         print(s_n)
         levels = levels_by_sp_num[str(s_n)]
         next_sn = s_n + 1
@@ -175,10 +190,12 @@ def create_rrec_for_bad_lines(in1_inp_path, out_dir, sp_nums, s_n, bad_lines):
                                          next_sp_levels)
                 sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
                 for lvl in next_levels:
-                    stat_weight = level[5]
-                    relative_weight = stat_weight / sum_of_stat_weights
-                    o_f.write("%4s  %4s\n" % (level_num, lvl[0],))
-                    compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
-                                        relative_weight,
-                                        o_f)
-                    o_f.write("--\n")
+                    if str(level_num) in level_2_bad and str(lvl[0]) in level_2_bad[str(level_num)]:
+                        print("Recreating rrec for bad trans: " + str(level_num) + "->" + str(lvl[0]))
+                        stat_weight = level[5]
+                        relative_weight = stat_weight / sum_of_stat_weights
+                        o_f.write("%4s  %4s\n" % (level_num, lvl[0],))
+                        compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
+                                            relative_weight,
+                                            o_f, True)
+                        o_f.write("--\n")

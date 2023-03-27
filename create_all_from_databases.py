@@ -14,24 +14,22 @@ from lib.utils import error, runcommand
 
 
 def create_rrec_inp(elem_dir):
-    my_dir = dirname(abspath(__file__))
-
-    python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path, my_dir = env(
-        "perl")
-
     i_spectro = sorted(filter(lambda f: f.isdigit(), os.listdir(elem_dir)))
     for sn in i_spectro:
-        dir = os.path.join(elem_dir, sn)
-        code, std_out, std_err = runcommand(ph_fac_path, dir, sn)
-        print(std_out + " " + std_err)
-        if code != 0:
-            error("Exit code = " + str(code))
+        rrec_dir = os.path.join(elem_dir, sn)
+        create_rrec_inp_from_dir(rrec_dir, ph_fac_path, sn)
 
-        print("Running " + "type output_ph.dat|sort>RREC.INP" + " in " + dir)
-        code, std_out, std_err = runcommand("type output_ph.dat|sort>RREC.INP", dir)
-        print(std_out + " " + std_err)
-        if code != 0:
-            error("Exit code = " + str(code))
+
+def create_rrec_inp_from_dir(rrec_dir, ph_fac_path, sn):
+    code, std_out, std_err = runcommand(ph_fac_path, rrec_dir, sn)
+    print(std_out + " " + std_err)
+    if code != 0:
+        error("Exit code = " + str(code))
+    print("Running " + "type output_ph.dat|sort>RREC.INP" + " in " + rrec_dir)
+    code, std_out, std_err = runcommand("type output_ph.dat|sort>RREC.INP", rrec_dir)
+    print(std_out + " " + std_err)
+    if code != 0:
+        error("Exit code = " + str(code))
 
 
 def check_and_fix_rr(dir):
@@ -77,6 +75,9 @@ elem = sys.argv[2]
 
 energy_limits = parse_energy_limits(sys.argv[3])
 
+python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path, my_dir = env(
+    "perl")
+
 download = False
 if len(sys.argv) == 5 and sys.argv[4] == 'True':
     download = True
@@ -112,24 +113,43 @@ in1 = os.path.join(elem_dir, "IN1.INP")
 create_rrec_from_in1(in1, elem_dir, sp_nums)
 create_rrec_inp(elem_dir)
 
+dir_bad = {}
+
+
+def check_fix():
+    global rrec_path
+    rrec_path = os.path.join(sp_path, "RREC.INP")
+    backup_rrec_name = os.path.join(sp_path, "RREC.INP.BACK")
+    shutil.copyfile(rrec_path, backup_rrec_name)
+    if os.path.getsize(rrec_path) > 0:
+        copy_checks(my_dir, sp_path)
+        bad = check_and_fix_rr(sp_path)
+        # check_and_fix_old_rr(sp_path)
+        dir_bad[sp] = bad
+        if len(bad) > 1:
+            create_rrec_for_bad_lines(in1, elem_dir, sp_nums, sp, bad)
+            bad_lines_path = os.path.join(sp_path, "bad_lines")
+            create_rrec_inp_from_dir(bad_lines_path, ph_fac_path, str(sp))
+            rrec_path = os.path.join(bad_lines_path, "RREC.INP")
+            backup_rrec_name = os.path.join(bad_lines_path, "RREC.INP.BACK")
+            shutil.copyfile(rrec_path, backup_rrec_name)
+            copy_checks(my_dir, bad_lines_path)
+            bad = check_and_fix_rr(bad_lines_path)
+            if len(bad) > 0:
+                error("Still have bad " + str(bad))
+
+
+for sp in sp_nums:
+    sp_path = os.path.join(elem_dir, str(sp))
+    check_fix()
+
 with open(os.path.join(elem_dir, "RREC.INP"), "w") as rrec:
-    dir_bad = {}
     for sp in sp_nums:
         sp_path = os.path.join(elem_dir, str(sp))
         rrec_path = os.path.join(sp_path, "RREC.INP")
-        backup_rrec_name = os.path.join(sp_path, "RREC.INP.BACK")
-        shutil.copyfile(rrec_path, backup_rrec_name)
-
-        if os.path.getsize(rrec_path) > 0:
-            copy_checks(my_dir, sp_path)
-            bad = check_and_fix_rr(sp_path)
-            # check_and_fix_old_rr(sp_path)
-            dir_bad[sp] = bad
-            with open(rrec_path, "r") as sp_rrec:
-                for line in sp_rrec:
-                    rrec.write(line)
-            if len(bad) > 0:
-                create_rrec_for_bad_lines(in1, elem_dir, sp_nums, sp, bad)
+        with open(rrec_path, "r") as sp_rrec:
+            for line in sp_rrec:
+                rrec.write(line)
 
 for sp in sp_nums:
     print("**********************")
