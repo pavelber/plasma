@@ -84,7 +84,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                     term = term[0:6]
 
                 if configuration.startswith(elem):
-                    outf.write("\n")
+                    #outf.write("\n")
                     return energy
                 else:
                     if energy_limits > float(energy_str):

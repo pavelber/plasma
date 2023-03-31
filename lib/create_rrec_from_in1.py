@@ -134,7 +134,8 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                                          (s_n, level[0], next_sn, lvl[0], relative_weight))
                             compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
                                                 relative_weight,
-                                                o_f)
+                                                o_f,
+                                                True)
                             o_f.write("--\n")
 
 

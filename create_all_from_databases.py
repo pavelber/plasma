@@ -65,6 +65,28 @@ def check_and_fix_old_rr(dir):
         i = i + 1
 
 
+def check_fix(rrec_path):
+    rrec_path = os.path.join(sp_path, "RREC.INP")
+    backup_rrec_name = os.path.join(sp_path, "RREC.INP.BACK")
+    shutil.copyfile(rrec_path, backup_rrec_name)
+    if os.path.getsize(rrec_path) > 0:
+        copy_checks(my_dir, sp_path)
+        bad = check_and_fix_rr(sp_path)
+        # check_and_fix_old_rr(sp_path)
+        dir_bad[sp] = bad
+        if len(bad) > 1:
+            create_rrec_for_bad_lines(in1, elem_dir, sp_nums, sp, bad)
+            bad_lines_path = os.path.join(sp_path, "bad_lines")
+            create_rrec_inp_from_dir(bad_lines_path, ph_fac_path, str(sp))
+            rrec_path = os.path.join(bad_lines_path, "RREC.INP")
+            backup_rrec_name = os.path.join(bad_lines_path, "RREC.INP.BACK")
+            shutil.copyfile(rrec_path, backup_rrec_name)
+            copy_checks(my_dir, bad_lines_path)
+            bad = check_and_fix_rr(bad_lines_path)
+            if len(bad) > 0:
+                error("Still have bad " + str(bad))
+
+
 ################## MAIN ######################
 if len(sys.argv) < 3:
     error('\nUsage: ' + sys.argv[
@@ -115,33 +137,10 @@ create_rrec_inp(elem_dir)
 
 dir_bad = {}
 
-
-def check_fix():
-    global rrec_path
-    rrec_path = os.path.join(sp_path, "RREC.INP")
-    backup_rrec_name = os.path.join(sp_path, "RREC.INP.BACK")
-    shutil.copyfile(rrec_path, backup_rrec_name)
-    if os.path.getsize(rrec_path) > 0:
-        copy_checks(my_dir, sp_path)
-        bad = check_and_fix_rr(sp_path)
-        # check_and_fix_old_rr(sp_path)
-        dir_bad[sp] = bad
-        if len(bad) > 1:
-            create_rrec_for_bad_lines(in1, elem_dir, sp_nums, sp, bad)
-            bad_lines_path = os.path.join(sp_path, "bad_lines")
-            create_rrec_inp_from_dir(bad_lines_path, ph_fac_path, str(sp))
-            rrec_path = os.path.join(bad_lines_path, "RREC.INP")
-            backup_rrec_name = os.path.join(bad_lines_path, "RREC.INP.BACK")
-            shutil.copyfile(rrec_path, backup_rrec_name)
-            copy_checks(my_dir, bad_lines_path)
-            bad = check_and_fix_rr(bad_lines_path)
-            if len(bad) > 0:
-                error("Still have bad " + str(bad))
-
-
 for sp in sp_nums:
     sp_path = os.path.join(elem_dir, str(sp))
-    check_fix()
+    rrec_path = os.path.join(sp_path, "RREC.INP")
+    check_fix(rrec_path)
 
 with open(os.path.join(elem_dir, "RREC.INP"), "w") as rrec:
     for sp in sp_nums:
