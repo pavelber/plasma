@@ -10,6 +10,7 @@ from lib.create_rrec_from_in1 import create_rrec_from_in1, create_rrec_for_bad_l
 from lib.download_parse_pa_uky import download_piter
 from lib.env import env
 from lib.nist import download_nist_for_in1
+from lib.remove_lines_and_renumenrate import read_used_lines, remove_unused_lines_and_renumerate
 from lib.utils import error, runcommand
 
 
@@ -142,7 +143,12 @@ for sp in sp_nums:
     rrec_path = os.path.join(sp_path, "RREC.INP")
     check_fix(rrec_path)
 
-with open(os.path.join(elem_dir, "RREC.INP"), "w") as rrec:
+rrec_path = os.path.join(elem_dir, "RREC.INP")
+excit_path = os.path.join(elem_dir, "EXCIT.INP")
+spectr_path = os.path.join(elem_dir, "SPECTR.INP")
+bcfp_path = os.path.join(elem_dir, "BFCP.INP")
+
+with open(rrec_path, "w") as rrec:
     for sp in sp_nums:
         sp_path = os.path.join(elem_dir, str(sp))
         rrec_path = os.path.join(sp_path, "RREC.INP")
@@ -162,3 +168,5 @@ for sp in sp_nums:
 # copy_checks(my_dir, elem_dir)
 # check_and_fix_rr(elem_dir)
 # check_and_fix_old_rr(elem_dir)
+
+remove_unused_lines_and_renumerate(elem_dir)
