@@ -21,3 +21,5 @@ elem_dir = os.path.join(out_dir, elem)
 # check_and_fix_old_rr(elem_dir)
 
 
+
+remove_unused_lines_and_renumerate(elem_dir)

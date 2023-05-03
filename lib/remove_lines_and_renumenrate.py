@@ -32,13 +32,14 @@ def replace_in_file(file_name, num_skip_lines, sp_num_levels_columns, mapping):
                         level_start = sp_num_level.level_num.start
                         level_end = sp_num_level.level_num.end
                         level = l[level_start:level_end].strip()
-                        if level in  mapping[sp_num]:
+                        if level in mapping[sp_num]:
                             new_level = mapping[sp_num][level]
                             new_level_formatted = ("%" + str(level_end - level_start) + "s") % new_level
                             l = l[:level_start] + new_level_formatted + l[level_end:]
-                            fwrite.write(l)
                         else:
-                            print("Missing "+level+" in "+sp_num+" in "+file_name)
+                            print("Missing " + level + " in " + sp_num + " in " + file_name)
+                    fwrite.write(l)
+
                     count += 1
 
     shutil.copyfile(after_renumerate_file, file_name)
@@ -106,19 +107,21 @@ def renumerate_in1_inp(in1_path):
     shutil.copyfile(after_renumerate_file, in1_path)
     return ret
 
+
 def remove_unused_lines_and_renumerate(elem_dir):
     in1_path = os.path.join(elem_dir, "IN1.INP")
     rrec_path = os.path.join(elem_dir, "RREC.INP")
     excit_path = os.path.join(elem_dir, "EXCIT.INP")
     spectr_path = os.path.join(elem_dir, "SPECTR.INP")
     bcfp_path = os.path.join(elem_dir, "BFCP.INP")
-    used_lines = read_used_lines(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
-                                                Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], {})
+    used_lines = {}
+    # used_lines = read_used_lines(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
+    #                                            Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], used_lines)
     used_lines = read_used_lines(excit_path, 2, [Level(sp_num_fun(0, 3), Field(4, 9))], used_lines)
-    used_lines = read_used_lines(spectr_path, 1, [Level(sp_num_fun(0, 3), Field(4, 7))], used_lines)
-    used_lines = read_used_lines(bcfp_path, 2,
-                                 [Level(sp_num_fun(0, 5), Field(6, 10)), Level(sp_num_fun(11, 15), Field(16, 20))],
-                                 used_lines)
+    # used_lines = read_used_lines(spectr_path, 1, [Level(sp_num_fun(0, 3), Field(4, 7))], used_lines)
+    # used_lines = read_used_lines(bcfp_path, 2,
+    #                             [Level(sp_num_fun(0, 5), Field(6, 10)), Level(sp_num_fun(11, 15), Field(16, 20))],
+    #                             used_lines)
     print(used_lines)
     remove_lines_from_in1_inp(in1_path, used_lines)
     replaces = renumerate_in1_inp(in1_path)
