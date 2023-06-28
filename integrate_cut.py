@@ -23,8 +23,10 @@ def fun(a, b, c, d, x):
 def integrate(a, b, c, d, start, end, step):
     sum = 0
     i = start
-    while i <= end + step:
-        sum += (fun(a, b, c, d, i) + fun(a, b, c, d, i + step)) / 2.0
+    while i < end + step:
+        i1 = fun(a, b, c, d, i)
+        i2 = fun(a, b, c, d, i + step)
+        sum += (i1 + i2) / 2.0
         i += step
     return sum
 
