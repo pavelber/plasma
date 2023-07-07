@@ -93,6 +93,8 @@ def remove_large(file_name, num_skip_lines, columns, abs_max_value):
 
                     if copy_line:
                         fwrite.write(l)
+                    else:
+                        print(l)
 
                 count += 1
 

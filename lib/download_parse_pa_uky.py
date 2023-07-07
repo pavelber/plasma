@@ -78,7 +78,7 @@ def download_piter_one_spnum(file, elem, sp_num_roman):
     conn = httplib.HTTPSConnection("www.pa.uky.edu")
     conn.request("POST", "/~peter/newpage/cgi-bin/qlines.cgi", params, headers)
     response = conn.getresponse()
-    print response.status, response.reason
+    print(response.status, response.reason)
 
     data = response.read()
     with open(file, "wb") as piter:

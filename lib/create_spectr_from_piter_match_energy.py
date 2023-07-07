@@ -56,7 +56,7 @@ def create_header_ecxit(table, elem, file):
 
 def write_spectr_section_from_piter(outf, spec_num, energy_table, spec_num_file):
     lines = []
-    with open(spec_num_file, "rb") as inf:
+    with open(spec_num_file, "r") as inf:
         skip_n_lines(inf, 18)
         for line in inf:
             if not line.startswith('***'):
@@ -90,8 +90,8 @@ def write_excit_section(outf, spec_num, lines):
 
 def create_spectr_from_piter_match_energy(out_dir, elem):
     piter_dir = os.path.join(out_dir, "piter")
-    with open(os.path.join(out_dir, "SPECTR.INP"), 'wb') as spectr_inp:
-        with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as exit_inp:
+    with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
+        with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
             i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
                                    filter(lambda f:
                                           os.path.splitext(

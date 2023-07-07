@@ -65,7 +65,7 @@ def read_table():
     if path == "" or path is None:
         path = "."
     table_file = path + os.path.sep + "PeriodicTable.csv"
-    with open(table_file, 'rb') as infile:
+    with open(table_file, 'r') as infile:
         reader = csv.reader(infile)
         headers = next(reader)[0:]
         for row in reader:
@@ -77,7 +77,6 @@ def read_table():
 def skip_n_lines(f, num):
     for _ in range(num):
         next(f)
-
 
 
 def skip_lines(f):
