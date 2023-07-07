@@ -7,7 +7,7 @@ from lib.utils import runcommand_print
 
 def copy_checks(my_dir, out_dir):
     check_dir = os.path.join(my_dir, "check")
-    print "copy check and fix utils"
+    print ("copy check and fix utils")
     for filename in os.listdir(check_dir):
         check_file = os.path.join(check_dir, filename)
         shutil.copy(check_file, out_dir)
@@ -86,7 +86,7 @@ def run_check_rr(dir):
 def run_check_rr_return_lines(dir):
     code, std_out, std_err = runcommand_print("check_rr.exe", dir)
     lines = std_out.split("\n")[:-2]
-    return map(lambda l: l.split(), lines)
+    return list(map(lambda l: l.split(), lines))
 
 
 def run_fix_old_rr(dir):

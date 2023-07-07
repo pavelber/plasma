@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import os
 import ssl
 import urllib
@@ -58,7 +58,8 @@ def download_nist_for_in1(element, nist_dir):
         conn = httplib.HTTPSConnection(host="physics.nist.gov", timeout=5, context=ssl._create_unverified_context())
         conn.request("GET", "/cgi-bin/ASD/energy1.pl" + '?' + params, "", headers)
         response = conn.getresponse()
-        print response.status, response.reason
+        print(response.status, response.reason)
+        #TODO: rewrite download for urlib
 
         data = response.read()
         outf = os.path.join(nist_dir, str(roman_to_int(sp_num)) + '.csv')

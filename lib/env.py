@@ -2,8 +2,11 @@ import os
 import sys
 from os.path import abspath, dirname
 
-from utils import error
-from utils import runcommand
+from lib.utils import runcommand
+
+
+#from utils import error
+#from utils import runcommand
 
 
 def check_file(p):

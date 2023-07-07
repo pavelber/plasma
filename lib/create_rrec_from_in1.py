@@ -113,11 +113,11 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                             config = add_one_to_config(last_config_wo_one_electron(config_1, config_2))
                             if remove_num_electrones(config) not in supported_configs:
                                 continue
-                            next_levels = filter(lambda x:
+                            next_levels = list(filter(lambda x:
                                                  (x[2][-1] == '0' and
                                                   add_one_to_config(x[1]) == config) or
                                                  add_one_to_config(x[2]) == config,
-                                                 next_sp_levels)
+                                                 next_sp_levels))
                         sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
                         # print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
                         #    next_sn) + " " + config)
@@ -125,17 +125,19 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                         for lvl in next_levels:
                             stat_weight = lvl[5]
                             relative_weight = stat_weight / sum_of_stat_weights
-                            print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
-                                next_sn) + " level " + str(
-                                lvl[0]) + " with weight " + str(relative_weight))
+                            # print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
+                            #    next_sn) + " level " + str(
+                            #    lvl[0]) + " with weight " + str(relative_weight))
 
-                            o_f.write("%4s  %4s\n" % (level_num, lvl[0],))
+                            lvl_to = lvl[0]
+                            o_f.write("%4s  %4s\n" % (level_num, lvl_to,))
                             bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0\n" %
-                                         (s_n, level[0], next_sn, lvl[0], relative_weight))
-                            compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
-                                                relative_weight,
-                                                o_f,
-                                                False)
+                                         (s_n, level[0], next_sn, lvl_to, relative_weight))
+                            with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, level_num, lvl_to)), "w") as f_data:
+                                compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
+                                                    relative_weight,
+                                                    o_f, f_data,
+                                                    False)
                             o_f.write("--\n")
 
 

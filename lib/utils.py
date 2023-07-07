@@ -1,10 +1,12 @@
 import csv
+import http.client
+import mimetypes
 import os
 import shutil
 import sys
 from shutil import copy
 from subprocess import Popen, PIPE
-import httplib, mimetypes
+
 
 def error(s):
     sys.stderr.write(s + '\n')
@@ -65,7 +67,7 @@ def read_table():
     if path == "" or path is None:
         path = "."
     table_file = path + os.path.sep + "PeriodicTable.csv"
-    with open(table_file, 'rb') as infile:
+    with open(table_file, 'r') as infile:
         reader = csv.reader(infile)
         headers = next(reader)[0:]
         for row in reader:
@@ -77,7 +79,6 @@ def read_table():
 def skip_n_lines(f, num):
     for _ in range(num):
         next(f)
-
 
 
 def skip_lines(f):
@@ -205,14 +206,16 @@ def post_multipart(host, selector, fields, files):
     Return the server's response page.
     """
     content_type, body = encode_multipart_formdata(fields, files)
-    h = httplib.HTTPS(host)
-    h.putrequest('POST', selector)
-    h.putheader('content-type', content_type)
-    h.putheader('content-length', str(len(body)))
-    h.endheaders()
-    h.send(body)
-    errcode, errmsg, headers = h.getreply()
-    return errcode, errmsg, h.file.read()
+    with http.client.HTTPSConnection(host) as h:
+        h.putrequest('POST', selector)
+        h.putheader('content-type', content_type)
+        h.putheader('content-length', str(len(body)))
+        h.endheaders()
+        h.send(body)
+        response = h.getresponse()
+        # TODO: Make download working
+
+        return response.status, response.errmsg, response.read()
 
 
 def encode_multipart_formdata(fields, files):

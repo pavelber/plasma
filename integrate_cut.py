@@ -43,3 +43,5 @@ with open(rrec_path, "r") as rrec:
         d = float(parts[6])
         cut = integrate(a, b, c, d, 1.0, 1000.0, 1.0)
         print("%4s%4s%4s%10.2f" % (sp, level1, level2, cut))
+
+# TODO: for removed create a graph using rrec and for this formula and RREC and compare

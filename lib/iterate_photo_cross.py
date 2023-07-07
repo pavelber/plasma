@@ -23,7 +23,7 @@ def get_num_of_electrons_last_level(c):
         return int(last_letter)  # TODO: assumption - single digit!!!!!
 
 
-def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file,
+def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file, f_data,
             alternate_sigma_computation):
     e = 2 * e_n0l0
     step = 2 * e_n0l0
@@ -40,11 +40,12 @@ def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_
                     (1.0 / math.pow(u + p4[last_level_without_num], 7.0 / 2.0 + l0)) * stat_weights_part
 
         out_file.write(" %.3e   %.3e   %.3e\n" % (e_relative, sigma, e))
+        f_data.write(" %.3e,%.3e,%.3e\n" % (e_relative, sigma, e))
         e = e + step
         n = n + 1
 
 
-def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, alternate_sigma_computation=False):
+def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, f_data, alternate_sigma_computation=False):
     last_level = config[-1]
     last_level_without_num = last_level[0:2]
     n0 = get_n0(last_level)
@@ -60,9 +61,8 @@ def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, alt
         z_tilda = z_eff + (z_eff - z)
     else:
         z_tilda = z_n - n_bound + n_nl_greater_n0l0
-    iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file,
+    iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file, f_data,
             alternate_sigma_computation)
-
 
 p1 = {
     '1s': 4.667e-1,
@@ -138,11 +138,11 @@ p4 = {
 
 supported_configs = p1.keys()
 
-#
-# config = ['2s2', '2p6']
-#
-# e_n0l0 = 21.6  # per spectr number- 5th column in in1.inp header table - level energy (>0)
-# z_n = 10  # Ne
-# z = 1  # spectr number
-#
-# compute_and_iterate(config, e_n0l0, z_n, z)
+    #
+    # config = ['2s2', '2p6']
+    #
+    # e_n0l0 = 21.6  # per spectr number- 5th column in in1.inp header table - level energy (>0)
+    # z_n = 10  # Ne
+    # z = 1  # spectr number
+    #
+    # compute_and_iterate(config, e_n0l0, z_n, z)

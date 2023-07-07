@@ -27,7 +27,7 @@ def format_configuration(configuration, max_len):
     configuration_split = configuration.replace(" ", ".").split(".")
     s = " ".join(configuration_split)
     if len(s) > max_len:
-        return filter(lambda c: c[0:1] != '(', configuration_split)
+        return list(filter(lambda c: c[0:1] != '(', configuration_split))
     else:
         return configuration_split
 
@@ -53,7 +53,7 @@ def remove_braces(param):
 
 
 def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
-    with open(spec_num_file, "rb") as inf:
+    with open(spec_num_file, "r") as inf:
         headers = inf.readline().strip().split(',')
         eV_column = headers.index("Level (eV)")
         n = 1
@@ -84,7 +84,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                     term = term[0:6]
 
                 if configuration.startswith(elem):
-                    #outf.write("\n")
+                    # outf.write("\n")
                     return energy
                 else:
                     if energy_limits > float(energy_str):
@@ -96,7 +96,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
 
 
 def read_section(elem, spec_num_file):
-    with open(spec_num_file, "rb") as inf:
+    with open(spec_num_file, "r") as inf:
         headers = inf.readline().split(",")
         index = 0
         while index < len(headers):
@@ -114,7 +114,7 @@ def read_section(elem, spec_num_file):
 
 
 def read_section_pass2(elem, spec_num_file, energy, max_energy):
-    with open(spec_num_file, "rb") as inf:
+    with open(spec_num_file, "r") as inf:
         headers = inf.readline().split(",")
         index = 0
         while index < len(headers):
@@ -165,15 +165,15 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
 def create_in1_inp_from_nist(dir, elem, energy_limits):
     print("Create IN1 from NIST in " + dir)
     nist_dir = os.path.join(dir, "NIST")
-    with open(os.path.join(dir, "IN1.INP"), 'wb') as in1_inp:
-        with open(os.path.join(dir, "IN1.csv"), 'wb') as in1_csv:
-            i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
+    with open(os.path.join(dir, "IN1.INP"), 'w') as in1_inp:
+        with open(os.path.join(dir, "IN1.csv"), 'w') as in1_csv:
+            i_spectro = sorted(list(map(lambda x: int(os.path.splitext(x)[0]),
                                    filter(lambda f:
                                           os.path.splitext(
                                               os.path.basename(f))[0].isdigit() and
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.csv',
-                                          os.listdir(nist_dir))))
+                                          os.listdir(nist_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
 
