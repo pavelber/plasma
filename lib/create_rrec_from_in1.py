@@ -119,9 +119,12 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                                                  add_one_to_config(x[2]) == config,
                                                  next_sp_levels))
                         sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
-                        # print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
-                        #    next_sn) + " " + config)
-                        # print("*** Got levels " + str(next_levels))
+                        #print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(next_sn) + " " + config,end="")
+                        #print("*** Got levels " + str(next_levels))
+                        if len(next_levels) ==0:
+                            print(" <NO LEVELS FOUND>")
+                        else:
+                            print()
                         for lvl in next_levels:
                             stat_weight = lvl[5]
                             relative_weight = stat_weight / sum_of_stat_weights

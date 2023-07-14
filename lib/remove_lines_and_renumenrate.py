@@ -78,6 +78,7 @@ def remove_large(file_name, num_skip_lines, columns, abs_max_value):
     shutil.copyfile(file_name, backup_file)
     after_remove_file = file_name + ".removed-large"
     count = 0
+    removed = 0
     with open(after_remove_file, "w") as fwrite:
         with open(file_name, "r") as f:
             for l in f:
@@ -94,11 +95,12 @@ def remove_large(file_name, num_skip_lines, columns, abs_max_value):
                     if copy_line:
                         fwrite.write(l)
                     else:
-                        print(l)
+                        removed +=1
 
                 count += 1
 
     shutil.copyfile(after_remove_file, file_name)
+    return removed
 
 
 def read_used_lines(file_name, num_skip_lines, sp_num_levels_columns, used_lines):
@@ -197,8 +199,7 @@ def remove_unused_lines_and_renumerate(elem_dir):
     remove_lines_from_in1_inp(in1_path, used_lines)
     remove_in_file(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
                                   Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], used_lines)
-    remove_in_file(excit_path, 3, [Level(sp_num_fun(0, 3), Field(4, 9)), Level(sp_num_fun(0, 3), Field(10, 15))],
-                   used_lines)
+
     remove_in_file(spectr_path, 1, [Level(sp_num_fun(0, 3), Field(4, 7))], used_lines)
     remove_in_file(bcfp_path, 2, [Level(sp_num_fun(0, 5), Field(6, 10)), Level(sp_num_fun(11, 15), Field(16, 20))],
                    used_lines)
@@ -212,4 +213,5 @@ def remove_unused_lines_and_renumerate(elem_dir):
     replace_in_file(bcfp_path, 2, [Level(sp_num_fun(0, 5), Field(6, 10)), Level(sp_num_fun(11, 15), Field(16, 20))],
                     replaces)
 
-    remove_large(rrec_path, 0, [4, 5], 1.0e-4)
+    return replaces
+

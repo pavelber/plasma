@@ -10,7 +10,8 @@ from lib.create_rrec_from_in1 import create_rrec_from_in1, create_rrec_for_bad_l
 from lib.download_parse_pa_uky import download_piter
 from lib.env import env
 from lib.nist import download_nist_for_in1
-from lib.remove_lines_and_renumenrate import read_used_lines, remove_unused_lines_and_renumerate
+from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate, remove_large
+from lib.update_fits import create_new_fits_for_rrec2, create_new_fits_for_rrec3
 from lib.utils import error, runcommand
 
 
@@ -151,8 +152,8 @@ bcfp_path = os.path.join(elem_dir, "BFCP.INP")
 with open(rrec_path, "w") as rrec:
     for sp in sp_nums:
         sp_path = os.path.join(elem_dir, str(sp))
-        rrec_path = os.path.join(sp_path, "RREC.INP")
-        with open(rrec_path, "r") as sp_rrec:
+        rrec_sp = os.path.join(sp_path, "RREC.INP")
+        with open(rrec_sp, "r") as sp_rrec:
             for line in sp_rrec:
                 rrec.write(line)
 
@@ -169,4 +170,25 @@ for sp in sp_nums:
 # check_and_fix_rr(elem_dir)
 # check_and_fix_old_rr(elem_dir)
 
-remove_unused_lines_and_renumerate(elem_dir)
+replaces = remove_unused_lines_and_renumerate(elem_dir)
+
+
+def invert_replaces(replaces):
+    new_to_old = {}
+    for sp_num in replaces:
+        n_o = {}
+        per_sp_num = replaces[sp_num]
+        for old in per_sp_num:
+            n_o[per_sp_num[old]] = old
+        new_to_old[sp_num] = n_o
+    return new_to_old
+
+
+from_new_to_old = invert_replaces(replaces)
+create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old)
+#create_new_fits_for_rrec3(elem_dir)
+removed = remove_large(rrec_path, 0, [4, 5], 1.0e-4)
+print("Removed " + str(removed) + "from " + rrec_path)
+file_name = os.path.join(elem_dir, "RREC-fits.INP")
+removed = remove_large(file_name, 0, [4, 5], 1.0e-4)
+print("Removed " + str(removed) + "from " + file_name)

@@ -1,7 +1,7 @@
 import csv
 import os
 
-from lib.levels_string import levels_order, level_to_electrons
+from lib.levels_string import find_previous
 from lib.utils import read_table, error
 
 
@@ -37,17 +37,6 @@ def format_term(s):
     return p[-1]
 
 
-def find_previous(c):
-    if c[-1].isdigit() and c[-2].isdigit():
-        config_wo_electrons = c[0:-2]
-    elif c[-1].isdigit():
-        config_wo_electrons = c[0:-1]
-    else:
-        config_wo_electrons = c
-    index = levels_order.index(config_wo_electrons)
-    return levels_order[index + 1] + str(level_to_electrons[levels_order[index + 1]])
-
-
 def remove_braces(param):
     return param.replace("(", "").replace(")", "")
 
@@ -66,10 +55,12 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 if len(configuration) == 0:
                     continue
                 configs = format_configuration(configuration, 10)
+                configs = list(filter(lambda x: len(x) > 0, configs))
                 if len(configs) == 1:
                     configs = [find_previous(configs[0]), configs[0]]
-                configs[0] = add_one_to_config(configs[0])
-                configs[1] = add_one_to_config(configs[1])
+                for i in range(len(configs)):
+                    configs[i] = add_one_to_config(configs[i])
+
                 term = format_term(nist_strip_csv_lib(parts[1]))
                 g = nist_strip_csv_lib(parts[3])
                 energy_str = clean_num(nist_strip_csv_lib(parts[eV_column]))
@@ -89,7 +80,7 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 else:
                     if energy_limits > float(energy_str):
                         outf.write("%4s %4s %-8s%3s%15.3f    0.00e+00 0.00e+00  % 6d\n" % (
-                            configs[0], remove_braces(configs[1]), term, g, energy, n))
+                            remove_braces(configs[-2]), remove_braces(configs[-1]), term, g, energy, n))
                         data_file.write("%s,%d,%s\n" % (spec_num, n, energy_str))
                         n = n + 1
                         prev_energy_str = energy_str
@@ -168,12 +159,12 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
     with open(os.path.join(dir, "IN1.INP"), 'w') as in1_inp:
         with open(os.path.join(dir, "IN1.csv"), 'w') as in1_csv:
             i_spectro = sorted(list(map(lambda x: int(os.path.splitext(x)[0]),
-                                   filter(lambda f:
-                                          os.path.splitext(
-                                              os.path.basename(f))[0].isdigit() and
-                                          os.path.splitext(os.path.basename(f))[
-                                              1] == '.csv',
-                                          os.listdir(nist_dir)))))
+                                        filter(lambda f:
+                                               os.path.splitext(
+                                                   os.path.basename(f))[0].isdigit() and
+                                               os.path.splitext(os.path.basename(f))[
+                                                   1] == '.csv',
+                                               os.listdir(nist_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
 

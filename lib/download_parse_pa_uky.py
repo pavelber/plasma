@@ -50,7 +50,7 @@ def download_piter(elem, piter_dir):
 def download_piter_one_spnum(file, elem, sp_num_roman):
     values = {
         'elmion': elem + ' ' + sp_num_roman,
-        'wavl': '1-9000',
+        'wavl': '1-20000',
         'wave': 'Angstrom',
         'air': 'Vacuum',
         'radv': '',
