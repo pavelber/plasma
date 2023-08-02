@@ -61,6 +61,9 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 for i in range(len(configs)):
                     configs[i] = add_one_to_config(configs[i])
 
+                # for C
+                if spec_num == "6" and configs[0][0] == "7":
+                    break
                 term = format_term(nist_strip_csv_lib(parts[1]))
                 g = nist_strip_csv_lib(parts[3])
                 energy_str = clean_num(nist_strip_csv_lib(parts[eV_column]))
@@ -156,6 +159,7 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
 def create_in1_inp_from_nist(dir, elem, energy_limits):
     print("Create IN1 from NIST in " + dir)
     nist_dir = os.path.join(dir, "NIST")
+    table = read_table()
     with open(os.path.join(dir, "IN1.INP"), 'w') as in1_inp:
         with open(os.path.join(dir, "IN1.csv"), 'w') as in1_csv:
             i_spectro = sorted(list(map(lambda x: int(os.path.splitext(x)[0]),
@@ -166,7 +170,6 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
                                                    1] == '.csv',
                                                os.listdir(nist_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
-            table = read_table()
 
             spec_number_energy = {}
             levels_data = {}

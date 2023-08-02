@@ -1,7 +1,7 @@
 import os
 
 from lib.create_in1_from_nist import create_in1_inp_from_nist
-from lib.create_spectr_from_piter_match_energy import create_spectr_from_piter_match_energy
+from lib.create_spectr_from_piter_match_energy import create_spectr_and_excit_from_piter_match_energy
 from lib.download_parse_pa_uky import download_piter
 from lib.nist import download_nist_for_in1
 
@@ -19,5 +19,5 @@ def parse_energy_limits(limits_str):
 def create_in1_from_databases(out_dir, elem, energy_limits):
 
     sp_nums = create_in1_inp_from_nist(out_dir, elem, energy_limits)
-    create_spectr_from_piter_match_energy(out_dir, elem)
+    create_spectr_and_excit_from_piter_match_energy(out_dir, elem)
     return sp_nums

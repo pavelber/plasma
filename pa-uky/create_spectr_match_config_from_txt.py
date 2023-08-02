@@ -69,7 +69,7 @@ def create_header_ecxit(table, elem, file):
 
 def write_spectr_section(outf, spec_num, config_table, spec_num_file):
     with open(spec_num_file, "rb") as inf:
-        skip_n_lines(inf, 18)
+        #skip_n_lines(inf, 18)
         for line in inf:
             if not line.startswith('***'):
                 parts = line.strip().split('|')

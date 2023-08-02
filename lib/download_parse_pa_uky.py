@@ -1,4 +1,3 @@
-import http.client
 # https://www.pa.uky.edu/~peter/newpage/index.html
 # https://www.pa.uky.edu/~peter/newpage/cgi-bin/qlines.cgi
 # wavl: 1-9000
@@ -29,16 +28,20 @@ import http.client
 # mode: Plain
 # mlin: 5000
 import os
-import urllib
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from lib.roman import roman_to_int
 
-sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+LINES_SKIP = 18
+
+#sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI']
 
 
 def download_piter(elem, piter_dir):
     if not os.path.exists(piter_dir):
-         os.mkdir(piter_dir)
+        os.mkdir(piter_dir)
     for sp_num in sp_nums_to_use:
         outf = os.path.join(piter_dir, str(roman_to_int(sp_num)) + '.txt')
         download_piter_one_spnum(outf, elem, sp_num)
@@ -48,9 +51,19 @@ def download_piter(elem, piter_dir):
 
 
 def download_piter_one_spnum(file, elem, sp_num_roman):
+    start_wave = 1
+    end_wave = 20000
+    step_wave = 2000
+    with open(file, "wb") as piter:
+        while start_wave < end_wave:
+            download_piter_one_spnum_wavelengts(piter, elem, sp_num_roman, start_wave, start_wave + step_wave)
+            start_wave += step_wave
+
+
+def download_piter_one_spnum_wavelengts(piter, elem, sp_num_roman, wavel_from, wavel_to):
     values = {
         'elmion': elem + ' ' + sp_num_roman,
-        'wavl': '1-20000',
+        'wavl': '%d-%d' % (wavel_from, wavel_to),
         'wave': 'Angstrom',
         'air': 'Vacuum',
         'radv': '',
@@ -64,23 +77,22 @@ def download_piter_one_spnum(file, elem, sp_num_roman):
         'elo': '100000',
         'ener': 'eV',
         'ehi': '100000',
-        'nmax': '',
+        'nmax': '6',
         'type': 'All',
         'auto': 'Show',
         'jval': 'usej',
         'tptype': 'as_a',
         'mode': 'Plain',
-        'mlin': '50000'
+        'mlin': '50000',
+        "form": ['spec', 'type', 'term', 'angm', 'ener', 'prob'],
     }
-
-    params = urllib.urlencode(values) + '&form=spec&form=type&form=term&form=angm&form=ener&form=prob'
+    data = urlencode(values, doseq=True).encode()
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-    conn = httplib.HTTPSConnection("www.pa.uky.edu")
-    conn.request("POST", "/~peter/newpage/cgi-bin/qlines.cgi", params, headers)
-    response = conn.getresponse()
-    print(response.status, response.reason)
+    req = Request("https://linelist.pa.uky.edu/newpage/cgi-bin/qlines.cgi", data=data,
+                  headers=headers, method="POST")
+    with urlopen(req, timeout=5) as response:
+        print(sp_num_roman, wavel_from, wavel_to, response.status, response.reason)
 
-    data = response.read()
-    with open(file, "wb") as piter:
-        piter.write(data)
-    conn.close()
+        for i in range(LINES_SKIP):
+            response.readline()
+        piter.write(response.read())

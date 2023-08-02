@@ -1,7 +1,7 @@
-import http.client
 import os
 import ssl
-import urllib
+from urllib.parse import urlencode
+from urllib.request import urlopen, Request
 
 # For IN1.INP
 # curl 'https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum=Fe+I&units=1&format=2&output=0&page_size=100&multiplet_ordered=1&conf_out=on&term_out=on&level_out=on&j_out=on&g_out=on&temp=&submit=Retrieve+Data' \
@@ -23,7 +23,8 @@ import urllib
 #   --compressed
 from lib.roman import roman_to_int
 
-sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI']
+#sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 
 def download_nist_for_in1(element, nist_dir):
@@ -35,7 +36,7 @@ def download_nist_for_in1(element, nist_dir):
             'spectrum': element + ' ' + sp_num
         }
 
-        params = urllib.urlencode(
+        params = urlencode(
             values) + '&de=0&units=1&format=2&output=0&page_size=100&multiplet_ordered=1&conf_out=on&term_out=on&level_out=on&j_out=on&g_out=on&temp=&submit=Retrieve+Data'
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -55,15 +56,14 @@ def download_nist_for_in1(element, nist_dir):
             'sec-gpc': '1',
 
         }
-        conn = httplib.HTTPSConnection(host="physics.nist.gov", timeout=5, context=ssl._create_unverified_context())
-        conn.request("GET", "/cgi-bin/ASD/energy1.pl" + '?' + params, "", headers)
-        response = conn.getresponse()
-        print(response.status, response.reason)
-        #TODO: rewrite download for urlib
+        req = Request("https://physics.nist.gov/cgi-bin/ASD/energy1.pl?" + params,
+                      headers=headers, )
+        with urlopen(req, timeout=5) as f:
+            print(f.status, f.reason)
 
-        data = response.read()
-        outf = os.path.join(nist_dir, str(roman_to_int(sp_num)) + '.csv')
-        print(outf)
-        with open(outf, 'wb') as out:
-            out.write(data)
-        conn.close()
+            data = f.read()
+            outf = os.path.join(nist_dir, str(roman_to_int(sp_num)) + '.csv')
+            print(outf)
+            with open(outf, 'wb') as out:
+                out.write(data)
+
