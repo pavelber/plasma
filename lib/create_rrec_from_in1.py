@@ -1,7 +1,7 @@
 import os
 from os.path import join, exists
 
-from lib.iterate_photo_cross import compute_and_iterate, supported_configs
+from lib.iterate_photo_cross import compute_and_iterate, supported_configs, p1
 from lib.utils import error
 
 
@@ -15,9 +15,10 @@ def read_n0l0(in1, sp_nums):
     for _ in sp_nums:
         line = in1.readline()
         l = line.split()
-        if float(l[4]) == 0.0:
-            break
-        sp_num_to_n0l0[l[0]] = float(l[4])
+        if len(l) < 5:
+            sp_num_to_n0l0[l[0]] = 0.0
+        else:
+            sp_num_to_n0l0[l[0]] = float(l[4])
     return sp_num_to_n0l0
 
 
@@ -49,7 +50,7 @@ def read_sp_nums(n0l0, in1):
             process = True
         elif line.startswith("Auto"):
             process = False
-        elif process and len(l) > 7:
+        elif process and len(l) == 8:
             level_num = int(l[7])
             config_1 = l[0]
             config_2 = l[1]
@@ -60,10 +61,21 @@ def read_sp_nums(n0l0, in1):
                 error("Less than 0 e_n0l0")
             level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
             sp_num_to_level[sp_num].append(level)
+        elif process and len(l) == 7:
+            level_num = int(l[6])
+            config_1 = ""
+            config_2 = l[0]
+            stat_weight = float(l[2])
+            e = float(l[3])
+            e_n0l0 = n0l0[sp_num] - e
+            if e_n0l0 < 0:
+                error("Less than 0 e_n0l0")
+            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
+            sp_num_to_level[sp_num].append(level)
     return sp_num_to_level
 
 
-def add_one_to_config(c):
+def add_digit(c):
     if not c[-1].isdigit():
         return c + "1"
     else:
@@ -83,6 +95,7 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
         skip_n_lines(in1_inp, 12)
         n0l0 = read_n0l0(in1_inp, sp_nums)
         levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
+    levels_by_sp_num["7"] = []  # TODO C
     with open(join(out_dir, "BFCP.INP"), "w") as bfcp_f:
         bfcp_f.write("    Z  lvl#  Z+1 lvl#      Coefficient	0 0 0\n")
         bfcp_f.write("--------------------------------------\n")
@@ -95,53 +108,55 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                 levels = levels_by_sp_num[str(s_n)]
                 next_sn = s_n + 1
                 str_next_sn = str(next_sn)
-                if next_sn in sp_nums:
-                    next_sp_levels = levels_by_sp_num[str_next_sn]
+                if next_sn in sp_nums or next_sn == 7:  # TODO!!! C
                     for level in levels:
                         level_num = level[0]
                         config_1 = level[1]
                         config_2 = level[2]
+
                         e = level[3]
                         e_n0l0 = level[4]
 
-                        if remove_num_electrones(config_2) not in supported_configs:
+                        if remove_num_electrones(config_2) not in p1.keys():
                             continue
 
                         if next_sn == atomic_number + 1:
                             next_levels = [(1, None, None, None, None, 1.0)]
                         else:
-                            config = add_one_to_config(last_config_wo_one_electron(config_1, config_2))
-                            if remove_num_electrones(config) not in supported_configs:
+                            next_sp_levels = levels_by_sp_num[str_next_sn]
+
+                            config = add_digit(last_config_wo_one_electron(config_1, config_2))
+                            if remove_num_electrones(config) not in p1.keys():
                                 continue
                             next_levels = list(filter(lambda x:
-                                                 (x[2][-1] == '0' and
-                                                  add_one_to_config(x[1]) == config) or
-                                                 add_one_to_config(x[2]) == config,
-                                                 next_sp_levels))
+                                                      (x[2][-1] == '0' and
+                                                       add_digit(x[1]) == config) or
+                                                      add_digit(x[2]) == config,
+                                                      next_sp_levels))
                         sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
-                        #print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(next_sn) + " " + config,end="")
-                        #print("*** Got levels " + str(next_levels))
-                        if len(next_levels) ==0:
+                        print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
+                            next_sn) + " " + config, end="")
+                        print("*** Got levels " + str(next_levels))
+                        if len(next_levels) == 0:
                             print(" <NO LEVELS FOUND>")
                         else:
-                            print()
-                        for lvl in next_levels:
-                            stat_weight = lvl[5]
-                            relative_weight = stat_weight / sum_of_stat_weights
-                            # print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
-                            #    next_sn) + " level " + str(
-                            #    lvl[0]) + " with weight " + str(relative_weight))
+                            for lvl in next_levels:
+                                stat_weight = lvl[5]
+                                relative_weight = stat_weight / sum_of_stat_weights
+                                # print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
+                                #    next_sn) + " level " + str(
+                                #    lvl[0]) + " with weight " + str(relative_weight))
 
-                            lvl_to = lvl[0]
-                            o_f.write("%4s  %4s\n" % (level_num, lvl_to,))
-                            bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0\n" %
-                                         (s_n, level[0], next_sn, lvl_to, relative_weight))
-                            with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, level_num, lvl_to)), "w") as f_data:
-                                compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
-                                                    relative_weight,
-                                                    o_f, f_data,
-                                                    False)
-                            o_f.write("--\n")
+                                lvl_to = lvl[0]
+                                o_f.write("%4s  %4s\n" % (level_num, lvl_to,))
+                                bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0\n" %
+                                             (s_n, level[0], next_sn, lvl_to, relative_weight))
+                                with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, level_num, lvl_to)), "w") as f_data:
+                                    compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
+                                                        relative_weight,
+                                                        o_f, f_data,
+                                                        False)
+                                o_f.write("--\n")
 
 
 def create_rrec_for_bad_lines(in1_inp_path, out_dir, sp_nums, s_n, bad_lines):
@@ -186,13 +201,14 @@ def create_rrec_for_bad_lines(in1_inp_path, out_dir, sp_nums, s_n, bad_lines):
                 if next_sn == atomic_number + 1:
                     next_levels = [(1, None, None, None, None, 1.0)]
                 else:
-                    config = add_one_to_config(last_config_wo_one_electron(config_1, config_2))
+                    config = add_digit(last_config_wo_one_electron(config_1, config_2))
                     if remove_num_electrones(config) not in supported_configs:
                         continue
+
                     next_levels = filter(lambda x:
                                          (x[2][-1] == '0' and
-                                          add_one_to_config(x[1]) == config) or
-                                         add_one_to_config(x[2]) == config,
+                                          add_digit(x[1]) == config) or
+                                         add_digit(x[2]) == config,
                                          next_sp_levels)
                 sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
                 for lvl in next_levels:

@@ -110,6 +110,8 @@ def find_previous(c):
     else:
         config_wo_electrons = c
     index = levels_order.index(config_wo_electrons)
-    return levels_order[index + 1] + str(level_to_electrons[levels_order[index + 1]])
+    if index == 0:
+        return ""
+    return levels_order[index - 1] + str(level_to_electrons[levels_order[index - 1]])
 
 # 1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 4f14 5d10 6s2 6p6 5f3 6d1 7s2

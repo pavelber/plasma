@@ -80,11 +80,11 @@ def download_piter_one_spnum_wavelengts(piter, elem, sp_num_roman, wavel_from, w
         'nmax': '6',
         'type': 'All',
         'auto': 'Show',
-        'jval': 'usej',
+        'jval': 'useg',
         'tptype': 'as_a',
         'mode': 'Plain',
         'mlin': '50000',
-        "form": ['spec', 'type', 'term', 'angm', 'ener', 'prob'],
+        "form": ['spec', 'type', 'term', 'angm', 'ener', 'prob','conf'],
     }
     data = urlencode(values, doseq=True).encode()
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}

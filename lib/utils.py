@@ -247,3 +247,19 @@ def encode_multipart_formdata(fields, files):
 
 def get_content_type(filename):
     return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+
+
+def normalize_energy(energy):
+    if energy[-1] == '?':
+        energy = energy[:-1]
+    # return str(round(float(energy), 3))
+    dot = energy.index(".")
+    return energy[0: dot + 4]
+
+def add_one_to_config_in_missing(c):
+    if c == "":
+        return c
+    elif not c[-1].isdigit():
+        return c + "1"
+    else:
+        return c

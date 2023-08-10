@@ -1,6 +1,6 @@
 import os
 
-from lib.utils import read_table, skip_n_lines, error
+from lib.utils import read_table, skip_n_lines, error, normalize_energy
 
 
 def nist_strip(s):
@@ -37,11 +37,6 @@ def read_energies(dir):
             eng[sp_n][rounded] = level
     return eng
 
-
-def normalize_energy(energy):
-    if energy[-1] == '?':
-        energy = energy[:-1]
-    return str(round(float(energy), 3))
 
 
 def create_header(table, elem, file):

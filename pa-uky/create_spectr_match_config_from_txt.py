@@ -1,11 +1,7 @@
 import os
 import sys
 
-from lib.utils import error, read_table, skip_n_lines
-
-
-def normalize_energy(energy):
-    return str(round(float(energy), 4))
+from lib.utils import error, read_table, skip_n_lines, normalize_energy
 
 
 def nist_strip(s):
