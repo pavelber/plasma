@@ -7,7 +7,8 @@ from lib.check_and_fix import run_check_old_rr, run_fix_old_rr, copy_checks, run
     run_check_rr_return_lines
 from lib.create_in1_from_databases import create_in1_from_databases, parse_energy_limits
 from lib.create_rrec_from_in1 import create_rrec_from_in1
-from lib.download_parse_pa_uky import download_piter
+from lib.download_parse_pa_uky_levels import download_piter_levels
+from lib.download_parse_pa_uky_lines import download_piter_lines
 from lib.env import env
 from lib.nist import download_nist_for_in1
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate, remove_large
@@ -119,23 +120,23 @@ elem_dir = os.path.join(out_dir, elem)
 if not os.path.exists(elem_dir):
     os.makedirs(elem_dir)
 my_dir = dirname(abspath(__file__))
-nist_downloaded = os.path.join(my_dir, "db", elem, "NIST")
+levels_downloaded = os.path.join(my_dir, "db", elem, "levels")
 
-piter_downloaded = os.path.join(my_dir, "db", elem, "piter")
+lines_downloaded = os.path.join(my_dir, "db", elem, "lines")
 
 if download:
-    download_nist_for_in1(elem, nist_downloaded)
-    download_piter(elem, piter_downloaded)
-nist = os.path.join(elem_dir, "NIST")
-if os.path.exists(nist):
-    shutil.rmtree(nist)
-piter = os.path.join(elem_dir, "piter")
+    download_piter_levels(elem, levels_downloaded)
+    download_piter_lines(elem, lines_downloaded)
+levels_dir = os.path.join(elem_dir, "levels")
+if os.path.exists(levels_dir):
+    shutil.rmtree(levels_dir)
+lines_dir = os.path.join(elem_dir, "lines")
 
-if os.path.exists(piter):
-    shutil.rmtree(piter)
-shutil.copytree(nist_downloaded, nist)
+if os.path.exists(lines_dir):
+    shutil.rmtree(lines_dir)
+shutil.copytree(levels_downloaded, levels_dir)
+shutil.copytree(lines_downloaded, lines_dir)
 
-shutil.copytree(piter_downloaded, piter)
 sp_nums = create_in1_from_databases(elem_dir, elem, energy_limits)
 in1 = os.path.join(elem_dir, "IN1.INP")
 create_rrec_from_in1(in1, elem_dir, sp_nums)

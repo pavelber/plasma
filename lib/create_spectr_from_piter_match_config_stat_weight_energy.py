@@ -87,23 +87,27 @@ def write_spectr_section_from_piter(outf, spec_num, config_table, spec_num_file)
                     key_k = (config_k, stat_w_k)
                     key_i = (config_i, stat_w_i)
                     if key_k in config_table[spec_num] and key_i in config_table[spec_num]:
-                        levels_k = list(filter(lambda x: abs(x[1] - ek) < 5e-3, config_table[spec_num][key_k]))
-                        levels_i = list(filter(lambda x: abs(x[1] - ei) < 5e-3, config_table[spec_num][key_i]))
-                        if len(levels_i) == 1 and len(levels_k):
-                            up_level = levels_k[0]
-                            low_level = levels_i[0]
-                            outf.write("%3s %3s %3s 1 %8.3f %8.3e %8.3e\n" % (
-                                spec_num, up_level, low_level, float(wave), float(eins), float(osc)))
-                            lines.append((low_level, up_level, osc))
-                            stat_good+=1
-                        else:
-                            stat_bad+=1
-                            #print("Not found " + line)
+                        #    levels_k = list(filter(lambda x: abs(x[1] - ek) < 5e-3, config_table[spec_num][key_k]))
+                        #    levels_i = list(filter(lambda x: abs(x[1] - ei) < 5e-3, config_table[spec_num][key_i]))
+                        levels_k = min(config_table[spec_num][key_k], key=lambda x: abs(x[1] - ek))
+                        levels_i = min(config_table[spec_num][key_i], key=lambda x: abs(x[1] - ei))
+                        #   levels_k =  config_table[spec_num][key_k]
+                        #   levels_i =  config_table[spec_num][key_i]
+                 #       if len(levels_i) == 1 and len(levels_k) == 1:
+                        up_level = levels_k
+                        low_level = levels_i
+                        outf.write("%3s %3s %3s 1 %8.3f %8.3e %8.3e\n" % (
+                            spec_num, up_level, low_level, float(wave), float(eins), float(osc)))
+                        lines.append((low_level, up_level, osc))
+                        stat_good += 1
+                  #      else:
+                   #         stat_bad += 1
+                            # print("Not found " + line)
                     else:
-                        stat_bad+=1
-                        #print("Not found " + line)
-        print("C "+dec_to_roman(int(spec_num))+"   нашли:   "+str(stat_good)+",   не нашли:  "+str(stat_bad))
-        return lines
+                        stat_bad += 1
+                # print("Not found " + line)
+    print("C " + dec_to_roman(int(spec_num)) + "   нашли:   " + str(stat_good) + ",   не нашли:  " + str(stat_bad))
+    return lines
 
 
 def write_excit_section(outf, spec_num, lines):

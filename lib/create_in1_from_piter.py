@@ -1,18 +1,10 @@
-import csv
 import os
 
-from lib.utils import read_table, error, add_one_to_config_in_missing
-
-
-def nist_strip_csv_lib(s):
-    if s.startswith('="'):
-        return s[2:-1].strip()
-    else:
-        return s.strip()
+from lib.utils import read_table, add_one_to_config_in_missing
 
 
 def clean_num(s):
-    return s.rstrip("?").strip('[]')
+    return s.rstrip("?").strip('[]').strip("+x")
 
 
 def format_configuration(configuration, max_len):
@@ -22,11 +14,6 @@ def format_configuration(configuration, max_len):
         return list(filter(lambda c: c[0:1] != '(', configuration_split))
     else:
         return configuration_split
-
-
-def format_term(s):
-    p = s.split(" ")
-    return p[-1]
 
 
 def remove_braces(param):
@@ -53,20 +40,15 @@ def extract_configs(spec_num, configuration):
     return configs
 
 
-def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits):
+def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
     with open(spec_num_file, "r") as inf:
-        headers = inf.readline().strip().split(',')
-        eV_column = headers.index("Level (eV)")
         n = 1
         outf.write(spec_num + '\n')
         prev_energy_str = None
-        for parts in csv.reader(inf, quotechar='"', delimiter=',',
-                                quoting=csv.QUOTE_ALL, skipinitialspace=True):
-            if not parts[0].startswith('=""' + elem):
-                configuration = nist_strip_csv_lib(parts[0])
-                if len(configuration) == 0:
-                    continue
-                configs = extract_configs(spec_num, configuration)
+        for line in inf:
+            parts = line.split()
+            if len(parts) == 5:
+                configs = normalize_config(parts[0])
                 configs_copy_for_csv = configs.copy()
                 if configs_copy_for_csv[0] == "":
                     configs_copy_for_csv.pop(0)
@@ -75,13 +57,16 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
 
                 configs_one_string = ".".join(configs_copy_for_csv)
 
+                if len(configs) == 1:
+                    configs.insert(0, "")
+
                 # for C
                 if spec_num == "6" and configs[1][0] == "7":
                     break
-                term = format_term(nist_strip_csv_lib(parts[1]))
-                g = nist_strip_csv_lib(parts[3])
-                energy_str = clean_num(nist_strip_csv_lib(parts[eV_column]))
-                energy = float(energy_str)
+                term = parts[1]
+                g = parts[2]
+                energy_str = parts[3]
+                energy = float(clean_num(energy_str))
                 energy_str = "%10.3f" % energy
 
                 if prev_energy_str is not None and float(energy_str) <= float(prev_energy_str):
@@ -90,65 +75,42 @@ def write_section(elem, outf, spec_num, spec_num_file, data_file, energy_limits)
                 if len(term) > 6:
                     term = term[0:6]
 
-                if configuration.startswith(elem):
-                    return energy
-                else:
-                    if should_include_level(energy, energy_limits, configs):
-                        outf.write("%4s %4s %-8s%3s%15.3f    0.00e+00 0.00e+00  % 6d\n" % (
-                            remove_braces(configs[-2]), remove_braces(configs[-1]), term, g, energy, n))
-                        data_file.write("%s,%d,%f,%s,%s\n" % (spec_num, n, energy,configs_one_string,g))
-                        n = n + 1
-                        prev_energy_str = energy_str
 
 
-def read_section(elem, spec_num_file):
+                if should_include_level(energy, energy_limits, configs):
+                    outf.write("%4s %4s %-8s%3s%15.3f    0.00e+00 0.00e+00  % 6d\n" % (
+                        remove_braces(configs[-2]), remove_braces(configs[-1]), term, g, energy, n))
+                    data_file.write("%s,%d,%f,%s,%s\n" % (spec_num, n, energy, configs_one_string, g))
+                    n = n + 1
+                    prev_energy_str = energy_str
+
+
+def normalize_config(conf):
+    m = list(map(lambda c: add_one_to_config_in_missing(c), filter(lambda c: c[0:1] != '(', conf.split("."))))
+    if len(m) == 3:
+        m.pop(0)
+    return m
+
+
+def count_levels(spec_num_file, max_energy):
     with open(spec_num_file, "r") as inf:
-        headers = inf.readline().split(",")
-        index = 0
-        while index < len(headers):
-            if headers[index] == 'Level (eV)':
-                break
-            index += 1
-        if index == len(headers):
-            error("Can't find energy column in headers " + str(headers) + " in file " + spec_num_file)
-        for parts in csv.reader(inf, quotechar='"', delimiter=',',
-                                quoting=csv.QUOTE_ALL, skipinitialspace=True):
-            # for line in inf:
-            if "Limit" in parts[1]:
-                level = float(clean_num(nist_strip_csv_lib(parts[index])))
-        return level
-
-
-def read_section_pass2(elem, spec_num, spec_num_file, energy, max_energy):
-    with open(spec_num_file, "r") as inf:
-        headers = inf.readline().split(",")
-        index = 0
-        while index < len(headers):
-            if headers[index] == 'Level (eV)':
-                break
-            index += 1
-        if index == len(headers):
-            error("Can't find energy column in headers " + str(headers) + " in file " + spec_num_file)
-
         levels = 0
-        ai_levels = 0
-        for parts in csv.reader(inf, quotechar='"', delimiter=',',
-                                quoting=csv.QUOTE_ALL, skipinitialspace=True):
+        for line in inf:
+            parts = line.split()
+            if len(parts) == 5:
+                level_energy = clean_num(parts[3])
+                configs = normalize_config(parts[0])
+                if should_include_level(level_energy, max_energy, configs):
+                    levels += 1
+        return levels, 0  # autoion levels = 0
 
-            # for line in inf:
-            if not parts[0].startswith('=""' + elem) and not parts[0].startswith('=""""'):
-                configuration = nist_strip_csv_lib(parts[0])
-                if len(configuration) == 0:
-                    continue
-                configs = extract_configs(spec_num, configuration)
 
-                level_energy = float(clean_num(nist_strip_csv_lib(parts[5])))
-                if should_include_level(energy, max_energy, configs):
-                    if level_energy < energy:
-                        levels += 1
-                    else:
-                        ai_levels += 1
-        return levels, ai_levels
+def find_ionization_potenzial(spec_num_file, max_energy):
+    with open(spec_num_file, "r") as inf:
+        for line in inf:
+            parts = line.split()
+            if parts[1] == "Limit":
+                return float(clean_num(parts[2]))
 
 
 def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data):
@@ -172,9 +134,9 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
             n, levels_data[n][0], levels_data[n][1], spec_number_energy[n], spec_number_energy[n]))
 
 
-def create_in1_inp_from_nist(dir, elem, energy_limits):
-    print("Create IN1 from NIST in " + dir)
-    nist_dir = os.path.join(dir, "NIST")
+def create_in1_inp_from_piter(dir, elem, energy_limits):
+    print("Create IN1 from Piter in " + dir)
+    levels_dir = os.path.join(dir, "levels")
     table = read_table()
     with open(os.path.join(dir, "IN1.INP"), 'w') as in1_inp:
         with open(os.path.join(dir, "IN1.csv"), 'w') as in1_csv:
@@ -183,27 +145,25 @@ def create_in1_inp_from_nist(dir, elem, energy_limits):
                                                os.path.splitext(
                                                    os.path.basename(f))[0].isdigit() and
                                                os.path.splitext(os.path.basename(f))[
-                                                   1] == '.csv',
-                                               os.listdir(nist_dir)))))
+                                                   1] == '.txt',
+                                               os.listdir(levels_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
 
-            spec_number_energy = {}
-            levels_data = {}
+            spec_number_max_energy = {}
+            levels_number = {}
             for f in i_spectro:
-                csv_path = os.path.join(nist_dir, str(f) + '.csv')
-                spec_number_energy[f] = read_section(elem, csv_path)
-
+                spec_number_max_energy[f] = find_ionization_potenzial(os.path.join(levels_dir, str(f) + '.txt'),
+                                                                      energy_limits[str(f)])
             for f in i_spectro:
-                levels_data[f] = read_section_pass2(elem, str(f), os.path.join(nist_dir, str(f) + '.csv'),
-                                                    spec_number_energy[f],
-                                                    energy_limits[str(f)])
+                levels_number[f] = count_levels(os.path.join(levels_dir, str(f) + '.txt'), energy_limits[str(f)])
 
-            create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_data)
+            create_header(i_spectro, elem, table, in1_inp, spec_number_max_energy, levels_number)
 
             # Nuclear
             in1_inp.write("  7   1       0\n")
+
             for f in i_spectro:
-                write_section(elem, in1_inp, str(f), os.path.join(nist_dir, str(f) + '.csv'), in1_csv,
+                write_section(in1_inp, str(f), os.path.join(levels_dir, str(f) + '.txt'), in1_csv,
                               energy_limits[str(f)])
 
             in1_inp.write("7\n")
