@@ -10,10 +10,10 @@ from lib.create_rrec_from_in1 import create_rrec_from_in1
 from lib.download_parse_pa_uky_levels import download_piter_levels
 from lib.download_parse_pa_uky_lines import download_piter_lines
 from lib.env import env
-from lib.nist import download_nist_for_in1
-from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate, remove_large
+from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import error, runcommand
+from lib.verify_results import test_number_of_levels_inp1, files_not_empty
 
 
 def create_rrec_inp(elem_dir):
@@ -163,9 +163,9 @@ with open(rrec_path, "w") as rrec:
             for line in sp_rrec:
                 rrec.write(line)
 
-# copy_checks(my_dir, elem_dir)
-# check_and_fix_rr(elem_dir)
-# check_and_fix_old_rr(elem_dir)
+copy_checks(my_dir, elem_dir)
+check_and_fix_rr(elem_dir)
+check_and_fix_old_rr(elem_dir)
 
 for sp in sp_nums:
     print("**********************")
@@ -176,10 +176,12 @@ for sp in sp_nums:
         for l in lines:
             print(l)
 
-#replaces = remove_unused_lines_and_renumerate(elem_dir)
-#
-# from_new_to_old = invert_replaces(replaces)
-# create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old)
+replaces = remove_unused_lines_and_renumerate(elem_dir)
+
+from_new_to_old = invert_replaces(replaces)
+create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old)
+test_number_of_levels_inp1(in1)
+files_not_empty(elem_dir)
 #
 # removed = remove_large(rrec_path, 0, [4, 5], 1.0e-4)
 # print("Removed " + str(removed) + "from " + rrec_path)

@@ -62,7 +62,7 @@ def remove_in_file(file_name, num_skip_lines, sp_num_levels_columns, used):
                         level_start = sp_num_level.level_num.start
                         level_end = sp_num_level.level_num.end
                         level = l[level_start:level_end].strip()
-                        if  sp_num!='7' and level not in used[sp_num]:
+                        if sp_num != '7' and level not in used[sp_num]:
                             copy_line = False
 
                     if copy_line:
@@ -131,6 +131,9 @@ def remove_lines_from_in1_inp(in1_path, used_lines):
                 if len(fields) == 1:
                     sp_num = fields[0]
                     num_of_lines_per_sp_num[sp_num] = 0
+                if len(fields) == 7 and fields[5] == "0.00e+00":
+                    fields.insert(0, "")
+
                 if len(fields) != 8:
                     fwrite.write(l)
                 else:
@@ -169,14 +172,16 @@ def renumerate_in1_inp(in1_path):
                     if sp_num not in ret:
                         ret[sp_num] = {}
                     level_num = 0
-                if len(fields) != 8:
-                    fwrite.write(l)
-                else:
+                if len(fields) == 7:
+                    fields.insert(0, "")
+                if len(fields) == 8:
                     level = fields[7]
                     level_num += 1
                     new_level = str(level_num)
                     ret[sp_num][level] = new_level
                     fwrite.write(rreplace(l, level, new_level))
+                else:
+                    fwrite.write(l)
     shutil.copyfile(after_renumerate_file, in1_path)
     return ret
 
@@ -207,7 +212,7 @@ def remove_unused_lines_and_renumerate(elem_dir):
                    used_lines)
 
     replaces = renumerate_in1_inp(in1_path)
-    replaces['7'] = {}  # TODO C
+    replaces['7'] = {'1': '1'}  # TODO C
 
     replace_in_file(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
                                    Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], replaces)

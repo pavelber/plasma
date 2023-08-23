@@ -60,9 +60,7 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
                 if len(configs) == 1:
                     configs.insert(0, "")
 
-                # for C
-                if spec_num == "6" and configs[1][0] == "7":
-                    break
+
                 term = parts[1]
                 g = parts[2]
                 energy_str = parts[3]
@@ -71,16 +69,15 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
 
                 if prev_energy_str is not None and float(energy_str) <= float(prev_energy_str):
                     energy = energy + float(prev_energy_str) - float(energy_str) + 0.001
+                    energy_str = "%10.3f" % energy
 
                 if len(term) > 6:
                     term = term[0:6]
 
-
-
                 if should_include_level(energy, energy_limits, configs):
                     outf.write("%4s %4s %-8s%3s%15.3f    0.00e+00 0.00e+00  % 6d\n" % (
                         remove_braces(configs[-2]), remove_braces(configs[-1]), term, g, energy, n))
-                    data_file.write("%s,%d,%f,%s,%s\n" % (spec_num, n, energy, configs_one_string, g))
+                    data_file.write("%s,%d,%f,%s,%s,%s\n" % (spec_num, n, energy, configs_one_string, g, term))
                     n = n + 1
                     prev_energy_str = energy_str
 

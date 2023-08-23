@@ -34,7 +34,7 @@ from lib.roman import roman_to_int
 
 LINES_SKIP = 18
 
-sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI']
+sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V',]
 
 
 def download_piter_lines(elem, piter_dir):

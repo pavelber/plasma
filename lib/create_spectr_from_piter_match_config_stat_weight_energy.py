@@ -33,10 +33,11 @@ def read_configs(dir):
             energy = parts[2].strip()
             config = parts[3].strip()
             stat_weight = parts[4].strip()
+            term = parts[5].strip()
             if sp_n not in confs:
                 confs[sp_n] = {}
 
-            key = (config, stat_weight)
+            key = (config, stat_weight, term)
             if key not in confs[sp_n]:
                 confs[sp_n][key] = []
             confs[sp_n][key].append((level, float(energy)))
@@ -79,13 +80,16 @@ def write_spectr_section_from_piter(outf, spec_num, config_table, spec_num_file)
                     stat_w_i = parts[6]
                     ek = float(normalize_energy(parts[14]))
                     ei = float(normalize_energy(parts[12]))
+                    terms = parts[5].split("-")
+                    term_k = terms[1]
+                    term_i = terms[0]
                     wave = parts[0]
                     if wave[-1] == '?':
                         wave = wave[:-1]
                     eins = parts[9]
                     osc = parts[10]
-                    key_k = (config_k, stat_w_k)
-                    key_i = (config_i, stat_w_i)
+                    key_k = (config_k, stat_w_k, term_k)
+                    key_i = (config_i, stat_w_i, term_i)
                     if key_k in config_table[spec_num] and key_i in config_table[spec_num]:
                         #    levels_k = list(filter(lambda x: abs(x[1] - ek) < 5e-3, config_table[spec_num][key_k]))
                         #    levels_i = list(filter(lambda x: abs(x[1] - ei) < 5e-3, config_table[spec_num][key_i]))
@@ -93,16 +97,16 @@ def write_spectr_section_from_piter(outf, spec_num, config_table, spec_num_file)
                         levels_i = min(config_table[spec_num][key_i], key=lambda x: abs(x[1] - ei))
                         #   levels_k =  config_table[spec_num][key_k]
                         #   levels_i =  config_table[spec_num][key_i]
-                 #       if len(levels_i) == 1 and len(levels_k) == 1:
+                        #       if len(levels_i) == 1 and len(levels_k) == 1:
                         up_level = levels_k
                         low_level = levels_i
-                        outf.write("%3s %3s %3s 1 %8.3f %8.3e %8.3e\n" % (
-                            spec_num, up_level, low_level, float(wave), float(eins), float(osc)))
+                        outf.write("%3s %3s %3s 1 %9.3f %8.3e %8.3e\n" % (
+                            spec_num, up_level[0], low_level[0], float(wave), float(eins), float(osc)))
                         lines.append((low_level, up_level, osc))
                         stat_good += 1
-                  #      else:
-                   #         stat_bad += 1
-                            # print("Not found " + line)
+                    #      else:
+                    #         stat_bad += 1
+                    # print("Not found " + line)
                     else:
                         stat_bad += 1
                 # print("Not found " + line)
@@ -117,11 +121,11 @@ def write_excit_section(outf, spec_num, lines):
         osc = line[2]
         outf.write(
             "%3s   %3s  %3s    0     0.000E+00    0.000E+00    0.000E+00    0.000E+00    0.000E+00    0.000E+00      -%s\n" % (
-                spec_num, low_level, up_level, osc))
+                spec_num, low_level[0], up_level[0], osc))
 
 
 def create_spectr_and_excit_from_piter_match_config(out_dir, elem):
-    piter_dir = os.path.join(out_dir, "piter")
+    lines_dir = os.path.join(out_dir, "lines")
     with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
             i_spectro = list(sorted(map(lambda x: int(os.path.splitext(x)[0]),
@@ -130,7 +134,7 @@ def create_spectr_and_excit_from_piter_match_config(out_dir, elem):
                                                    os.path.basename(f))[0].isdigit() and
                                                os.path.splitext(os.path.basename(f))[
                                                    1] == '.txt',
-                                               os.listdir(piter_dir)))))
+                                               os.listdir(lines_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
             configs = read_configs(out_dir)
@@ -141,7 +145,7 @@ def create_spectr_and_excit_from_piter_match_config(out_dir, elem):
             for f in i_spectro:
                 sp_num_str = str(f)
                 section_lines = write_spectr_section_from_piter(spectr_inp, sp_num_str, configs,
-                                                                os.path.join(piter_dir, sp_num_str + '.txt'))
+                                                                os.path.join(lines_dir, sp_num_str + '.txt'))
                 if len(section_lines) == 0:
                     error("No lines for " + elem + " " + sp_num_str)
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0][0]), int(l[1][0])))

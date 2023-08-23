@@ -15,7 +15,7 @@ from urllib.request import Request, urlopen
 
 from lib.roman import roman_to_int
 
-LINES_SKIP = 18
+LINES_SKIP = 10
 
 sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI']
 
