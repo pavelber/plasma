@@ -4,7 +4,7 @@ from math import sqrt
 pi_a0_2 = 8.79e-17
 ry = 13.6057
 
-letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'n': 5}
+letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i':6}
 
 
 def get_n0(c):
@@ -75,11 +75,7 @@ p1 = {
     '4p': 1.493e-2,
     '4d': 1.769e-3,
     '4f': 1.092e-4,
-    '5s': 3.956e-3,
-    '5p': 5.846e-2,  # duplication
-    '5d': 5.846e-2,  # duplication
-    '5f': 5.846e-2,  # duplication
-    '5g': 5.846e-2,  # duplication
+    '5s': 3.956e-3
 }
 
 p2 = {
@@ -94,10 +90,6 @@ p2 = {
     '4d': 1.205e-1,
     '4f': 1.055e-1,
     '5s': 5.846e-2,
-    '5p': 5.846e-2,  # duplication
-    '5d': 5.846e-2,  # duplication
-    '5f': 5.846e-2,  # duplication
-    '5g': 5.846e-2,  # duplication
 }
 
 p3 = {
@@ -112,10 +104,6 @@ p3 = {
     '4d': 6.346,
     '4f': 9.231,
     '5s': 8.651,
-    '5p': 8.651,  # duplication
-    '5d': 8.651,  # duplication
-    '5f': 8.651,  # duplication
-    '5g': 8.651,  # duplication
 }
 
 p4 = {
@@ -130,10 +118,6 @@ p4 = {
     '4d': 1.205e-1,
     '4f': 1.055e-1,
     '5s': 5.846e-2,
-    '5p': 5.846e-2,  # duplication
-    '5d': 5.846e-2,  # duplication
-    '5f': 5.846e-2,  # duplication
-    '5g': 5.846e-2,  # duplication
 }
 
 supported_configs = p1.keys()

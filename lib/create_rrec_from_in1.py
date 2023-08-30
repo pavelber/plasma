@@ -117,17 +117,15 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                         e = level[3]
                         e_n0l0 = level[4]
 
-                        if remove_num_electrones(config_2) not in p1.keys():
-                            continue
-
                         if next_sn == atomic_number + 1:
                             next_levels = [(1, None, None, None, None, 1.0)]
+                            alternative_iteration_formula = True
                         else:
                             next_sp_levels = levels_by_sp_num[str_next_sn]
 
                             config = add_digit(last_config_wo_one_electron(config_1, config_2))
-                            if remove_num_electrones(config) not in p1.keys():
-                                continue
+                            alternative_iteration_formula = remove_num_electrones(config_2) not in p1.keys()
+
                             next_levels = list(filter(lambda x:
                                                       (x[2][-1] == '0' and
                                                        add_digit(x[1]) == config) or
@@ -155,7 +153,7 @@ def create_rrec_from_in1(in1_inp_path, out_dir, sp_nums):
                                     compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
                                                         relative_weight,
                                                         o_f, f_data,
-                                                        False)
+                                                        alternative_iteration_formula)
                                 o_f.write("--\n")
 
 

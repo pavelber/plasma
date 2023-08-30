@@ -67,7 +67,7 @@ def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, wavel_f
         'radv': '',
         'rvtp': 'vrad',
         'wacc': '',
-        'akival': '1e-3',
+        'akival': '1e-4',
         'akitype': 'f_ik',
         'akizero': 'excl',
         'abun': '',
