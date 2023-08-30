@@ -6,7 +6,7 @@ from os.path import dirname, abspath
 from lib.check_and_fix import run_check_old_rr, run_fix_old_rr, copy_checks, run_new_fix, \
     run_check_rr_return_lines
 from lib.create_in1_from_databases import create_in1_from_databases, parse_energy_limits
-from lib.create_rrec_from_in1 import create_rrec_from_in1
+from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
 from lib.download_parse_pa_uky_levels import download_piter_levels
 from lib.download_parse_pa_uky_lines import download_piter_lines
 from lib.env import env
@@ -139,7 +139,7 @@ shutil.copytree(lines_downloaded, lines_dir)
 
 sp_nums = create_in1_from_databases(elem_dir, elem, energy_limits)
 in1 = os.path.join(elem_dir, "IN1.INP")
-create_rrec_from_in1(in1, elem_dir, sp_nums)
+create_rrec_bcfp_from_in1(in1, elem_dir, sp_nums)
 
 create_rrec_inp(elem_dir)
 
