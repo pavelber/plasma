@@ -1,6 +1,7 @@
 import os
 from os.path import join, exists
 
+from lib.current_data import NUCLEUS
 from lib.iterate_photo_cross import compute_and_iterate, supported_configs, p1
 from lib.levels_string import levels_order, level_to_electrons
 from lib.utils import error
@@ -138,7 +139,7 @@ def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums):
         skip_n_lines(in1_inp, 12)
         n0l0 = read_n0l0(in1_inp, sp_nums)
         levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
-    levels_by_sp_num["7"] = []  # TODO C
+    levels_by_sp_num[str(NUCLEUS)] = []
     with open(join(out_dir, "BFCP.INP"), "w") as bfcp_f:
         bfcp_f.write("    Z  lvl#  Z+1 lvl#      Coefficient	0 0 0\n")
         bfcp_f.write("--------------------------------------\n")
@@ -151,7 +152,7 @@ def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums):
                 levels = levels_by_sp_num[str(s_n)]
                 next_sn = s_n + 1
 
-                if next_sn in sp_nums or next_sn == 7:  # TODO!!! C
+                if next_sn in sp_nums or next_sn == NUCLEUS:
                     for level in levels:
                         level_num = level[0]
                         config_1 = level[1]

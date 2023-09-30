@@ -30,17 +30,16 @@ import os
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from lib.current_data import SPNUMS_TO_USE
 from lib.roman import roman_to_int
 
 LINES_SKIP = 18
-
-sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V',]
 
 
 def download_piter_lines(elem, piter_dir, nmax, osc):
     if not os.path.exists(piter_dir):
         os.mkdir(piter_dir)
-    for sp_num in sp_nums_to_use:
+    for sp_num in SPNUMS_TO_USE:
         outf = os.path.join(piter_dir, str(roman_to_int(sp_num)) + '.txt')
         download_piter_lines_one_spnum(outf, elem, sp_num, nmax, osc)
 

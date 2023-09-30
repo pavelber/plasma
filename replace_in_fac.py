@@ -134,7 +134,7 @@ def recreate_fac_lev(old, new, nist_level_to_energy, max_n, element, num):
             else:
                 levels_config = (levels_adjusted[-1], '', config[2])
             if levels_config in current_levels:
-                print levels_config
+                print(levels_config)
             if levels_config in current_levels and no_4_in_config(levels_config, max_n) and len(
                     current_levels[levels_config]) > 0:
                 eV = current_levels[levels_config].pop(0)

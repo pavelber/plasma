@@ -3,6 +3,7 @@ import os
 import shutil
 from collections import namedtuple
 
+from lib.current_data import NUCLEUS
 from lib.utils import skip_n_lines
 
 Field = namedtuple('Field', 'start end')
@@ -62,7 +63,7 @@ def remove_in_file(file_name, num_skip_lines, sp_num_levels_columns, used):
                         level_start = sp_num_level.level_num.start
                         level_end = sp_num_level.level_num.end
                         level = l[level_start:level_end].strip()
-                        if sp_num != '7' and level not in used[sp_num]:
+                        if sp_num != str(NUCLEUS) and level not in used[sp_num]:
                             copy_line = False
 
                     if copy_line:
@@ -212,7 +213,7 @@ def remove_unused_lines_and_renumerate(elem_dir):
                    used_lines)
 
     replaces = renumerate_in1_inp(in1_path)
-    replaces['7'] = {'1': '1'}  # TODO C
+    replaces[str(NUCLEUS)] = {'1': '1'}
 
     replace_in_file(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
                                    Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], replaces)

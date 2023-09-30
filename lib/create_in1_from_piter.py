@@ -1,5 +1,6 @@
 import os
 
+from lib.current_data import NUCLEUS
 from lib.utils import read_table, add_one_to_config_in_missing
 
 
@@ -84,6 +85,8 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
 
 def normalize_config(conf):
     m = list(map(lambda c: add_one_to_config_in_missing(c), filter(lambda c: c[0:1] != '(', conf.split("."))))
+    if len(m) == 4:
+        m.pop(-1)
     if len(m) == 3:
         m.pop(0)
     return m
@@ -157,14 +160,14 @@ def create_in1_inp_from_piter(dir, elem, energy_limits):
             create_header(i_spectro, elem, table, in1_inp, spec_number_max_energy, levels_number)
 
             # Nuclear
-            in1_inp.write("  7    1    0  0     0.00     0      0.00   0.0000   0.0000   0.000\n")
+            in1_inp.write("  "+str(NUCLEUS)+"    1    0  0     0.00     0      0.00   0.0000   0.0000   0.000\n")
 
             for f in i_spectro:
                 write_section(in1_inp, str(f), os.path.join(levels_dir, str(f) + '.txt'), in1_csv,
                               energy_limits[str(f)])
 
-            in1_inp.write("7\n")
+            in1_inp.write(str(NUCLEUS)+"\n")
             in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
 
-            i_spectro.append(7)  # TODO C
+            i_spectro.append(NUCLEUS)
             return i_spectro
