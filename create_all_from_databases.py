@@ -96,20 +96,21 @@ def check_fix(rrec_path):
 
 ################## MAIN ######################
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 5:
     error('\nUsage: ' + sys.argv[
-        0] + ' out-dir element-name energy-limits')
+        0] + ' out-dir element-name nmax osc energy-limits ')
 out_dir = os.path.abspath(sys.argv[1])
 
 elem = sys.argv[2]
-
-energy_limits = parse_energy_limits(sys.argv[3])
+nmax = sys.argv[3]
+osc = sys.argv[4]
+energy_limits = parse_energy_limits(sys.argv[5])
 
 python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path, my_dir = env(
     "perl")
 download = False
 
-if len(sys.argv) == 5 and sys.argv[4] == 'True':
+if len(sys.argv) == 7 and sys.argv[6] == 'True':
     download = True
 
 if not os.path.exists(out_dir):
@@ -125,8 +126,8 @@ levels_downloaded = os.path.join(my_dir, "db", elem, "levels")
 lines_downloaded = os.path.join(my_dir, "db", elem, "lines")
 
 if download:
-    download_piter_levels(elem, levels_downloaded)
-    download_piter_lines(elem, lines_downloaded)
+    download_piter_levels(elem, levels_downloaded, nmax)
+    download_piter_lines(elem, lines_downloaded, nmax, osc)
 levels_dir = os.path.join(elem_dir, "levels")
 if os.path.exists(levels_dir):
     shutil.rmtree(levels_dir)

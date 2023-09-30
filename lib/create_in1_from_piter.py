@@ -24,7 +24,7 @@ def should_include_level(energy, energy_limit, configs):
     last_config_part = configs[-1]
     first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
     n = int(last_config_part[0:first_letter_index])
-    return energy_limit > float(energy) and n < 8
+    return energy_limit > float(energy)
 
 
 def extract_configs(spec_num, configuration):
@@ -157,7 +157,7 @@ def create_in1_inp_from_piter(dir, elem, energy_limits):
             create_header(i_spectro, elem, table, in1_inp, spec_number_max_energy, levels_number)
 
             # Nuclear
-            in1_inp.write("  7   1       0\n")
+            in1_inp.write("  7    1    0  0     0.00     0      0.00   0.0000   0.0000   0.000\n")
 
             for f in i_spectro:
                 write_section(in1_inp, str(f), os.path.join(levels_dir, str(f) + '.txt'), in1_csv,

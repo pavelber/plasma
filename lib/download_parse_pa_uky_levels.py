@@ -20,21 +20,21 @@ LINES_SKIP = 10
 sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI']
 
 
-def download_piter_levels(elem, piter_dir):
+def download_piter_levels(elem, piter_dir, nmax):
     if not os.path.exists(piter_dir):
         os.mkdir(piter_dir)
     for sp_num in sp_nums_to_use:
         outf = os.path.join(piter_dir, str(roman_to_int(sp_num)) + '.txt')
-        download_piter_levels_one_spnum(outf, elem, sp_num)
+        download_piter_levels_one_spnum(outf, elem, nmax, sp_num)
 
 
-def download_piter_levels_one_spnum(file, elem, sp_num_roman):
+def download_piter_levels_one_spnum(file, elem, nmax, sp_num_roman):
     with open(file, "wb") as piter:
         values = {
             'elmion': elem + ' ' + sp_num_roman,
             'erange': '1000',
             'ener': 'eV',
-            'nmax': '8',
+            'nmax': nmax,
             'jrange': '',
             'auto': 'Suppress',
             'jval': 'useg',

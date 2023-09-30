@@ -44,7 +44,7 @@ def read_configs(dir):
     return confs
 
 
-def create_header(table, elem, file):
+def create_header_spectr(table, elem, file):
     file.write("%2s 7.10 7.90 2000\n" % table[0][elem]["AtomicNumber"])
 
 
@@ -139,7 +139,7 @@ def create_spectr_and_excit_from_piter_match_config(out_dir, elem):
             table = read_table()
             configs = read_configs(out_dir)
 
-            create_header(table, elem, spectr_inp)
+            create_header_spectr(table, elem, spectr_inp)
             create_header_ecxit(table, elem, exit_inp)
 
             for f in i_spectro:

@@ -4,7 +4,7 @@ from math import sqrt
 pi_a0_2 = 8.79e-17
 ry = 13.6057
 
-letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i':6}
+letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i':6, 'k':7}
 
 
 def get_n0(c):
