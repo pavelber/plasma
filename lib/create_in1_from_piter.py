@@ -22,9 +22,9 @@ def remove_braces(param):
 
 
 def should_include_level(energy, energy_limit, configs):
-    last_config_part = configs[-1]
-    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
-    n = int(last_config_part[0:first_letter_index])
+#    last_config_part = configs[-1]
+#    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
+#    n = int(last_config_part[0:first_letter_index])
     return energy_limit > float(energy)
 
 
