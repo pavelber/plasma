@@ -4,8 +4,9 @@ import sys
 import urllib
 from os import listdir
 
-from lib.get_ionization_energy import get_ionization_energy_ev
+
 from lib.levels_string import create_levels_string
+from lib.nist import get_ionization_energy_ev, download_one_sp_num
 from lib.utils import error, nist_strip, dec_to_roman
 
 
@@ -25,12 +26,12 @@ def read_nist(levels_dir):
         configs = {}
         num = os.path.splitext(nist_file)[0]
         configs_per_num[num] = configs
-        with open(os.path.join(levels_dir, nist_file), 'rb') as levels_file:
+        with open(os.path.join(levels_dir, nist_file), 'r') as levels_file:
             headers = levels_file.readline().strip().split(',')
             eVColumn = headers.index("Level (eV)")
             for line in levels_file:
                 data = line.split(',')
-                config = filter(lambda l: '(' not in l, nist_strip(data[0]).split('.'))
+                config = list(filter(lambda l: '(' not in l, nist_strip(data[0]).split('.')))
                 if nist_strip(data[2]) == '---':
                     break
                 j = compute_2j(nist_strip(data[2]))
@@ -202,7 +203,7 @@ def renumerate_fac_lev(old, new, old_to_new_level):
 def extract_element(fac_nums_dir):
     any_num = listdir(fac_nums_dir)[0]
     any_fac_lev_name = os.path.join(fac_nums_dir, any_num, "fac.lev")
-    with open(any_fac_lev_name, 'rb') as fac_lev_file:
+    with open(any_fac_lev_name, 'r') as fac_lev_file:
         for i in range(0, 5):
             fac_lev_file.readline()
         el = fac_lev_file.readline().split()[0]
@@ -212,9 +213,8 @@ def extract_element(fac_nums_dir):
 def download_nist(elemnt, spec_nums, nist_dir_name):
     for n in spec_nums:
         num = dec_to_roman(int(n))
-        url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum=" + elemnt + "+" + num + "&units=1&format=2&output=0&page_size=100&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=1&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
-        testfile = urllib.URLopener()
-        testfile.retrieve(url, os.path.join(nist_dir_name, n + ".csv"))
+        download_one_sp_num(elemnt, nist_dir_name, num)
+
 
 
 ################################# MAIN ################################################################
@@ -266,8 +266,8 @@ for fac_dir_name in listdir(fac_nums_dir):
         next_sp_nist = {}
     levels = [nist_levels_per_num[num], next_sp_nist]
 
-    with open(fac_lev, 'rb') as fac_lev_file:
-        with open(fac_lev_tmp, 'wb') as fac_lev_tmp_file:
+    with open(fac_lev, 'r') as fac_lev_file:
+        with open(fac_lev_tmp, 'w') as fac_lev_tmp_file:
             old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, max_n, elemnt,
                                                          int(num))
 
@@ -282,10 +282,10 @@ for fac_dir_name in listdir(fac_nums_dir):
     fac_out_dir = os.path.join(fac_nums_out_dir, fac_dir_name)
     fac_out_lev = os.path.join(fac_out_dir, "fac.lev")
     fn = os.path.join(fac_out_dir, "fn.corr")
-    with open(fac_lev_tmp, 'rb') as fac_lev_tmp_file:
-        with open(fac_out_lev, 'wb') as fac_lev_new_file:
+    with open(fac_lev_tmp, 'r') as fac_lev_tmp_file:
+        with open(fac_out_lev, 'w') as fac_lev_new_file:
             renumerate_fac_lev(fac_lev_tmp_file, fac_lev_new_file, old_2_new[num])
 
-    with open(fac_out_lev, 'rb') as fac_lev_file:
-        with open(fn, 'wb') as fn_file:
+    with open(fac_out_lev, 'r') as fac_lev_file:
+        with open(fn, 'w') as fn_file:
             create_fn(fac_lev_file, fn_file)
