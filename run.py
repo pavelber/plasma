@@ -66,7 +66,7 @@ def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn
             if should_create_new:
                 if new_list_file:
                     close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn)
-                print "SPLIT: opening " + files_list_file
+                print("SPLIT: opening " + files_list_file)
                 new_list_file = open(orig_file, 'wb')
                 count += 1
             new_list_file.write(line)
@@ -83,7 +83,7 @@ def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn
 
 def close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn):
     new_list_file.close()
-    print "SPLIT: closing " + files_list_file
+    print("SPLIT: closing " + files_list_file)
     code, std_out, std_err = copy_and_run(exe_path, "", run_dir, run_dir, spn)
     print(std_out + " " + std_err)
     code, std_out, std_err = runcommand(wc_path + " -l *.dat", run_dir)
@@ -124,9 +124,9 @@ def run_facIn1(spn, levels, out_dir_spn):
 
 
 def check_and_fix(my_dir, out_dir):
-    print "check_and_fix"
+    print("check_and_fix")
     copy_checks(my_dir, out_dir)
-    print "start check all in " + out_dir
+    print("start check all in " + out_dir)
     code, std_out, std_err = runcommand_print("perl check_all.pl -d", out_dir)
 
     for spn in os.listdir(out_dir):
@@ -152,7 +152,8 @@ def run_old_fac(in_dir_spn, out_dir_spn):
 
 
 def run_for_all_numbers():
-    i_spectro = map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(in_dir)))))
+    i_spectro = list(
+        map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(in_dir))))))
     for spn in i_spectro:
         in_dir_spn = in_dir + os.path.sep + spn
         out_dir_spn = out_dir + os.path.sep + spn

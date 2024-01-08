@@ -76,8 +76,8 @@ def error(s):
 def convert(in_file, out_file, processors, optional=False):
     procs = processors + [default_processor]
     if os.path.exists(in_file):
-        with open(in_file, 'rb') as inf:
-            with open(out_file, 'wb') as outf:
+        with open(in_file, 'r') as inf:
+            with open(out_file, 'w') as outf:
                 for line_number, line in enumerate(inf, 1):
                     for p in procs:
                         res = p(line_number, line)

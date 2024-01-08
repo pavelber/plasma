@@ -1,7 +1,7 @@
 import os
 
 from lib.create_in1_from_piter import create_in1_inp_from_piter
-from lib.create_spectr_from_piter_match_config_stat_weight_energy import create_spectr_and_excit_from_piter_match_config
+from lib.create_spectr_and_excit_from_piter_match_config import create_spectr_and_excit_from_piter_match_config
 
 
 def parse_energy_limits(limits_str):
@@ -14,7 +14,7 @@ def parse_energy_limits(limits_str):
     return limits
 
 
-def create_in1_from_databases(out_dir, elem, energy_limits):
+def create_input_from_databases(out_dir, elem, energy_limits):
 
     sp_nums = create_in1_inp_from_piter(out_dir, elem, energy_limits)
     create_spectr_and_excit_from_piter_match_config(out_dir, elem)
