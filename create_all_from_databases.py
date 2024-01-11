@@ -3,6 +3,7 @@ import shutil
 import sys
 from os.path import dirname, abspath
 
+from lib import current_data
 from lib.check_and_fix import run_check_old_rr, run_fix_old_rr, copy_checks, run_new_fix, \
     run_check_rr_return_lines
 from lib.create_in1_from_databases import create_input_from_databases, parse_energy_limits
@@ -10,9 +11,9 @@ from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
 from lib.download_parse_pa_uky_levels import download_piter_levels
 from lib.download_parse_pa_uky_lines import download_piter_lines
 from lib.env import env
-from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate, remove_large
+from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
-from lib.utils import error, runcommand
+from lib.utils import error, runcommand, dec_to_roman
 from lib.verify_results import test_number_of_levels_inp1, files_not_empty
 
 
@@ -96,21 +97,27 @@ def check_fix(rrec_path):
 
 ################## MAIN ######################
 
-if len(sys.argv) < 5:
+if len(sys.argv) < 9:
     error('\nUsage: ' + sys.argv[
-        0] + ' out-dir element-name nmax osc energy-limits ')
+        0] + ' out-dir element-name nmax osc energy-limits min_sp_num max_sp_num nucleus_num')
 out_dir = os.path.abspath(sys.argv[1])
 
 elem = sys.argv[2]
 nmax = sys.argv[3]
 osc = sys.argv[4]
 energy_limits = parse_energy_limits(sys.argv[5])
+min_sp_num = int(sys.argv[6])
+max_sp_num = int(sys.argv[7])
+nucleus_num = int(sys.argv[8])
+
+current_data.NUCLEUS = nucleus_num
+current_data.SPNUMS_TO_USE =  list(map(dec_to_roman, range(min_sp_num, max_sp_num + 1)))
 
 python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path, my_dir = env(
     "perl")
 download = False
 
-if len(sys.argv) == 7 and sys.argv[6] == 'True':
+if len(sys.argv) == 10 and sys.argv[9] == 'True':
     download = True
 
 if not os.path.exists(out_dir):
