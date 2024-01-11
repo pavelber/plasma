@@ -17,6 +17,7 @@ def read_ion_potential_from_fac_lev(fac_lev):
             if ion_num == 2:
                 return float(parts[2])
 
+
 def create_translation_table(out_dir, spectral_num, potential):
     # print("+++++++++++++++++++"+spectral_num)
     fac_lev = out_dir + os.path.sep + spectral_num + os.path.sep + 'fac.lev'
@@ -34,7 +35,7 @@ def create_translation_table(out_dir, spectral_num, potential):
                         return table
                     n = parts[0]
                     energy = float(parts[2])
-                    #print(line)
+                    # print(line)
                     if energy < potential:
                         table[str(int(n) + 1)] = str(int(n) + 1)
                         # print(n+" "+str(int(n)+1))
@@ -44,7 +45,8 @@ def create_translation_table(out_dir, spectral_num, potential):
 
 
 def create_tables(out_dir):
-    i_spectro = map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(out_dir)))))
+    i_spectro = list(
+        map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(out_dir))))))
 
     ionization_potential = {}
 
