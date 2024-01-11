@@ -4,7 +4,7 @@ from math import sqrt
 pi_a0_2 = 8.79e-17
 ry = 13.6057
 
-letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'n': 5}
+letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i':6, 'k':7}
 
 
 def get_n0(c):
@@ -23,7 +23,7 @@ def get_num_of_electrons_last_level(c):
         return int(last_letter)  # TODO: assumption - single digit!!!!!
 
 
-def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file,
+def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file, f_data,
             alternate_sigma_computation):
     e = 2 * e_n0l0
     step = 2 * e_n0l0
@@ -40,11 +40,12 @@ def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_
                     (1.0 / math.pow(u + p4[last_level_without_num], 7.0 / 2.0 + l0)) * stat_weights_part
 
         out_file.write(" %.3e   %.3e   %.3e\n" % (e_relative, sigma, e))
+        f_data.write(" %.3e,%.3e,%.3e\n" % (e_relative, sigma, e))
         e = e + step
         n = n + 1
 
 
-def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, alternate_sigma_computation=False):
+def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, f_data, alternate_sigma_computation=False):
     last_level = config[-1]
     last_level_without_num = last_level[0:2]
     n0 = get_n0(last_level)
@@ -60,9 +61,8 @@ def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, alt
         z_tilda = z_eff + (z_eff - z)
     else:
         z_tilda = z_n - n_bound + n_nl_greater_n0l0
-    iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file,
+    iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file, f_data,
             alternate_sigma_computation)
-
 
 p1 = {
     '1s': 4.667e-1,
@@ -75,11 +75,7 @@ p1 = {
     '4p': 1.493e-2,
     '4d': 1.769e-3,
     '4f': 1.092e-4,
-    '5s': 3.956e-3,
-    '5p': 5.846e-2,  # duplication
-    '5d': 5.846e-2,  # duplication
-    '5f': 5.846e-2,  # duplication
-    '5g': 5.846e-2,  # duplication
+    '5s': 3.956e-3
 }
 
 p2 = {
@@ -94,10 +90,6 @@ p2 = {
     '4d': 1.205e-1,
     '4f': 1.055e-1,
     '5s': 5.846e-2,
-    '5p': 5.846e-2,  # duplication
-    '5d': 5.846e-2,  # duplication
-    '5f': 5.846e-2,  # duplication
-    '5g': 5.846e-2,  # duplication
 }
 
 p3 = {
@@ -112,10 +104,6 @@ p3 = {
     '4d': 6.346,
     '4f': 9.231,
     '5s': 8.651,
-    '5p': 8.651,  # duplication
-    '5d': 8.651,  # duplication
-    '5f': 8.651,  # duplication
-    '5g': 8.651,  # duplication
 }
 
 p4 = {
@@ -130,19 +118,15 @@ p4 = {
     '4d': 1.205e-1,
     '4f': 1.055e-1,
     '5s': 5.846e-2,
-    '5p': 5.846e-2,  # duplication
-    '5d': 5.846e-2,  # duplication
-    '5f': 5.846e-2,  # duplication
-    '5g': 5.846e-2,  # duplication
 }
 
 supported_configs = p1.keys()
 
-#
-# config = ['2s2', '2p6']
-#
-# e_n0l0 = 21.6  # per spectr number- 5th column in in1.inp header table - level energy (>0)
-# z_n = 10  # Ne
-# z = 1  # spectr number
-#
-# compute_and_iterate(config, e_n0l0, z_n, z)
+    #
+    # config = ['2s2', '2p6']
+    #
+    # e_n0l0 = 21.6  # per spectr number- 5th column in in1.inp header table - level energy (>0)
+    # z_n = 10  # Ne
+    # z = 1  # spectr number
+    #
+    # compute_and_iterate(config, e_n0l0, z_n, z)

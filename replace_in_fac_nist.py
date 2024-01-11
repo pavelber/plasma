@@ -4,8 +4,9 @@ import sys
 import urllib
 from os import listdir
 
-from lib.get_ionization_energy import get_ionization_energy_ev
+
 from lib.levels_string import create_levels_string
+from lib.nist import get_ionization_energy_ev, download_one_sp_num
 from lib.utils import error, nist_strip, dec_to_roman
 
 
@@ -30,7 +31,7 @@ def read_nist(levels_dir):
             eVColumn = headers.index("Level (eV)")
             for line in levels_file:
                 data = line.split(',')
-                config = filter(lambda l: '(' not in l, nist_strip(data[0]).split('.'))
+                config = list(filter(lambda l: '(' not in l, nist_strip(data[0]).split('.')))
                 if nist_strip(data[2]) == '---':
                     break
                 j = compute_2j(nist_strip(data[2]))
@@ -134,7 +135,7 @@ def recreate_fac_lev(old, new, nist_level_to_energy, max_n, element, num):
             else:
                 levels_config = (levels_adjusted[-1], '', config[2])
             if levels_config in current_levels:
-                print levels_config
+                print(levels_config)
             if levels_config in current_levels and no_4_in_config(levels_config, max_n) and len(
                     current_levels[levels_config]) > 0:
                 eV = current_levels[levels_config].pop(0)
@@ -212,9 +213,8 @@ def extract_element(fac_nums_dir):
 def download_nist(elemnt, spec_nums, nist_dir_name):
     for n in spec_nums:
         num = dec_to_roman(int(n))
-        url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?de=0&spectrum=" + elemnt + "+" + num + "&units=1&format=2&output=0&page_size=100&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=1&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
-        testfile = urllib.URLopener()
-        testfile.retrieve(url, os.path.join(nist_dir_name, n + ".csv"))
+        download_one_sp_num(elemnt, nist_dir_name, num)
+
 
 
 ################################# MAIN ################################################################

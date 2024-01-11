@@ -1,6 +1,6 @@
 import os
 
-from lib.utils import read_table, skip_n_lines, error
+from lib.utils import read_table, skip_n_lines, error, normalize_energy
 
 
 def nist_strip(s):
@@ -38,11 +38,6 @@ def read_energies(dir):
     return eng
 
 
-def normalize_energy(energy):
-    if energy[-1] == '?':
-        energy = energy[:-1]
-    return str(round(float(energy), 3))
-
 
 def create_header(table, elem, file):
     file.write("%2s 7.10 7.90 2000\n" % table[0][elem]["AtomicNumber"])
@@ -57,7 +52,7 @@ def create_header_ecxit(table, elem, file):
 def write_spectr_section_from_piter(outf, spec_num, energy_table, spec_num_file):
     lines = []
     with open(spec_num_file, "r") as inf:
-        skip_n_lines(inf, 18)
+        #skip_n_lines(inf, 18)
         for line in inf:
             if not line.startswith('***'):
                 parts = line.strip().split()
@@ -88,17 +83,17 @@ def write_excit_section(outf, spec_num, lines):
                 spec_num, low_level, up_level, osc))
 
 
-def create_spectr_from_piter_match_energy(out_dir, elem):
+def create_spectr_and_excit_from_piter_match_energy(out_dir, elem):
     piter_dir = os.path.join(out_dir, "piter")
     with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
-            i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
+            i_spectro = list(sorted(map(lambda x: int(os.path.splitext(x)[0]),
                                    filter(lambda f:
                                           os.path.splitext(
                                               os.path.basename(f))[0].isdigit() and
                                           os.path.splitext(os.path.basename(f))[
                                               1] == '.txt',
-                                          os.listdir(piter_dir))))
+                                          os.listdir(piter_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
             energies = read_energies(out_dir)

@@ -1,21 +1,3 @@
-Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
-
-Request: 1
-
-Wavelength range: 1 - 9000   Unit: Angstrom   Type: Vacuum
-Radial velocity: 0 km/s
-Wavelength accuracy upper limit: 5%
-Element/Spectrum: Fe VII
-Minimum line strength: 0.001   Type: f_ik
-Include lines without atomic data: false
-Minimum abundance: no minimum
-Lower level energy range: 0 - 100000   Unit: eV
-Upper level energy range: 0 - 100000
-Maximum for principal quantum number n: no restrictions
-Transition types included: all
-Transitions from auto-ionizing levels: included
-
--LAB-WAVL-ANG-VAC-|SPECTRUM|TT|-TERM--|J_i-J_k|--A_ki---|--f_ik---|-TPF-|---LEVEL-ENERGY--EV---|-REF---|
     104.8378        Fe VII  E1  3F-3Go  3 - 4  1.178e+10 2.495e-02     3  0.130144 - 118.393000 029,ASD
     104.9718        Fe VII  E1  3F-3Go  4 - 5  1.251e+10 2.527e-02     3  0.288803 - 118.400700 029,ASD
     104.9786        Fe VII  E1  3F-3Go  4 - 4  7.820e+08 1.292e-03     3  0.288803 - 118.393000 029,ASD

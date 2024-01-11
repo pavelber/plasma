@@ -1,6 +1,7 @@
 from lib.utils import error
 
-levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f","5g", "6s", "6p", "6d",'6f','6g','6h']
+levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f", "5g", "6s", "6p",
+                "6d", '6f', '6g', '6h', '7s', '7p', '7d', '7f', '7g', '7f']
 level_to_electrons = {
     "1s": 2,
     "2s": 2,
@@ -22,7 +23,13 @@ level_to_electrons = {
     "6h": 22,
     "6s": 2,
     "6p": 6,
-    "6d": 10
+    "6d": 10,
+    '7s': 2,
+    '7p': 6,
+    '7d': 10,
+    '7f': 14,
+    '7g': 18,
+    '7h': 22
 }
 
 
@@ -93,5 +100,18 @@ def create_levels_string(num_of_electrons, line):
         error("Remained electrons")
 
     return ' '.join(result)
+
+
+def find_previous(c):
+    if c[-1].isdigit() and c[-2].isdigit():
+        config_wo_electrons = c[0:-2]
+    elif c[-1].isdigit():
+        config_wo_electrons = c[0:-1]
+    else:
+        config_wo_electrons = c
+    index = levels_order.index(config_wo_electrons)
+    if index == 0:
+        return ""
+    return levels_order[index - 1] + str(level_to_electrons[levels_order[index - 1]])
 
 # 1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 4f14 5d10 6s2 6p6 5f3 6d1 7s2

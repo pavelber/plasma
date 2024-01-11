@@ -86,7 +86,7 @@ def run_check_rr(dir):
 def run_check_rr_return_lines(dir):
     code, std_out, std_err = runcommand_print("check_rr.exe", dir)
     lines = std_out.split("\n")[:-2]
-    return map(lambda l: l.split(), lines)
+    return list(map(lambda l: l.split(), lines))
 
 
 def run_fix_old_rr(dir):

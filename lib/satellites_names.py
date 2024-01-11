@@ -12,7 +12,7 @@ def read_satellites_names(el_num):
         path = ".."
     names_file_path = path + os.path.sep + "satellites-names.csv"
     names = {}
-    with open(names_file_path, "rb") as name_file:
+    with open(names_file_path, "r") as name_file:
         name_file.readline()
         for line in name_file:
             striped = line.strip()

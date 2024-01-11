@@ -1,21 +1,3 @@
-Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
-
-Request: 1
-
-Wavelength range: 1 - 9000   Unit: Angstrom   Type: Vacuum
-Radial velocity: 0 km/s
-Wavelength accuracy upper limit: 5%
-Element/Spectrum: Fe IV
-Minimum line strength: 0.001   Type: f_ik
-Include lines without atomic data: false
-Minimum abundance: no minimum
-Lower level energy range: 0 - 100000   Unit: eV
-Upper level energy range: 0 - 100000
-Maximum for principal quantum number n: no restrictions
-Transition types included: all
-Transitions from auto-ionizing levels: included
-
--LAB-WAVL-ANG-VAC-|-SPC--|TT|-TERM--|--J_i-J_k--|--A_ki---|--f_ik---|-TPF-|--LEVEL-ENERGY--EV---|-REF---|
     419.4199        Fe IV E1 2F3-2Do  7/2 - 5/2  1.038e+08 2.053e-03     3  6.372070 - 35.932944 ASD
     421.5247        Fe IV E1 2F3-2Do  5/2 - 3/2  1.074e+08 1.907e-03     3  6.467850 - 35.881113 ASD
     437.5135        Fe IV E1 2F5-2Do  7/2 - 5/2  1.212e+08 2.608e-03     3  7.594580 - 35.932944 ASD
@@ -1568,13 +1550,13 @@ Transitions from auto-ionizing levels: included
    3644.469         Fe IV E1  4F-4Go  3/2 - 5/2  4.561e+05 1.362e-03     3 23.607389 - 27.009371 ASD
    3679.459         Fe IV E1  2F-2Go  5/2 - 7/2  1.292e+06 3.497e-03     3 24.328265 - 27.697896 ASD
    3893.417         Fe IV E1  4F-4Go  9/2 - 11/2 1.203e+06 3.281e-03     3 23.596464 - 26.780921 ASD
-   4006.235         Fe IV E1  4F-4Go  7/2 - 9/2  1.012e+06 3.044e-03     3 23.609582 - 26.704362 ASD
-   4015.688         Fe IV E1  4F-4Do  9/2 - 7/2  5.322e+05 1.029e-03     3 23.596464 - 26.683960 ASD
-   4065.315         Fe IV E1  4F-4Go  5/2 - 7/2  9.099e+05 3.006e-03     3 23.610987 - 26.660792 ASD
-   4078.631         Fe IV E1  2F-2Fo  7/2 - 7/2  1.981e+06 4.941e-03    R3 24.317166 - 27.357014 ASD
-   4082.251         Fe IV E1  2P-2Po  3/2 - 3/2  7.141e+05 1.784e-03     3 24.284057 - 27.321210 ASD
-   4095.794         Fe IV E1  4F-4Go  3/2 - 5/2  8.857e+05 3.341e-03     3 23.607389 - 26.634499 ASD
-   4170.744         Fe IV E1  2F-2Fo  5/2 - 5/2  1.830e+06 4.772e-03    R3 24.328265 - 27.300977 ASD
-   4452.701         Fe IV E1  2P-2Po  1/2 - 1/2  4.402e+05 1.309e-03     3 24.409463 - 27.193935 ASD
-   4926.776         Fe IV E1  2F-2Go  7/2 - 9/2  5.368e+05 2.442e-03     3 24.317166 - 26.833704 ASD
-   5027.404         Fe IV E1  2F-2Go  5/2 - 7/2  4.871e+05 2.461e-03     3 24.328265 - 26.794432 ASD
+   4006.235         Fe IV E1  4F-4Go 7/2 - 9/2 1.012e+06 3.044e-03     3 23.609582 - 26.704362 ASD
+   4015.688         Fe IV E1  4F-4Do 9/2 - 7/2 5.322e+05 1.029e-03     3 23.596464 - 26.683960 ASD
+   4065.315         Fe IV E1  4F-4Go 5/2 - 7/2 9.099e+05 3.006e-03     3 23.610987 - 26.660792 ASD
+   4078.631         Fe IV E1  2F-2Fo 7/2 - 7/2 1.981e+06 4.941e-03    R3 24.317166 - 27.357014 ASD
+   4082.251         Fe IV E1  2P-2Po 3/2 - 3/2 7.141e+05 1.784e-03     3 24.284057 - 27.321210 ASD
+   4095.794         Fe IV E1  4F-4Go 3/2 - 5/2 8.857e+05 3.341e-03     3 23.607389 - 26.634499 ASD
+   4170.744         Fe IV E1  2F-2Fo 5/2 - 5/2 1.830e+06 4.772e-03    R3 24.328265 - 27.300977 ASD
+   4452.701         Fe IV E1  2P-2Po 1/2 - 1/2 4.402e+05 1.309e-03     3 24.409463 - 27.193935 ASD
+   4926.776         Fe IV E1  2F-2Go 7/2 - 9/2 5.368e+05 2.442e-03     3 24.317166 - 26.833704 ASD
+   5027.404         Fe IV E1  2F-2Go 5/2 - 7/2 4.871e+05 2.461e-03     3 24.328265 - 26.794432 ASD

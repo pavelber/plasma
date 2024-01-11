@@ -116,11 +116,11 @@ def replace(table, search_table_in1, parts, table_name):
         lines_with_einst = table[key]
         old_einstein = parts[COEFF_EINS_INDEX_IN_SPECTR]
         old_einstein_f = float(old_einstein)
-        min_line_with_einst = min(lines_with_einst, key=lambda (x): abs(old_einstein_f - float(x[1])) / old_einstein_f)
+        min_line_with_einst = min(lines_with_einst, key=lambda x: abs(old_einstein_f - float(x[1])) / old_einstein_f)
         old_wave_length = parts[WAVE_LENGTH_INDEX_IN_SPECTR]
         parts[COEFF_EINS_INDEX_IN_SPECTR] = min_line_with_einst[1]
         parts[WAVE_LENGTH_INDEX_IN_SPECTR] = min_line_with_einst[2]
-        print "Replaced for key " + str(key) + " from " + table_name
+        print("Replaced for key " + str(key) + " from " + table_name)
         replaced = True
     else:
         replaced = False
@@ -148,7 +148,7 @@ def adjust_eins_weight(python_path, el_num, out_dir):
     spectr_path = os.path.join(out_dir, "SPECTR.INP")
     old_spectr_path = os.path.join(out_dir, "SPECTR.INP.UPD")
 
-    print "Creation of " + spectr_path + " with updated Einstein weights"
+    print("Creation of " + spectr_path + " with updated Einstein weights")
     shutil.move(spectr_path, old_spectr_path)
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
@@ -174,10 +174,10 @@ def map_lines_names(el_num, old_spectr_path, search_table, search_table_in1):
                 energy = find_energy_for_spectr_line(parts, search_table_in1)
                 if key in he_lines:
                     he_lines[key].append((parts, energy))
-    ic_line = min(he_lines[(('1s2p', '3'), ('1s2', '1'))], key=lambda (x): x[1])
-    he_alpha = max(he_lines[(('1s2p', '3'), ('1s2', '1'))], key=lambda (x): x[1])
-    ic = min(he_lines[(('1s3p', '3'), ('1s2', '1'))], key=lambda (x): x[1])
-    he_beta = max(he_lines[(('1s3p', '3'), ('1s2', '1'))], key=lambda (x): x[1])
+    ic_line = min(he_lines[(('1s2p', '3'), ('1s2', '1'))], key=lambda x: x[1])
+    he_alpha = max(he_lines[(('1s2p', '3'), ('1s2', '1'))], key=lambda x: x[1])
+    ic = min(he_lines[(('1s3p', '3'), ('1s2', '1'))], key=lambda x: x[1])
+    he_beta = max(he_lines[(('1s3p', '3'), ('1s2', '1'))], key=lambda x: x[1])
     line_names[str(ic_line[0])] = 'IC-line'
     line_names[str(he_alpha[0])] = 'He-alpha'
     line_names[str(ic[0])] = 'IC'
@@ -245,7 +245,7 @@ def replace_from_mz(python_path, el_num, out_dir):
     old_spectr_path = os.path.join(out_dir, "SPECTR.INP.UPD")
     satellites_names = read_satellites_names(el_num)
 
-    print "Creation of " + spectr_path + " with updated Einstein weights"
+    print("Creation of " + spectr_path + " with updated Einstein weights")
     shutil.move(spectr_path, old_spectr_path)
     search_table_h_iia = read_mz("IIa", el_num, letter2config_h)
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
