@@ -13,7 +13,7 @@ def error(s):
 
 def start_file(lines, in_file, odir, file_num, l):
     out_file = odir + os.path.sep + os.path.basename(in_file) + str(file_num)
-    out = open(out_file, 'wb')
+    out = open(out_file, 'w')
     for h in lines:
         out.write(h)
     out.write(l)
@@ -27,7 +27,7 @@ def split(in_file, out_dir):
         file_counter = 0
         line_counter = 0
 
-        with open(in_file, 'rb') as inf:
+        with open(in_file, 'r') as inf:
             for line in inf:
                 columns = line.split()
                 if len(columns) < COLUMNS_IN_BLOCK_START and header:  # Header

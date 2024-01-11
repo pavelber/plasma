@@ -190,24 +190,24 @@ if not os.path.isdir(in_dir) or not os.path.exists(in_dir):
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
-with open(os.path.join(in_dir, "IN1.INP"), 'rb') as inf:
-    with open(os.path.join(out_dir, "IN1.INP"), 'wb') as outf:
+with open(os.path.join(in_dir, "IN1.INP"), 'r') as inf:
+    with open(os.path.join(out_dir, "IN1.INP"), 'w') as outf:
         replace = rewrite_in1_inp(inf, outf)
 
-with open(os.path.join(in_dir, "BCFP.INP"), 'rb') as inf:
-    with open(os.path.join(out_dir, "BCFP.INP"), 'wb') as outf:
+with open(os.path.join(in_dir, "BCFP.INP"), 'r') as inf:
+    with open(os.path.join(out_dir, "BCFP.INP"), 'w') as outf:
         replace_bcfp(inf, outf, replace)
 
-with open(os.path.join(in_dir, "RREC.INP"), 'rb') as inf:
-    with open(os.path.join(out_dir, "RREC.INP"), 'wb') as outf:
+with open(os.path.join(in_dir, "RREC.INP"), 'r') as inf:
+    with open(os.path.join(out_dir, "RREC.INP"), 'w') as outf:
         replace_rrec(inf, outf, replace)
 
-with open(os.path.join(in_dir, "EXCIT.INP"), 'rb') as inf:
-    with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as outf:
+with open(os.path.join(in_dir, "EXCIT.INP"), 'r') as inf:
+    with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as outf:
         replace_excit(inf, outf, replace)
 
-with open(os.path.join(in_dir, "SPECTR.INP"), 'rb') as inf:
-    with open(os.path.join(out_dir, "SPECTR.INP"), 'wb') as outf:
+with open(os.path.join(in_dir, "SPECTR.INP"), 'r') as inf:
+    with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as outf:
         replace_spectr(inf, outf, replace)
 
 find_transitions(nist_dir,
@@ -219,6 +219,6 @@ find_transitions(nist_dir,
                  ]
                  )
 #
-# with open(os.path.join(in_dir, "EXCIT.INP.tmp"), 'rb') as inf:
-#     with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as outf:
+# with open(os.path.join(in_dir, "EXCIT.INP.tmp"), 'r') as inf:
+#     with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as outf:
 #         add_transitions(inf, outf, transitions)

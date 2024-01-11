@@ -141,13 +141,13 @@ if len(sys.argv) != 5:
     exit(1)
 
 if os.path.exists(sys.argv[1]):
-    with open(sys.argv[1], 'rb') as levels_f:
+    with open(sys.argv[1], 'r') as levels_f:
         if os.path.exists(sys.argv[2]):
-            with open(sys.argv[2], 'rb') as trans_f:
+            with open(sys.argv[2], 'r') as trans_f:
                 if os.path.exists(sys.argv[3]):
-                    with open(sys.argv[3], 'rb') as ai_f:
+                    with open(sys.argv[3], 'r') as ai_f:
                         if os.path.exists(sys.argv[4]):
-                            with open(sys.argv[4], 'rb') as ss_f:  # UTL/transition
+                            with open(sys.argv[4], 'r') as ss_f:  # UTL/transition
                                 # Read Spectroscopic Symbol from two files and compare
                                 ss_lev = get_ss(levels_f, LINE_OF_SS_IN_LEVELS_FILE, HEADER_LINES_NUM_LEVELS_FILE)
                                 ss_tran = get_ss(trans_f, LINE_OF_SS_IN_TRANSITIONS_FILE,

@@ -9,7 +9,7 @@ COLUMNS_IN_BLOCK_START = 6
 
 def start_file(lines, in_file, odir, file_num, l):
     out_file = odir + os.path.sep + os.path.basename(in_file) + str(file_num)
-    out = open(out_file, 'wb')
+    out = open(out_file, 'w')
     for h in lines:
         out.write(h)
     out.write(l)
@@ -76,8 +76,8 @@ def error(s):
 def convert(in_file, out_file, processors, optional=False):
     procs = processors + [default_processor]
     if os.path.exists(in_file):
-        with open(in_file, 'rb') as inf:
-            with open(out_file, 'wb') as outf:
+        with open(in_file, 'r') as inf:
+            with open(out_file, 'w') as outf:
                 for line_number, line in enumerate(inf, 1):
                     for p in procs:
                         res = p(line_number, line)

@@ -9,6 +9,7 @@ from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
 from lib.create_spect import create_spectr
 from lib.env import env
+from lib.fisher import run_for_fisher
 from lib.process_mz import replace_from_mz
 from lib.renumer import create_tables
 from lib.utils import error, copy_and_run, runcommand_print
@@ -32,7 +33,7 @@ def check_dirs(i_dir, o_dir):
 
 def read_nlev(fac_lev):
     if os.path.exists(fac_lev):
-        with open(fac_lev, 'rb') as inf:
+        with open(fac_lev, 'r') as inf:
             for line in inf:
                 columns = line.split()
                 if len(columns) == 3 and columns[0] == 'NLEV':
@@ -61,13 +62,13 @@ def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn
     bak_file = os.path.join(run_dir, files_list_file + ".bak")
     shutil.move(orig_file, bak_file)
 
-    with open(bak_file, 'rb') as inf:
+    with open(bak_file, 'r') as inf:
         for line in inf:
             if should_create_new:
                 if new_list_file:
                     close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn)
-                print "SPLIT: opening " + files_list_file
-                new_list_file = open(orig_file, 'wb')
+                print("SPLIT: opening " + files_list_file)
+                new_list_file = open(orig_file, 'w')
                 count += 1
             new_list_file.write(line)
             line_count += 1
@@ -83,7 +84,7 @@ def split_and_run(run_dir, max_files, exe_path, files_list_file, merge_file, spn
 
 def close_and_run(count, exe_path, files_list_file, merge_file, new_list_file, run_dir, spn):
     new_list_file.close()
-    print "SPLIT: closing " + files_list_file
+    print("SPLIT: closing " + files_list_file)
     code, std_out, std_err = copy_and_run(exe_path, "", run_dir, run_dir, spn)
     print(std_out + " " + std_err)
     code, std_out, std_err = runcommand(wc_path + " -l *.dat", run_dir)
@@ -124,9 +125,9 @@ def run_facIn1(spn, levels, out_dir_spn):
 
 
 def check_and_fix(my_dir, out_dir):
-    print "check_and_fix"
+    print("check_and_fix")
     copy_checks(my_dir, out_dir)
-    print "start check all in " + out_dir
+    print("start check all in " + out_dir)
     code, std_out, std_err = runcommand_print("perl check_all.pl -d", out_dir)
 
     for spn in os.listdir(out_dir):
@@ -201,6 +202,6 @@ create_excit(out_dir, spec_numbers, translation_table)
 create_rrec(out_dir, spec_numbers, translation_table)
 element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
 create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-# run_for_fisher(dont_run_all_tools, python_path, qsege_path, element, out_dir)
+run_for_fisher(dont_run_all_tools, python_path, qsege_path, element, out_dir)
 replace_from_mz(python_path, el_num, out_dir)
 check_and_fix_in_main_dir(out_dir)

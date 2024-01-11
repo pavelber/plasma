@@ -136,7 +136,7 @@ if len(sys.argv) != 3:
 (name_to_table, num_to_table) = read_table()
 
 if os.path.exists(sys.argv[1]):
-    with open(sys.argv[1], 'rb') as inp:
+    with open(sys.argv[1], 'r') as inp:
         element = read_element(inp)
         print_header()
         skip_lines(inp)

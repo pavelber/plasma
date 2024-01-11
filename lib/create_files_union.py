@@ -54,8 +54,8 @@ def copy_from_aiw(out_dir):
     out_filename = os.path.join(out_dir, "BCFP.INP")
     print("Append to " + out_filename)
 
-    with open(out_filename, 'ab') as outf:
-        with open(in_filename, 'rb') as inf:
+    with open(out_filename, 'a') as outf:
+        with open(in_filename, 'r') as inf:
             skip_n_lines(inf, 1)
             for line in inf:
                 parts = line.split()
@@ -69,7 +69,7 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
     file_path = os.path.join(out_dir, out_file_name)
     print("Creation of " + file_path)
 
-    with open(file_path, 'wb') as outf:
+    with open(file_path, 'w') as outf:
         outf.write(header)
         max_spec_number = spec_numbers[-1]
         for n in spec_numbers:
@@ -77,7 +77,7 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_dir + os.path.sep + in_file_name
             else:
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_name
-            with open(in_path, 'rb') as inf:
+            with open(in_path, 'r') as inf:
                 for line in inf:
                     if len(line) > 10:
                         new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,

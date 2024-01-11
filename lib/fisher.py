@@ -22,21 +22,21 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
     out_file_path = os.path.join(dir_path, "Inz" + element + levels_num + ".INP")
     print("Creation of " + out_file_path)
     levels_to_bcfp = {}
-    with open(in_file_path_1, "rb") as inf1:
+    with open(in_file_path_1, "r") as inf1:
         for line1 in inf1:
             parts1 = line1.split()
             if len(parts1) > 4:
                 id_by = (parts1[0], parts1[1], parts1[3])
                 levels_to_bcfp[id_by] = line1
-    with open(in_file_path_2, "rb") as inf2:
+    with open(in_file_path_2, "r") as inf2:
         skip_n_lines(inf2, 2)
-        with open(out_file_path, "wb") as outf:
+        with open(out_file_path, "w") as outf:
             outf.write(HEADER)
             for line2 in inf2:
                 parts2 = line2.split()
                 id_by = (parts2[0], parts2[1], parts2[2])
                 if not id_by in levels_to_bcfp:
-                    print id_by
+                    print(id_by)
                 else:
                     bcfp_parts = levels_to_bcfp[id_by].split()
                     spectr_num_low = bcfp_parts[0]
@@ -62,7 +62,7 @@ def run_qsege(dont_run_all_tools, python_path, qsege_path, element, o_dir):
     print("Creation of " + file_path)
     create_qsege(os.path.join(o_dir, "IN1.INP"), o_dir, file_path)
 
-    with open(file_path, 'rb') as inf:
+    with open(file_path, 'r') as inf:
         for line in inf:
             parts = line.split()
     levels_num = parts.pop()
@@ -77,7 +77,7 @@ def get_energy_from_in1_inp(file_path):
     ain_energy = {}
     levels_energy = {}
 
-    with open(file_path, 'rb') as inf:
+    with open(file_path, 'r') as inf:
         for line in inf:
             parts = line.split()
             if ain_levels_lines and len(parts) > 4:

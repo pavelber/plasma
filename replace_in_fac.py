@@ -25,7 +25,7 @@ def read_nist(levels_dir):
         configs = {}
         num = os.path.splitext(nist_file)[0]
         configs_per_num[num] = configs
-        with open(os.path.join(levels_dir, nist_file), 'rb') as levels_file:
+        with open(os.path.join(levels_dir, nist_file), 'r') as levels_file:
             headers = levels_file.readline().strip().split(',')
             eVColumn = headers.index("Level (eV)")
             for line in levels_file:
@@ -202,7 +202,7 @@ def renumerate_fac_lev(old, new, old_to_new_level):
 def extract_element(fac_nums_dir):
     any_num = listdir(fac_nums_dir)[0]
     any_fac_lev_name = os.path.join(fac_nums_dir, any_num, "fac.lev")
-    with open(any_fac_lev_name, 'rb') as fac_lev_file:
+    with open(any_fac_lev_name, 'r') as fac_lev_file:
         for i in range(0, 5):
             fac_lev_file.readline()
         el = fac_lev_file.readline().split()[0]
@@ -266,8 +266,8 @@ for fac_dir_name in listdir(fac_nums_dir):
         next_sp_nist = {}
     levels = [nist_levels_per_num[num], next_sp_nist]
 
-    with open(fac_lev, 'rb') as fac_lev_file:
-        with open(fac_lev_tmp, 'wb') as fac_lev_tmp_file:
+    with open(fac_lev, 'r') as fac_lev_file:
+        with open(fac_lev_tmp, 'w') as fac_lev_tmp_file:
             old_energy_to_levels[num] = recreate_fac_lev(fac_lev_file, fac_lev_tmp_file, levels, max_n, elemnt,
                                                          int(num))
 
@@ -282,10 +282,10 @@ for fac_dir_name in listdir(fac_nums_dir):
     fac_out_dir = os.path.join(fac_nums_out_dir, fac_dir_name)
     fac_out_lev = os.path.join(fac_out_dir, "fac.lev")
     fn = os.path.join(fac_out_dir, "fn.corr")
-    with open(fac_lev_tmp, 'rb') as fac_lev_tmp_file:
-        with open(fac_out_lev, 'wb') as fac_lev_new_file:
+    with open(fac_lev_tmp, 'r') as fac_lev_tmp_file:
+        with open(fac_out_lev, 'w') as fac_lev_new_file:
             renumerate_fac_lev(fac_lev_tmp_file, fac_lev_new_file, old_2_new[num])
 
-    with open(fac_out_lev, 'rb') as fac_lev_file:
-        with open(fn, 'wb') as fn_file:
+    with open(fac_out_lev, 'r') as fac_lev_file:
+        with open(fn, 'w') as fn_file:
             create_fn(fac_lev_file, fn_file)

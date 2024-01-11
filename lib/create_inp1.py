@@ -21,7 +21,7 @@ HEADER = "Tolerances: I/FInt = 1.D-03: SystInt = 1.D-09: StMatr = 1.D-13\n" + \
 def read_nele(in_dir):
     in_path = in_dir + os.path.sep + "fac.lev"
 
-    with open(in_path, 'rb') as inf:
+    with open(in_path, 'r') as inf:
         for line in inf:
             parts = line.split()
             if len(parts) > 0 and parts[0] == "NELE":
@@ -71,7 +71,7 @@ def lines_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tab
 def read_fac_lev(out_dir, n):
     fac_name = os.path.join(out_dir, n, "fac.lev")
     level_22_line = {}
-    with open(fac_name, 'rb') as inf:
+    with open(fac_name, 'r') as inf:
         for line in inf:
             parts = line.split()
             if len(parts) > 7:
@@ -102,7 +102,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
         level_to_line = read_fac_lev(out_dir, n)
         in_path = out_dir + os.path.sep + n + os.path.sep + "IN1.INP"
         num_of_electrons = read_nele(os.path.join(out_dir, n))
-        with open(in_path, 'rb') as inf:
+        with open(in_path, 'r') as inf:
             count = 1
             last_num = 1
             first_ai = True
@@ -150,7 +150,7 @@ def create_inp(out_dir, spec_numbers, translation_table, ionization_potential):
     el, el_nu, num_of_electrons = read_element(os.path.join(out_dir, last_spect_number))
     file_path = out_dir + os.path.sep + "IN1.INP"
     print("Creation of " + file_path)
-    with open(file_path, 'wb') as outf:
+    with open(file_path, 'w') as outf:
         should_add_next_spect_num, nucleus, header = create_inp_header(out_dir, spec_numbers, el, el_nu,
                                                                        num_of_electrons)
         outf.write(header)

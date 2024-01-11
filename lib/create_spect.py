@@ -14,7 +14,7 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
     in_path = os.path.join(out_dir, "EXCIT.INP")
     last_sp_num = None
     line_data = []
-    with open(in_path, 'rb') as inf:
+    with open(in_path, 'r') as inf:
         skip_n_lines(inf, 2)
         for line in inf:
             parts = line.split()
@@ -54,7 +54,7 @@ def read_fac_tr(out_dir, spec_numbers, translation_table):
     transition_to_line = {}
     for n in spec_numbers:
         in_path = os.path.join(out_dir, n, "fac.tr")
-        with open(in_path, 'rb') as inf:
+        with open(in_path, 'r') as inf:
             for line in inf:
                 parts = line.split()
                 if len(parts) == 8:
@@ -81,6 +81,6 @@ def create_spectr(out_dir, spec_numbers, translation_table, ionization_potential
     file_path = out_dir + os.path.sep + "SPECTR.INP"
     print("Creation of " + file_path)
     header = create_spectr_header(out_dir, spec_numbers)
-    with open(file_path, 'wb') as outf:
+    with open(file_path, 'w') as outf:
         outf.write(header)
         copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr, min_eins_coef)

@@ -108,8 +108,8 @@ if not os.path.isdir(in_dir) or not os.path.exists(in_dir):
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
-with open(os.path.join(out_dir, "SPECTR.INP"), 'wb') as spectr_inp:
-    with open(os.path.join(out_dir, "EXCIT.INP"), 'wb') as exit_inp:
+with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
+    with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
         i_spectro = sorted(map(lambda x: int(os.path.splitext(x)[0]),
                                filter(lambda f:
                                       os.path.splitext(

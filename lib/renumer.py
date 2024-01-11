@@ -3,7 +3,7 @@ import os
 
 def get_ion_potential(out_dir, spectral_num):
     fac_lev = out_dir + os.path.sep + spectral_num + os.path.sep + 'fac.lev'
-    with open(fac_lev, 'rb') as inf:
+    with open(fac_lev, 'r') as inf:
         return read_ion_potential_from_fac_lev(inf)
 
 
@@ -23,7 +23,7 @@ def create_translation_table(out_dir, spectral_num, potential):
     fac_lev = out_dir + os.path.sep + spectral_num + os.path.sep + 'fac.lev'
     table = {}
     count_autoion = -1
-    with open(fac_lev, 'rb') as fac_lev:
+    with open(fac_lev, 'r') as fac_lev:
         take_lines = False
         for line in fac_lev:
             parts = line.split()

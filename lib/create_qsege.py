@@ -133,8 +133,8 @@ def create_qsege(in1p, fac_dir, out_file_path):
     (name_to_table, num_to_table) = read_table()
 
     if os.path.exists(in1p):
-        with open(in1p, 'rb') as inp:
-            with open(out_file_path, 'wb') as outf:
+        with open(in1p, 'r') as inp:
+            with open(out_file_path, 'w') as outf:
                 element = read_element(inp)
                 print_header(outf)
                 skip_lines(inp)
