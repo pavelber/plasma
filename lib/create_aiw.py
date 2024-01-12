@@ -23,15 +23,15 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                                 error("No level " + lev2_search + " in renumeration table for spectroscopic number " + n_next)
                             lev2 = translation_table[n_next][lev2_search]
                             outf.write(
-                                ("%5s%5s%5s%5s%15s%13.3f" + os.linesep) % (n, lev1, n_next, lev2, parts[5], float(parts[4])))
+                                ("%5s%5s%5s%5s%15s%13.3f\n") % (n, lev1, n_next, lev2, parts[5], float(parts[4])))
                         else:
-                            print ("No " + lev1_search + " or " + lev2_search)
+                            print("No " + lev1_search + " or " + lev2_search)
 
 
 def create_aiw(out_dir, spec_numbers, translation_table):
     file_path = os.path.join(out_dir, "AIW.INP")
     print("Creation of " + file_path)
     with open(file_path, 'w') as outf:
-        outf.write("  SSi AIQS#  SSf  QSf#       WAI          DE(eV)" + os.linesep)
+        outf.write("  SSi AIQS#  SSf  QSf#       WAI          DE(eV)\n")
         copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table)
     sort_file_by_levels(out_dir, "AIW.INP", 0, 1, 3, 1)

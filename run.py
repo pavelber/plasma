@@ -153,7 +153,8 @@ def run_old_fac(in_dir_spn, out_dir_spn):
 
 
 def run_for_all_numbers():
-    i_spectro = map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(in_dir)))))
+    i_spectro = list(
+        map(lambda x: str(x), sorted(map(lambda x: int(x), filter(lambda f: f.isdigit(), os.listdir(in_dir))))))
     for spn in i_spectro:
         in_dir_spn = in_dir + os.path.sep + spn
         out_dir_spn = out_dir + os.path.sep + spn

@@ -7,7 +7,7 @@ def create_spectr_header(out_dir, spec_numbers):
     last_spect_number = spec_numbers[len(spec_numbers) - 1]
     el, el_nu, num_of_electrons = read_element(os.path.join(out_dir, last_spect_number))
     (name_to_table, num_to_table) = read_table()
-    return str(name_to_table[el]['AtomicMass']) + " 100.0 200.0 1000" + os.linesep
+    return str(name_to_table[el]['AtomicMass']) + " 100.0 200.0 1000" + '\n'
 
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table, from_fac_tr, min_eins_coef):
@@ -46,7 +46,7 @@ def sorting_key(x):
 
 def write_lines_to_file(line_data, outf):
     for l in line_data:
-        new_line = ("%2s %4s %4s   1.000   %11.4f  %.5e" + os.linesep) % l
+        new_line = ("%2s %4s %4s   1.000   %11.4f  %.5e" + '\n') % l
         outf.write(new_line)
 
 

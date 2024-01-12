@@ -24,11 +24,11 @@ class Res:
 
     @classmethod
     def done(cls, line):  # Don't process this line more
-        return cls(None, line + os.linesep, False)
+        return cls(None, line + '\n', False)
 
     @classmethod
     def insert(cls, line):  # Don't process this line more
-        return cls(None, line + os.linesep, True)
+        return cls(None, line + '\n', True)
 
     @classmethod
     def done_line(cls, line):  # Don't process this line more
@@ -56,7 +56,9 @@ def fac_processor(line_number, line):
         if line.startswith('cFAC'):
             return Res.done('FAC 1.1.1')
         else:
-            return Res.err('Expected cFAC 1.6.3 in the first line of file ')
+            if line.startswith("FAC 1.1.1"):
+                return Res.skip()
+        return Res.err('Expected cFAC 1.6.3 in the first line of file ')
     else:
         return Res.skip()
 

@@ -46,7 +46,7 @@ def create_header_ecxit(table, elem, file):
 
 
 def write_spectr_section(outf, spec_num, config_table, spec_num_file):
-    with open(spec_num_file, "rb") as inf:
+    with open(spec_num_file, "r") as inf:
         for line in inf:
             if line.startswith('"'):
                 parts = line.strip().split(',')
@@ -78,7 +78,7 @@ def write_excit_section(outf, spec_num, lines):
 
 def read_section(spec_num, energy_table, spec_num_file):
     lines = []
-    with open(spec_num_file, "rb") as inf:
+    with open(spec_num_file, "r") as inf:
         for line in inf:
             if line.startswith('"'):
                 parts = line.strip().split(',')

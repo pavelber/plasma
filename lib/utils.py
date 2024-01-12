@@ -22,7 +22,7 @@ def warn(out_dir, s):
 
 def info(out_dir, s):
     warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
-    with open(warnings_file_path, 'ab') as warnf:
+    with open(warnings_file_path, 'a') as warnf:
         warnf.write("INFO: " + s + "\n")
         # print("INFO: " + s)
 
@@ -104,14 +104,15 @@ def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_le
     spect_num_data_max_level = {}
     spect_num_data_num_of_lines = {}
 
-    with open(file_path, 'wb') as outf:
-        with open(file_path_not_sorted, 'rb') as inf:
+    with open(file_path, 'w') as outf:
+        with open(file_path_not_sorted, 'r') as inf:
             # read headers
             for _ in range(skip_lines):
                 outf.write(inf.readline())
             # read lines to dict
             for line in inf:
                 parts = line.split()
+                s_num = parts[s_num_index]
                 s_num = parts[s_num_index]
                 from_level = parts[from_level_index]
                 to_level = parts[to_level_index]
@@ -155,7 +156,7 @@ def sort_file_by_levels(out_dir, file_name, s_num_index, from_level_index, to_le
 def read_element(in_dir):
     in_path = in_dir + os.path.sep + "fac.lev"
     line_num = 1
-    with open(in_path, 'rb') as inf:
+    with open(in_path, 'r') as inf:
         for line in inf:
             parts = line.split()
             if line_num == 6:

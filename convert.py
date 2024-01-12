@@ -31,10 +31,10 @@ def get_ss(f, alomic_num_line_num, header_lines_num):
             element_atomic_num = float(value)
 
     if element_atomic_num == 0:
-        sys.stderr.write('Unexpected format: can\'t find element atomic number in file ' + f.name + os.linesep)
+        sys.stderr.write('Unexpected format: can\'t find element atomic number in file ' + f.name + '\n')
         exit(1)
     if not 'NELE' in headers:
-        sys.stderr.write('Unexpected format: can\'t find NELE in file ' + f.name + os.linesep)
+        sys.stderr.write('Unexpected format: can\'t find NELE in file ' + f.name + '\n')
         exit(1)
 
     return element_atomic_num + 1 - int(headers['NELE'])
@@ -58,7 +58,7 @@ def read_ai(ai_f):
         if len(columns) > 4:  # Skip empty lines
             return int(columns[0])
 
-    sys.stderr.write('Unexpected format of autoionization file ' + sys.argv[3] + os.linesep)
+    sys.stderr.write('Unexpected format of autoionization file ' + sys.argv[3] + '\n')
     exit(1)
 
 
@@ -67,7 +67,7 @@ def convert_level(level_str, ai_coef, start_level, start_ai_level):
     level = int(level_str)
     if level >= ai_coef:
         if start_ai_level is None:
-            sys.stderr.write('Detected AI level, where it don\'t expected. Level = ' + level_str + os.linesep)
+            sys.stderr.write('Detected AI level, where it don\'t expected. Level = ' + level_str + '\n')
             exit(1)
         return abs(ai_coef - 1 - level) + start_ai_level - 1
     else:
@@ -137,7 +137,7 @@ def print_transitions(trans_f, ss, levels_energy, ai_coef, start_level, start_ai
 ################################## HERE THE MAIN CODE ##################################################################
 if len(sys.argv) != 5:
     sys.stderr.write(
-        'Usage: ' + sys.argv[0] + ' levels_file transitions_file autoionization_file UTL_transition_file'+os.linesep)
+        'Usage: ' + sys.argv[0] + ' levels_file transitions_file autoionization_file UTL_transition_file'+'\n')
     exit(1)
 
 if os.path.exists(sys.argv[1]):
@@ -154,7 +154,7 @@ if os.path.exists(sys.argv[1]):
                                                  HEADER_LINES_NUM_TRANSITIONS_FILE)
                                 if ss_lev != ss_tran:
                                     sys.stderr.write(
-                                        'Spectroscopic symbol is not identical in files or is not on 6 line'+os.linesep)
+                                        'Spectroscopic symbol is not identical in files or is not on 6 line'+'\n')
                                     exit(1)
 
                                 start_level, start_ai_level = read_utl_transition_file(ss_f, ss_lev)
@@ -168,7 +168,7 @@ if os.path.exists(sys.argv[1]):
                                 # Look over transitions and print output lines
                                 print_transitions(trans_f, ss_lev, levels_energy, ai_coef, start_level, start_ai_level)
                         else:
-                            sys.stderr.write('Can\'t open UTL/transition file ' + sys.argv[3] + os.linesep)
+                            sys.stderr.write('Can\'t open UTL/transition file ' + sys.argv[3] + '\n')
                             exit(1)
                 else:
                     sys.stderr.write('Can\'t open autoionization file ' + sys.argv[3] + '\n')
