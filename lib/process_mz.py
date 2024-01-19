@@ -240,7 +240,7 @@ def replace_in_excit(out_dir, replaced_lines):
                     outf.write(line)
 
 
-def replace_from_mz(python_path, el_num, out_dir):
+def replace_from_mz(el_num, out_dir):
     spectr_path = os.path.join(out_dir, "SPECTR.INP")
     old_spectr_path = os.path.join(out_dir, "SPECTR.INP.UPD")
     satellites_names = read_satellites_names(el_num)

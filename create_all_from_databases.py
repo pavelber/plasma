@@ -10,7 +10,7 @@ from lib.create_in1_from_databases import create_input_from_databases, parse_ene
 from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
 from lib.download_parse_pa_uky_levels import download_piter_levels
 from lib.download_parse_pa_uky_lines import download_piter_lines
-from lib.env import env
+from lib.env import get_pathes, env
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import error, runcommand, dec_to_roman
@@ -111,10 +111,13 @@ max_sp_num = int(sys.argv[7])
 nucleus_num = int(sys.argv[8])
 
 current_data.NUCLEUS = nucleus_num
-current_data.SPNUMS_TO_USE =  list(map(dec_to_roman, range(min_sp_num, max_sp_num + 1)))
+current_data.SPNUMS_TO_USE = list(map(dec_to_roman, range(min_sp_num, max_sp_num + 1)))
 
-python_path, perl_path, old_path, fit_path, exc_fac_path, ph_fac_path, qsege_path, wc_path, fac_in1_path, my_dir = env(
-    "perl")
+env_errors = env()
+if env_errors is not None:
+    error(env_errors)
+
+old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
 download = False
 
 if len(sys.argv) == 10 and sys.argv[9] == 'True':

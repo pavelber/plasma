@@ -7,6 +7,8 @@ import sys
 from shutil import copy
 from subprocess import Popen, PIPE
 
+from lib.exceptions import GenericPlasmaException
+
 
 def error(s):
     sys.stderr.write(s + '\n')
@@ -45,13 +47,22 @@ def runcommand(cmd, cwd=".", cmd_in=None):
     std_out, std_err = proc.communicate(cmd_in)
     code = proc.returncode
     if code != 0:
-        error("**** Failed.\n" + std_out + "\n" + std_err)
+        raise GenericPlasmaException("**** Failed.\n" + std_out + "\n" + std_err)
     return code, std_out, std_err
+
+
+def remove_files_and_dirs(directory):
+    for root, dirs, files in os.walk(directory, topdown=False):
+        for file in files:
+            os.remove(os.path.join(root, file))
+        for dir in dirs:
+            os.rmdir(os.path.join(root, dir))
+    os.rmdir(directory)
 
 
 def copy_and_run(exe, prefix, out_dir, cwd=".", cmd_in=None, args=""):
     if not os.path.exists(out_dir):
-        error(out_dir + " not exists")
+        raise GenericPlasmaException(out_dir + " not exists")
     copy(exe, out_dir)
     path_to, file_name = os.path.split(exe)
     cmd = prefix + " " + out_dir + os.path.sep + file_name + " " + args
@@ -256,6 +267,7 @@ def normalize_energy(energy):
     # return str(round(float(energy), 3))
     dot = energy.index(".")
     return energy[0: dot + 4]
+
 
 def add_one_to_config_in_missing(c):
     if c == "":

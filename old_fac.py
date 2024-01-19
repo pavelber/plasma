@@ -2,6 +2,8 @@
 import os
 import sys
 
+from lib.utils import error
+
 OUTPUT_FORMAT_STRING = '%5s%5s%6s%5s%14s%14s%14s%14s'
 MAX_LINES = 1000000
 COLUMNS_IN_BLOCK_START = 6
@@ -68,11 +70,6 @@ def qkmode_processor(line_number, line):
         return Res.insert('QKMODE = 0')
     else:
         return Res.skip()
-
-
-def error(s):
-    sys.stderr.write(s + '\n')
-    exit(1)
 
 
 def convert(in_file, out_file, processors, optional=False):

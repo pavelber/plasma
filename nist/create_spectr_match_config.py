@@ -17,7 +17,7 @@ def clean_num(s):
 
 def format_configuration(configuration):
     configuration_split = configuration.split(".")
-    removed_braces = filter(lambda c: c[0:1] != '(', configuration_split)
+    removed_braces = list(filter(lambda c: c[0:1] != '(', configuration_split))
     return removed_braces[-2] + "." + removed_braces[-1]
 
 

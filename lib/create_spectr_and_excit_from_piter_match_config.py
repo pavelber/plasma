@@ -1,6 +1,7 @@
 import os
 
-from lib.utils import read_table, error, add_one_to_config_in_missing, normalize_energy, dec_to_roman
+from lib.exceptions import GenericPlasmaException
+from lib.utils import read_table, add_one_to_config_in_missing, normalize_energy, dec_to_roman
 
 
 def nist_strip(s):
@@ -147,6 +148,6 @@ def create_spectr_and_excit_from_piter_match_config(out_dir, elem):
                 section_lines = write_spectr_section_from_piter(spectr_inp, sp_num_str, configs,
                                                                 os.path.join(lines_dir, sp_num_str + '.txt'))
                 if len(section_lines) == 0:
-                    error("No lines for " + elem + " " + sp_num_str)
+                    raise GenericPlasmaException("No lines for " + elem + " " + sp_num_str)
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0][0]), int(l[1][0])))
                 write_excit_section(exit_inp, sp_num_str, sorted_lines)

@@ -1,7 +1,8 @@
 import os
 
+from lib.exceptions import GenericPlasmaException
 from lib.levels_string import create_levels_string
-from lib.utils import read_table, skip_n_lines, error
+from lib.utils import read_table, skip_n_lines
 
 HEADER_FORMAT_STRING = '%3s  %3s  %3s   %8s'
 OUTPUT_FORMAT_STRING = '%24s%5s%13s%6d%9d\n'
@@ -11,7 +12,7 @@ OUTPUT_FORMAT_STRING2 = '%24s%5s%13s%7d%9d%9s%15s\n'
 
 
 def print_header(outf):
-    outf.write(HEADER_FORMAT_STRING % ('SpS', 'QSs', 'AI', 'FAC PI')+"\n")
+    outf.write(HEADER_FORMAT_STRING % ('SpS', 'QSs', 'AI', 'FAC PI') + "\n")
     outf.write('------------------------------------------\n')
 
 
@@ -22,12 +23,13 @@ def skip_lines(f):
 def verify_fac(el, fac_dir):
     path = fac_dir + os.path.sep + str(el) + os.path.sep + "fac.lev"
     if not os.path.exists(path):
-        error("Expected file fac lev at " + path)
+        raise GenericPlasmaException("Expected file fac lev at " + path)
 
 
-def copy_lines(f, element, fac_dir, name_to_table, num_to_table, outf): #TODO: read number of lines as I depdenndx on command line param - read 3 lines in Cu
+def copy_lines(f, element, fac_dir, name_to_table, num_to_table,
+               outf):
     el = int(name_to_table[element]["AtomicNumber"])
-    #verify_fac(el, fac_dir)
+    # verify_fac(el, fac_dir)
     for line in f:
         columns = line.split()
         if len(columns) == 10:
@@ -36,8 +38,8 @@ def copy_lines(f, element, fac_dir, name_to_table, num_to_table, outf): #TODO: r
                 break
             name = num_to_table[str(num)]["Symbol"]
             outf.write(
-                    HEADER_FORMAT_STRING % (
-                columns[0], columns[1], columns[2], columns[4]) + "  [" + name + "]\n")
+                HEADER_FORMAT_STRING % (
+                    columns[0], columns[1], columns[2], columns[4]) + "  [" + name + "]\n")
         else:
             break
 
@@ -65,7 +67,7 @@ def copy_atomic(f, element, fac_dir, name_to_table, num_to_table, outf):
                 fac_file.close()
 
             if num == 0:
-                outf.write(e+"\n")
+                outf.write(e + "\n")
                 outf.write(OUTPUT_FORMAT_STRING % ("nucleus", "1", "0.000", 1, counter))
                 counter += 1
                 break
@@ -142,4 +144,4 @@ def create_qsege(in1p, fac_dir, out_file_path):
                 outf.write("----------------------------------------------------------------\n")
                 copy_atomic(inp, element, fac_dir, name_to_table, num_to_table, outf)
     else:
-        error('Can\'t open file ' + in1p)
+        raise GenericPlasmaException('Can\'t open file ' + in1p)

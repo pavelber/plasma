@@ -2,9 +2,8 @@ import os
 from os.path import join, exists
 
 from lib.current_data import NUCLEUS
+from lib.exceptions import GenericPlasmaException
 from lib.iterate_photo_cross import compute_and_iterate, supported_configs, p1
-from lib.levels_string import levels_order, level_to_electrons
-from lib.utils import error
 
 
 def read_element(in1):
@@ -64,7 +63,7 @@ def read_sp_nums(n0l0, in1):
             e = float(l[4])
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
-                error("Less than 0 e_n0l0")
+                raise GenericPlasmaException("Less than 0 e_n0l0")
             level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
             sp_num_to_level[sp_num].append(level)
         elif process and len(l) == 7:
@@ -75,7 +74,7 @@ def read_sp_nums(n0l0, in1):
             e = float(l[3])
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
-                error("Less than 0 e_n0l0")
+                raise GenericPlasmaException("Less than 0 e_n0l0")
             level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
             sp_num_to_level[sp_num].append(level)
     return sp_num_to_level
@@ -172,7 +171,8 @@ def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums):
                                                                                     atomic_number,
                                                                                     levels_by_sp_num)
                         iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, config_1, config_2,
-                                            e_n0l0, level, level_num, next_levels, next_sn, o_f, s_n, sp_dir, " # internal electron")
+                                            e_n0l0, level, level_num, next_levels, next_sn, o_f, s_n, sp_dir,
+                                            " # internal electron")
 
 
 def iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, config_1, config_2, e_n0l0, level,

@@ -54,7 +54,7 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                     outf.write(bsfp + rrec + "\n")
 
 
-def run_qsege(dont_run_all_tools, python_path, qsege_path, element, o_dir):
+def run_qsege(dont_run_all_tools, element, o_dir):
     dir_path = os.path.join(o_dir, "fisher")
     if not dont_run_all_tools:
         os.mkdir(dir_path)
@@ -95,8 +95,8 @@ def get_energy_from_in1_inp(file_path):
     return ain_energy, levels_energy
 
 
-def run_for_fisher(dont_run_all_tools, python_path, qsege_path, element, o_dir):
+def run_for_fisher(dont_run_all_tools, element, o_dir):
     path_to_in1_inp = os.path.join(o_dir, "IN1.INP")
     (spectr_num_to_aion_energy, spectr_num_level_to_energy) = get_energy_from_in1_inp(path_to_in1_inp)
-    levels_num = run_qsege(dont_run_all_tools, python_path, qsege_path, element, o_dir)
+    levels_num = run_qsege(dont_run_all_tools, element, o_dir)
     createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy, spectr_num_level_to_energy)

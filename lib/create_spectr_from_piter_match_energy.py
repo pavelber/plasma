@@ -1,6 +1,7 @@
 import os
 
-from lib.utils import read_table, skip_n_lines, error, normalize_energy
+from lib.exceptions import GenericPlasmaException
+from lib.utils import read_table, normalize_energy
 
 
 def nist_strip(s):
@@ -38,7 +39,6 @@ def read_energies(dir):
     return eng
 
 
-
 def create_header(table, elem, file):
     file.write("%2s 7.10 7.90 2000\n" % table[0][elem]["AtomicNumber"])
 
@@ -52,7 +52,7 @@ def create_header_ecxit(table, elem, file):
 def write_spectr_section_from_piter(outf, spec_num, energy_table, spec_num_file):
     lines = []
     with open(spec_num_file, "r") as inf:
-        #skip_n_lines(inf, 18)
+        # skip_n_lines(inf, 18)
         for line in inf:
             if not line.startswith('***'):
                 parts = line.strip().split()
@@ -88,12 +88,12 @@ def create_spectr_and_excit_from_piter_match_energy(out_dir, elem):
     with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
             i_spectro = list(sorted(map(lambda x: int(os.path.splitext(x)[0]),
-                                   filter(lambda f:
-                                          os.path.splitext(
-                                              os.path.basename(f))[0].isdigit() and
-                                          os.path.splitext(os.path.basename(f))[
-                                              1] == '.txt',
-                                          os.listdir(piter_dir)))))
+                                        filter(lambda f:
+                                               os.path.splitext(
+                                                   os.path.basename(f))[0].isdigit() and
+                                               os.path.splitext(os.path.basename(f))[
+                                                   1] == '.txt',
+                                               os.listdir(piter_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
             energies = read_energies(out_dir)
@@ -106,6 +106,6 @@ def create_spectr_and_excit_from_piter_match_energy(out_dir, elem):
                 section_lines = write_spectr_section_from_piter(spectr_inp, sp_num_str, energies,
                                                                 os.path.join(piter_dir, sp_num_str + '.txt'))
                 if len(section_lines) == 0:
-                    error("No lines for " + elem + " " + sp_num_str)
+                    raise GenericPlasmaException("No lines for " + elem + " " + sp_num_str)
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0]), int(l[1])))
                 write_excit_section(exit_inp, sp_num_str, sorted_lines)

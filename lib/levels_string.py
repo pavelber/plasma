@@ -1,4 +1,4 @@
-from lib.utils import error
+from lib.exceptions import GenericPlasmaException
 
 levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f", "5g", "6s", "6p",
                 "6d", '6f', '6g', '6h', '7s', '7p', '7d', '7f', '7g', '7f']
@@ -53,8 +53,9 @@ def create_levels_string(num_of_electrons, line):
         i += 1
     should_be = sum(num_to_electrons.values())
     if should_be != num_of_electrons:
-        error("Got different electrons number in " + line + ". Should be " + str(should_be) + ", got " + str(
-            num_of_electrons))
+        raise GenericPlasmaException(
+            "Got different electrons number in " + line + ". Should be " + str(should_be) + ", got " + str(
+                num_of_electrons))
     # print num_of_electrons
     # print num_to_electrons
     # print holes
@@ -75,7 +76,7 @@ def create_levels_string(num_of_electrons, line):
         now = level[0:1]
         if now != current:
             if num_to_electrons[current] > 0:  # got to next level, not all electrons used
-                error("Now: " + level + " result until now: " + str(result))
+                raise GenericPlasmaException("Now: " + level + " result until now: " + str(result))
             else:
                 current = now
                 if current not in num_to_electrons and int(current) > go_until:
@@ -97,7 +98,7 @@ def create_levels_string(num_of_electrons, line):
 
     remain_electrons = sum(num_to_electrons.values())
     if remain_electrons > 0:
-        error("Remained electrons")
+        raise GenericPlasmaException("Remained electrons")
 
     return ' '.join(result)
 

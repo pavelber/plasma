@@ -1,13 +1,14 @@
 import os
 
-from lib.utils import sort_file_by_levels, error
+from lib.exceptions import GenericPlasmaException
+from lib.utils import sort_file_by_levels
 
 
 def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_table):
     for n in spec_numbers:
         n_next = str(int(n) + 1)
         if not n_next in translation_table:
-            error("No renumeration table for spectroscopic number " + n_next)
+            raise GenericPlasmaException("No renumeration table for spectroscopic number " + n_next)
         max_level = max(map(lambda x: int(x), translation_table[n].keys()))
         in_path = os.path.join(out_dir, n, "fac.ai")
         if os.path.exists(in_path):
@@ -20,7 +21,8 @@ def copy_for_spectroscopic_numbers(outf, out_dir, spec_numbers, translation_tabl
                         if lev1_search in translation_table[n]:
                             lev1 = translation_table[n][lev1_search]
                             if not lev2_search in translation_table[n_next]:
-                                error("No level " + lev2_search + " in renumeration table for spectroscopic number " + n_next)
+                                raise GenericPlasmaException(
+                                    "No level " + lev2_search + " in renumeration table for spectroscopic number " + n_next)
                             lev2 = translation_table[n_next][lev2_search]
                             outf.write(
                                 ("%5s%5s%5s%5s%15s%13.3f\n") % (n, lev1, n_next, lev2, parts[5], float(parts[4])))
