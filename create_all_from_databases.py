@@ -13,7 +13,7 @@ from lib.download_parse_pa_uky_lines import download_piter_lines
 from lib.env import get_pathes, env
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
-from lib.utils import error, runcommand, dec_to_roman
+from lib.utils import error, runcommand, dec_to_roman, read_table
 from lib.verify_results import test_number_of_levels_inp1, files_not_empty
 
 
@@ -97,9 +97,9 @@ def check_fix(rrec_path):
 
 ################## MAIN ######################
 
-if len(sys.argv) < 9:
+if len(sys.argv) < 8:
     error('\nUsage: ' + sys.argv[
-        0] + ' out-dir element-name nmax osc energy-limits min_sp_num max_sp_num nucleus_num')
+        0] + ' out-dir element-name nmax osc energy-limits min_sp_num max_sp_num')
 out_dir = os.path.abspath(sys.argv[1])
 
 elem = sys.argv[2]
@@ -108,9 +108,10 @@ osc = sys.argv[4]
 energy_limits = parse_energy_limits(sys.argv[5])
 min_sp_num = int(sys.argv[6])
 max_sp_num = int(sys.argv[7])
-nucleus_num = int(sys.argv[8])
 
-current_data.NUCLEUS = nucleus_num
+(name_to_table, num_to_table) = read_table()
+
+current_data.NUCLEUS = int(name_to_table[elem]["AtomicNumber"]) + 1
 current_data.SPNUMS_TO_USE = list(map(dec_to_roman, range(min_sp_num, max_sp_num + 1)))
 
 env_errors = env()

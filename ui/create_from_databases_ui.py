@@ -4,11 +4,15 @@ from tkinter import filedialog
 from ui.generic_ui import GenericUI
 
 
-class RunFacUI(GenericUI):
+class CreateFromDataBasesUI(GenericUI):
 
     @property
     def config_file_path(self):
-        return "run_fac_config.ini"
+        return "create_from_databases_config.ini"
+
+    @property
+    def title(self):
+        return "Create NOMAD input files from databases"
 
     def return_values_from_config(self, config):
         try:
@@ -28,17 +32,20 @@ class RunFacUI(GenericUI):
             "fac_value": self.fac_var.get()
         }
 
-    def choose_fac_directory(self):
-        directory_path = filedialog.askdirectory()
-        self.fac_var.set(directory_path)
+    # out_dir = os.path.abspath(sys.argv[1])
+    #
+    # elem = sys.argv[2]
+    # nmax = sys.argv[3]
+    # osc = sys.argv[4]
+    # energy_limits = parse_energy_limits(sys.argv[5])
+    # min_sp_num = int(sys.argv[6])
+    # max_sp_num = int(sys.argv[7])
+    # nucleus_num = int(sys.argv[8])
 
     def choose_out_directory(self):
         directory_path = filedialog.askdirectory()
         self.out_var.set(directory_path)
 
-    @property
-    def title(self):
-        return "Create NOMAD input files from FAC"
 
     def create_ui(self, run_it):
         super().create_ui(run_it)

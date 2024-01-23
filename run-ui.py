@@ -4,6 +4,7 @@ import queue
 import sys
 from io import StringIO
 from multiprocessing.pool import ThreadPool
+from os.path import exists
 
 from lib.create_aiw import create_aiw
 from lib.create_files_union import create_bcfp, create_excit, create_rrec
@@ -16,7 +17,7 @@ from lib.process_mz import replace_from_mz
 from lib.renumer import create_tables
 from lib.utils import remove_files_and_dirs
 from run import check_dirs, run_for_all_numbers, check_and_fix
-from ui.create_input_from_fac_ui import UI
+from ui.create_input_from_fac_ui import RunFacUI
 
 
 @contextlib.contextmanager
@@ -32,7 +33,7 @@ def capture_stderr():
 class Runner:
     def __init__(self):
         self.good = True
-        self.ui = UI()
+        self.ui = RunFacUI()
         self.pool = ThreadPool(processes=1)
 
     def ui_message(self, message):
@@ -59,11 +60,13 @@ class Runner:
 
     def run_async(self):
         try:
+            self.ui.disable()
             self.run_and_set_good(env, "Check environment")
             old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
             input_dir = self.ui.get_input_dir()
             out_dir = self.ui.get_out_dir()
-            remove_files_and_dirs(out_dir)
+            if exists(out_dir):
+                remove_files_and_dirs(out_dir)
             min_eins_coef = self.ui.get_min_eins()
             self.run_and_set_good(lambda: check_dirs(input_dir, out_dir), "Check dirs")
             warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
@@ -93,8 +96,11 @@ class Runner:
             self.run_and_set_good(lambda: run_for_fisher(False, element, out_dir), "Create RT-Code files")
             self.run_and_set_good(lambda: replace_from_mz(el_num, out_dir), "Replace from MZ")
             self.ui_message("Done")
+            self.ui.enable()
         except Exception as e:
             self.ui_error(str(e))
+
+        self.ui.enable()
 
     def run_it(self):
         self.ui.save_config()
