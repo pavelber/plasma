@@ -276,3 +276,14 @@ def add_one_to_config_in_missing(c):
         return c + "1"
     else:
         return c
+
+
+def invert_replaces(replaces):
+    new_to_old = {}
+    for sp_num in replaces:
+        n_o = {}
+        per_sp_num = replaces[sp_num]
+        for old in per_sp_num:
+            n_o[per_sp_num[old]] = old
+        new_to_old[sp_num] = n_o
+    return new_to_old

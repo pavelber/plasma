@@ -51,7 +51,7 @@ def download_piter_lines_one_spnum(file, elem, sp_num_roman, nmax, osc):
     start_wave = 1
     end_wave = 20000
     step_wave = 2000
-    with open(file, "b") as piter:
+    with open(file, "wb") as piter:
         while start_wave < end_wave:
             download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, osc, start_wave, start_wave + step_wave)
             start_wave += step_wave

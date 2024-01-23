@@ -30,7 +30,7 @@ def download_piter_levels(elem, piter_dir, nmax):
 
 
 def download_piter_levels_one_spnum(file, elem, nmax, sp_num_roman):
-    with open(file, "b") as piter:
+    with open(file, "wb") as piter:
         values = {
             'elmion': elem + ' ' + sp_num_roman,
             'erange': '1000',
