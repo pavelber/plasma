@@ -48,6 +48,8 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
         prev_energy_str = None
         for line in inf:
             parts = line.split()
+            if ".nd" in parts[0]:
+                continue
             if len(parts) == 5:
                 configs = normalize_config(parts[0])
                 configs_copy_for_csv = configs.copy()

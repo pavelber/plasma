@@ -138,10 +138,10 @@ def check_fix(sp_path, my_dir, rrec_path, dir_bad, sp):
     shutil.copyfile(rrec_path, backup_rrec_name)
     if os.path.getsize(rrec_path) > 0:
         copy_checks(my_dir, sp_path)
-        bad = check_and_fix_rr(sp_path)
+        bad = check_and_fix_rr_version2(sp_path)
         dir_bad[sp] = bad
         if len(bad) > 1:
-            bad = check_and_fix_rr(sp_path)
+            bad = check_and_fix_rr_version2(sp_path)
             if len(bad) > 0:
                 raise GenericPlasmaException("Still have bad " + str(bad))
 

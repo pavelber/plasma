@@ -30,6 +30,7 @@ class Runner:
         self.ui.update()
 
     def ui_error(self, message):
+        self.good = False
         self.ui_message("\n" + message)
 
     def run_and_set_good(self, func, text):
