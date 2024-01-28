@@ -1,8 +1,8 @@
 import os
 import shutil
 
-from lib.utils import skip_n_lines, info
 from lib.satellites_names import read_satellites_names
+from lib.utils import skip_n_lines, info
 
 letter2config_h = {
     "Y": "1s", "R": "2p", "R'": "3p",
@@ -53,7 +53,7 @@ def read_mz(table_name, el_num, letter_2_config):
         path = "."
     mz_file_path = path + os.path.sep + "MZ" + table_name + ".csv"
     mz = {}
-    with open(mz_file_path, "r") as mz_file:
+    with open(mz_file_path, "r", encoding="utf-8") as mz_file:
         mz_file.readline()
         for line in mz_file:
             parts = line.split(",")
@@ -96,7 +96,7 @@ def convert_level_configs(cfg1, cfg2):
 
 def read_in1_inp(out_dir):
     levels = {}
-    with open(os.path.join(out_dir, "IN1.INP"), "r") as inf:
+    with open(os.path.join(out_dir, "IN1.INP"), "r", encoding="utf-8") as inf:
         skip_n_lines(inf, 20)
         for line in inf:
             parts = line.split()
@@ -160,7 +160,7 @@ def adjust_eins_weight(python_path, el_num, out_dir):
 def map_lines_names(el_num, old_spectr_path, search_table, search_table_in1):
     line_names = {}
     he_lines = {(('1s2p', '3'), ('1s2', '1')): [], (('1s3p', '3'), ('1s2', '1')): []}
-    with open(old_spectr_path, "r") as inf:
+    with open(old_spectr_path, "r", encoding="utf-8") as inf:
         inf.readline()  # header
         for line in inf:
             parts = line.split()
@@ -193,7 +193,7 @@ def replace_values(el_num, old_spectr_path, search_table, search_table_in1, spec
 
     info(out_dir, "*************************************")
     info(out_dir, "Replaced in SPECTR.INP")
-    with open(old_spectr_path, "r") as inf:
+    with open(old_spectr_path, "r", encoding="utf-8") as inf:
         inf.readline()  # header
         with open(spectr_path, "w") as outf:
             for line in inf:
@@ -230,7 +230,7 @@ def replace_in_excit(out_dir, replaced_lines):
     excit_path = os.path.join(out_dir, "EXCIT.INP")
     old_excit_path = os.path.join(out_dir, "EXCIT.INP.UPD")
     shutil.move(excit_path, old_excit_path)
-    with open(old_excit_path, "r") as inf:
+    with open(old_excit_path, "r", encoding="utf-8") as inf:
         with open(excit_path, "w") as outf:
             for line in inf:
                 parts = line.split()
@@ -251,7 +251,7 @@ def replace_from_mz(el_num, out_dir):
     search_table_he_iib = read_mz("IIb", el_num, letter2config_he)
     search_table_he_ia = read_mz("Ia", el_num, letter2config_h)
     search_table_he_ib = read_mz("Ib", el_num, letter2config_he)
-    search_table = search_table_he_ib | search_table_he_ia| search_table_h_iia| search_table_he_iib
+    search_table = search_table_he_ib | search_table_he_ia | search_table_h_iia | search_table_he_iib
     search_table_in1 = read_in1_inp(out_dir)
     replaced_lines = replace_values(el_num, old_spectr_path, search_table, search_table_in1,
                                     spectr_path,

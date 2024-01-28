@@ -12,7 +12,7 @@ def read_satellites_names(el_num):
         path = ".."
     names_file_path = path + os.path.sep + "satellites-names.csv"
     names = {}
-    with open(names_file_path, "r") as name_file:
+    with open(names_file_path, "r", encoding="utf-8") as name_file:
         name_file.readline()
         for line in name_file:
             striped = line.strip()
@@ -27,6 +27,8 @@ def read_satellites_names(el_num):
             elif reading:
                 wavelength = "%.4f" % float(parts[0])
                 names[wavelength] = parts
+
+    return names
 
 
 print(read_satellites_names(12))
