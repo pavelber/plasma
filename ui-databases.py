@@ -39,8 +39,7 @@ class Runner:
         if self.good:
             try:
                 val = func()
-                self.ui.append_to_errors(" Ok\n")
-                self.ui.update()
+                self.ui_message(" Ok\n")
                 return val
             except GenericPlasmaException as e:
                 self.ui_error(e.message)
@@ -114,6 +113,7 @@ class Runner:
 
             self.run_and_set_good(lambda: self.create_new_fits(elem_dir, replaces), "Create new fits")
             self.run_and_set_good(lambda: self.verification(elem_dir, in1)," Verification");
+            self.ui_message(" DONE\n")
         except Exception as e:
             self.ui_error(str(e))
 

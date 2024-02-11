@@ -1,7 +1,38 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, simpledialog
 
 from ui.generic_ui import GenericUI
+
+
+class EnergyLimitsDialog(simpledialog.Dialog):
+
+    def __init__(self, minsp, maxsp, current_data, parent):
+        self.minsp = minsp
+        self.maxsp = maxsp
+        self.limits = {k.strip(): v.strip() for k, v in (pair.split(':') for pair in current_data.split(','))}
+        super().__init__(parent)
+        self.title = "Energy Limits"
+
+    def body(self, master):
+        self.entries = []
+        self.vars = {}
+        for i in range(self.minsp, self.maxsp + 1):
+            label = tk.Label(master, text="{} max energy: ".format(i))
+            label.grid(row=i, column=0)
+            k = str(i)
+            if k in self.limits:
+                v = float(self.limits[k])
+            else:
+                v = 1000.0
+            energy_var = tk.DoubleVar(master, value=v)
+            self.vars[i] = energy_var
+            entry = tk.Entry(master, textvariable=energy_var, width=7)
+            entry.grid(row=i, column=1)
+            self.entries.append(entry)
+
+    def apply(self):
+        # self.result = [entry.get() for entry in self.entries]
+        self.result = {k: v.get() for k, v in self.vars.items()}
 
 
 class CreateFromDataBasesUI(GenericUI):
@@ -17,19 +48,34 @@ class CreateFromDataBasesUI(GenericUI):
     def return_values_from_config(self, config):
         try:
             elem_value = config.get("FormValues", "elem_value")
-            spmax_value = int(config.get("FormValues", "spmax_value"))
-            spmin_value = int(config.get("FormValues", "spmin_value"))
-            nmax_value = int(config.get("FormValues", "nmax_value"))
-            osc_value = float(config.get("FormValues", "osc_value"))
-            out_value = config.get("FormValues", "out_value")
         except:
             elem_value = "Al"
+        try:
+            spmax_value = int(config.get("FormValues", "spmax_value"))
+        except:
             spmax_value = 8
+        try:
+            spmin_value = int(config.get("FormValues", "spmin_value"))
+        except:
             spmin_value = 1
+        try:
+            nmax_value = int(config.get("FormValues", "nmax_value"))
+        except:
             nmax_value = 6
+        try:
+            osc_value = float(config.get("FormValues", "osc_value"))
+        except:
             osc_value = 1e-8
+        try:
+            out_value = config.get("FormValues", "out_value")
+        except:
             out_value = ""
-        return elem_value, out_value, nmax_value, osc_value, spmin_value, spmax_value
+        try:
+            energy_limits_value = config.get("FormValues", "energy_limits_value")
+        except:
+            energy_limits_value = "1:70.8,2:150,3:250,4:350,5:450,6:550,7:750,8:1000"
+
+        return elem_value, out_value, nmax_value, osc_value, spmin_value, spmax_value, energy_limits_value
 
     def get_config_map(self):
         return {
@@ -38,8 +84,16 @@ class CreateFromDataBasesUI(GenericUI):
             "nmax_value": self.nmax_var.get(),
             "spmin_value": self.spmin_var.get(),
             "spmax_value": self.spmax_var.get(),
-            "elem_value": self.elem_var.get()
+            "elem_value": self.elem_var.get(),
+            "energy_limits_value": self.energy_limits_var.get(),
         }
+
+    def open_dialog(self):
+        modal_dialog = EnergyLimitsDialog(self.spmin_var.get(), self.spmax_var.get(), self.energy_limits_var.get(),
+                                          self.root)
+
+        result = modal_dialog.result
+        self.energy_limits_var.set(', '.join([f"{key}:{value}" for key, value in result.items()]))
 
     def choose_out_directory(self):
         directory_path = filedialog.askdirectory()
@@ -48,13 +102,14 @@ class CreateFromDataBasesUI(GenericUI):
     def create_ui(self, run_it):
         super().create_ui(run_it)
 
-        elem_value, out_value, nmax_value, osc_value, spmin_value, spmax_value = self.load_config()
+        elem_value, out_value, nmax_value, osc_value, spmin_value, spmax_value, energy_limits_value = self.load_config()
         self.elem_var = tk.StringVar(value=elem_value)
         self.out_var = tk.StringVar(value=out_value)
         self.nmax_var = tk.IntVar(value=nmax_value)
         self.osc_var = tk.DoubleVar(value=osc_value)
         self.spmin_var = tk.IntVar(value=spmin_value)
         self.spmax_var = tk.IntVar(value=spmax_value)
+        self.energy_limits_var = tk.StringVar(value=energy_limits_value)
 
         elem_label = tk.Label(self.root, text="Element")
         elem_label.pack(anchor="w")
@@ -88,15 +143,23 @@ class CreateFromDataBasesUI(GenericUI):
         spmax_entry.pack(anchor="w")
         tk.Label(self.root).pack()
 
+        energy_limits_label = tk.Label(self.root, text="Energy Limits")
+        energy_limits_label.pack(anchor="w")
+        energy_limits_entry = tk.Entry(self.root, textvariable=self.energy_limits_var, width=70)
+        energy_limits_entry.pack(anchor="w")
+        energy_limits_button = tk.Button(self.root, text="Change Limits", command=self.open_dialog)
+        energy_limits_button.pack(anchor="w")
+        tk.Label(self.root).pack()
+
         submit_button = tk.Button(self.root, text="Run!", command=run_it)
         submit_button.pack(anchor="w")
         tk.Label(self.root).pack()
         errors_label = tk.Label(self.root, text="Info and errors")
         errors_label.pack(anchor="w")
-        self.errors_area = tk.Text(self.root, height=30, width=60)
+        self.errors_area = tk.Text(self.root, height=40, width=80)
         self.errors_area.pack(anchor="w")
 
-        self.root.geometry("600x600")
+        self.root.geometry("600x800")
         # Run the application
         self.root.mainloop()
 
