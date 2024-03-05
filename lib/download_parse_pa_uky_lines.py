@@ -48,12 +48,17 @@ def download_piter_lines(elem, piter_dir, nmax, osc):
 
 
 def download_piter_lines_one_spnum(file, elem, sp_num_roman, nmax, osc):
-    start_wave = 1
-    end_wave = 20000
+    start_wave = 0
+    end_wave = 200000
     step_wave = 2000
+    has_lines = True
     with open(file, "wb") as piter:
-        while start_wave < end_wave:
-            download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, osc, start_wave, start_wave + step_wave)
+        while start_wave < end_wave and has_lines:
+            out_len = download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, osc, start_wave,
+                                                                start_wave + step_wave)
+            if out_len == 0:
+                print("Stopping this sp num")
+                has_lines = False
             start_wave += step_wave
 
 
@@ -81,7 +86,7 @@ def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, o
         'tptype': 'as_a',
         'mode': 'Plain',
         'mlin': '50000',
-        "form": ['spec', 'type', 'term', 'angm', 'ener', 'prob','conf'],
+        "form": ['spec', 'type', 'term', 'angm', 'ener', 'prob', 'conf'],
     }
     data = urlencode(values, doseq=True).encode()
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
@@ -92,4 +97,6 @@ def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, o
 
         for i in range(LINES_SKIP):
             response.readline()
-        piter.write(response.read())
+        str = response.read()
+        piter.write(str)
+        return len(str)

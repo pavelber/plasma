@@ -8,8 +8,6 @@ from lib.check_and_fix import create_rrec_inp, check_fix, copy_checks, check_and
     check_and_fix_old_rr_version2
 from lib.create_in1_from_databases import parse_energy_limits, create_input_from_databases
 from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
-from lib.download_parse_pa_uky_levels import download_piter_levels
-from lib.download_parse_pa_uky_lines import download_piter_lines
 from lib.env import env, get_pathes
 from lib.exceptions import GenericPlasmaException
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
@@ -34,9 +32,9 @@ class Runner:
         self.ui_message("\n" + message)
 
     def run_and_set_good(self, func, text):
-        self.ui.append_to_errors(text + " ... ")
-        self.ui.update()
         if self.good:
+            self.ui.append_to_errors(text + " ... ")
+            self.ui.update()
             try:
                 val = func()
                 self.ui_message(" Ok\n")
@@ -49,6 +47,7 @@ class Runner:
 
     def run_async(self):
         try:
+            self.good = True
             self.ui.disable()
             self.run_and_set_good(env, "Check environment")
             old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
@@ -56,15 +55,9 @@ class Runner:
 
             elem = self.ui.get_elem()
             nmax = self.ui.get_nmax()
-            osc = self.ui.get_osc()
             energy_limits = parse_energy_limits("1:70.8,2:150,3:250,4:350,5:450,6:550,7:750,8:1000")
             min_sp_num = self.ui.get_spmin()
             max_sp_num = self.ui.get_spmax()
-
-            (name_to_table, num_to_table) = read_table()
-
-            current_data.NUCLEUS = int(name_to_table[elem]["AtomicNumber"]) + 1
-            current_data.SPNUMS_TO_USE = list(map(dec_to_roman, range(min_sp_num, max_sp_num + 1)))
 
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
@@ -75,17 +68,14 @@ class Runner:
                 os.makedirs(elem_dir)
             my_dir = dirname(abspath(__file__))
 
-            download = not os.path.exists(os.path.join(my_dir, "db"))
+            (name_to_table, num_to_table) = read_table()
+            nucleus = int(name_to_table[elem]["AtomicNumber"]) + 1
 
             levels_downloaded = os.path.join(my_dir, "db", elem, "levels")
 
             lines_downloaded = os.path.join(my_dir, "db", elem, "lines")
 
-            if download:
-                self.run_and_set_good(lambda: download_piter_levels(elem, levels_downloaded, nmax), "Download levels")
-                self.run_and_set_good(lambda: download_piter_lines(elem, lines_downloaded, nmax, osc), "Download lines")
-            else:
-                self.ui.append_to_errors("Levels and lines downloaded.")
+            self.ui.append_to_errors("Levels and lines downloaded.")
 
             levels_dir = os.path.join(elem_dir, "levels")
             if os.path.exists(levels_dir):
@@ -96,23 +86,26 @@ class Runner:
                 shutil.rmtree(lines_dir)
             shutil.copytree(levels_downloaded, levels_dir)
             shutil.copytree(lines_downloaded, lines_dir)
+            sp_nums_dec = list(range(min_sp_num, max_sp_num + 1))
+            sp_nums_str = list(map(lambda x: str(x), range(min_sp_num, max_sp_num + 1)))
 
-            sp_nums = self.run_and_set_good(lambda: create_input_from_databases(elem_dir, elem, energy_limits),
-                                            "Create IN1, SPECTR, EXCIT")
+            sp_nums = self.run_and_set_good(
+                lambda: create_input_from_databases(elem_dir, elem, nucleus, sp_nums_dec, energy_limits, nmax),
+                "Create IN1, SPECTR, EXCIT")
 
             in1 = os.path.join(elem_dir, "IN1.INP")
-            self.run_and_set_good(lambda: create_rrec_bcfp_from_in1(in1, elem_dir, sp_nums),
+            self.run_and_set_good(lambda: create_rrec_bcfp_from_in1(in1, elem_dir, sp_nums, nucleus),
                                   "Create rrec per spectroscopic number, BCFP")
 
-            self.run_and_set_good(lambda: create_rrec_inp(elem_dir, ph_fac_path), "Create RREC.INP")
+            self.run_and_set_good(lambda: create_rrec_inp(elem_dir, ph_fac_path, sp_nums_str), "Create RREC.INP")
 
             self.run_and_set_good(lambda: self.check_fix(elem_dir, my_dir, sp_nums), "Check and fix RREC")
 
-            replaces = self.run_and_set_good(lambda: remove_unused_lines_and_renumerate(elem_dir),
+            replaces = self.run_and_set_good(lambda: remove_unused_lines_and_renumerate(elem_dir, nucleus),
                                              "Remove unused lines and renumerate")
 
             self.run_and_set_good(lambda: self.create_new_fits(elem_dir, replaces), "Create new fits")
-            self.run_and_set_good(lambda: self.verification(elem_dir, in1)," Verification");
+            self.run_and_set_good(lambda: self.verification(elem_dir, in1), " Verification")
             self.ui_message(" DONE\n")
         except Exception as e:
             self.ui_error(str(e))

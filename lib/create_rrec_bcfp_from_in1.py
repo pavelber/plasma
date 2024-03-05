@@ -1,7 +1,6 @@
 import os
 from os.path import join, exists
 
-from lib.current_data import NUCLEUS
 from lib.exceptions import GenericPlasmaException
 from lib.iterate_photo_cross import compute_and_iterate, supported_configs, p1
 
@@ -132,13 +131,13 @@ def create_configs_without_one_external_electron_in_next_sp(config_1, config_2, 
     return alternative_iteration_formula, next_levels
 
 
-def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums):
+def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus):
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
         skip_n_lines(in1_inp, 12)
         n0l0 = read_n0l0(in1_inp, sp_nums)
         levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
-    levels_by_sp_num[str(NUCLEUS)] = []
+    levels_by_sp_num[str(nucleus)] = []
     with open(join(out_dir, "BFCP.INP"), "w") as bfcp_f:
         bfcp_f.write("    Z  lvl#  Z+1 lvl#      Coefficient	0 0 0\n")
         bfcp_f.write("--------------------------------------\n")
@@ -151,7 +150,7 @@ def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums):
                 levels = levels_by_sp_num[str(s_n)]
                 next_sn = s_n + 1
 
-                if next_sn in sp_nums or next_sn == NUCLEUS:
+                if next_sn in sp_nums or next_sn == nucleus:
                     for level in levels:
                         level_num = level[0]
                         config_1 = level[1]

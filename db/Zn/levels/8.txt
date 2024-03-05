@@ -1,0 +1,5 @@
+ 3d5           6S       6     0.00000   ASD
+ 3d4.(5D).4p   6Po      4    77.01      ASD
+ 3d4.(5D).4p   6Po      6    77.03      ASD
+ 3d4.(5D).4p   6Po      8    77.13      ASD
+ 3d4.(5D<0>)   Limit        173.9       ASD

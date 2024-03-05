@@ -63,10 +63,6 @@ class CreateFromDataBasesUI(GenericUI):
         except:
             nmax_value = 6
         try:
-            osc_value = float(config.get("FormValues", "osc_value"))
-        except:
-            osc_value = 1e-8
-        try:
             out_value = config.get("FormValues", "out_value")
         except:
             out_value = ""
@@ -75,12 +71,11 @@ class CreateFromDataBasesUI(GenericUI):
         except:
             energy_limits_value = "1:70.8,2:150,3:250,4:350,5:450,6:550,7:750,8:1000"
 
-        return elem_value, out_value, nmax_value, osc_value, spmin_value, spmax_value, energy_limits_value
+        return elem_value, out_value, nmax_value, spmin_value, spmax_value, energy_limits_value
 
     def get_config_map(self):
         return {
             "out_value": self.out_var.get(),
-            "osc_value": self.osc_var.get(),
             "nmax_value": self.nmax_var.get(),
             "spmin_value": self.spmin_var.get(),
             "spmax_value": self.spmax_var.get(),
@@ -102,11 +97,10 @@ class CreateFromDataBasesUI(GenericUI):
     def create_ui(self, run_it):
         super().create_ui(run_it)
 
-        elem_value, out_value, nmax_value, osc_value, spmin_value, spmax_value, energy_limits_value = self.load_config()
+        elem_value, out_value, nmax_value, spmin_value, spmax_value, energy_limits_value = self.load_config()
         self.elem_var = tk.StringVar(value=elem_value)
         self.out_var = tk.StringVar(value=out_value)
         self.nmax_var = tk.IntVar(value=nmax_value)
-        self.osc_var = tk.DoubleVar(value=osc_value)
         self.spmin_var = tk.IntVar(value=spmin_value)
         self.spmax_var = tk.IntVar(value=spmax_value)
         self.energy_limits_var = tk.StringVar(value=energy_limits_value)
@@ -168,9 +162,6 @@ class CreateFromDataBasesUI(GenericUI):
 
     def get_nmax(self):
         return self.nmax_var.get()
-
-    def get_osc(self):
-        return self.osc_var.get()
 
     def get_spmin(self):
         return self.spmin_var.get()

@@ -146,8 +146,7 @@ def check_fix(sp_path, my_dir, rrec_path, dir_bad, sp):
                 raise GenericPlasmaException("Still have bad " + str(bad))
 
 
-def create_rrec_inp(elem_dir, ph_fac_path):
-    i_spectro = sorted(filter(lambda f: f.isdigit(), os.listdir(elem_dir)))
+def create_rrec_inp(elem_dir, ph_fac_path, i_spectro):
     for sn in i_spectro:
         rrec_dir = os.path.join(elem_dir, sn)
         create_rrec_inp_from_dir(rrec_dir, ph_fac_path, sn)

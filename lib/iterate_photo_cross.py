@@ -1,10 +1,11 @@
 import math
+import re
 from math import sqrt
 
 pi_a0_2 = 8.79e-17
 ry = 13.6057
 
-letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i':6, 'k':7}
+letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i': 6, 'k': 7, 'l':8,'m':9,'n':10}
 
 
 def get_n0(c):
@@ -12,7 +13,8 @@ def get_n0(c):
 
 
 def get_l0(c):
-    return letter_to_num[c[1]]
+    first_letter = re.search('[a-z]', c)
+    return letter_to_num[first_letter.group()]
 
 
 def get_num_of_electrons_last_level(c):
@@ -63,6 +65,7 @@ def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, f_d
         z_tilda = z_n - n_bound + n_nl_greater_n0l0
     iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file, f_data,
             alternate_sigma_computation)
+
 
 p1 = {
     '1s': 4.667e-1,
@@ -122,11 +125,11 @@ p4 = {
 
 supported_configs = p1.keys()
 
-    #
-    # config = ['2s2', '2p6']
-    #
-    # e_n0l0 = 21.6  # per spectr number- 5th column in in1.inp header table - level energy (>0)
-    # z_n = 10  # Ne
-    # z = 1  # spectr number
-    #
-    # compute_and_iterate(config, e_n0l0, z_n, z)
+#
+# config = ['2s2', '2p6']
+#
+# e_n0l0 = 21.6  # per spectr number- 5th column in in1.inp header table - level energy (>0)
+# z_n = 10  # Ne
+# z = 1  # spectr number
+#
+# compute_and_iterate(config, e_n0l0, z_n, z)

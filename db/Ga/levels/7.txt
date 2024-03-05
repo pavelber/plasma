@@ -1,0 +1,5 @@
+ 3d7           4F      10     0.000   ASD
+ 3d7           4F       8     0.346   ASD
+ 3d7           4F       6     0.584   ASD
+ 3d7           4F       4     0.735   ASD
+ 3d6.(5D<4>)   Limit        140.8     ASD

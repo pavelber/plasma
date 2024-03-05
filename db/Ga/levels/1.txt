@@ -1,0 +1,46 @@
+ 4s2.4p           2Po      2    0.000000    ASD
+ 4s2.4p           2Po      4    0.102434    ASD
+ 4s2.5s           2S       2    3.0733857   ASD
+ 4s2.5p           2Po      2    4.096937    ASD
+ 4s2.5p           2Po      4    4.110702    ASD
+ 4s2.4d           2D       4    4.312376    ASD
+ 4s2.4d           2D       6    4.313143    ASD
+ 4s2.6s           2S       2    4.659917    ASD
+ 4s.4p2           4P       2    4.70800     ASD
+ 4s.4p2           4P       4    4.75342     ASD
+ 4s.4p2           4P       6    4.82456     ASD
+ 4s2.6p           2Po      2    5.006039    ASD
+ 4s2.6p           2Po      4    5.011143    ASD
+ 4s2.5d           2D       4    5.058907    ASD
+ 4s2.5d           2D       6    5.059967    ASD
+ 4s2.4f           2Fo      6    5.139663    ASD
+ 4s2.4f           2Fo      8    5.139663    ASD
+ 4s2.7s           2S       2    5.227018    ASD
+ 4s2.7p           2Po      2    5.386221    ASD
+ 4s2.7p           2Po      4    5.388690    ASD
+ 4s2.6d           2D       4    5.402622    ASD
+ 4s2.6d           2D       6    5.403283    ASD
+ 4s2.5f           2Fo      6    5.449732    ASD
+ 4s2.5f           2Fo      8    5.449732    ASD
+ 4s2.8s           2S       2    5.496498    ASD
+ 4s2.7d           2D       4    5.588182    ASD
+ 4s2.7d           2D       6    5.588675    ASD
+ 4s2.6f           2Fo      6    5.618088    ASD
+ 4s2.6f           2Fo      8    5.618088    ASD
+ 4s2.9s           2S       2    5.645826    ASD
+ 4s2.8d           2D       4    5.69945     ASD
+ 4s2.8d           2D       6    5.69980     ASD
+ 4s2.7f           2Fo      6    5.719501    ASD
+ 4s2.7f           2Fo      8    5.719501    ASD
+ 4s2.10s          2S       2    5.73729     ASD
+ 4s2.9d           2D       4    5.77120     ASD
+ 4s2.9d           2D       6    5.77134     ASD
+ 4s2.8f           2Fo      6    5.785252    ASD
+ 4s2.8f           2Fo      8    5.785252    ASD
+ 4s2.10d          2D       4    5.82026     ASD
+ 4s2.10d          2D       6    5.82026     ASD
+ 4s2.(1S<0>)      Limit         5.9993014   ASD
+ 4s.4p.(3Po<0>)   Limit        11.872123    ASD
+ 4s.4p.(3Po<1>)   Limit        11.927487    ASD
+ 4s.4p.(3Po<2>)   Limit        12.043498    ASD
+ 4s.4p.(1Po<1>)   Limit        14.765140    ASD

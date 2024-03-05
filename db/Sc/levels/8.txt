@@ -1,0 +1,27 @@
+ 3s2.3p2             3P       1     0.00000   ASD
+ 3s2.3p2             3P       3     0.28168   ASD
+ 3s2.3p2             3P       5     0.68287   ASD
+ 3s2.3p2             1D       5     3.10294   ASD
+ 3s2.3p2             1S       1     6.80232   ASD
+ 3s.3p3              3Do      3    22.31248   ASD
+ 3s.3p3              3Do      5    22.32121   ASD
+ 3s.3p3              3Do      7    22.37959   ASD
+ 3s.3p3              3Po      1    25.75039   ASD
+ 3s.3p3              3Po      3    25.75908   ASD
+ 3s.3p3              3Po      5    25.76570   ASD
+ 3s.3p3              1Do      5    28.34505   ASD
+ 3s.3p3              3So      3    33.77545   ASD
+ 3s.3p3              1Po      3    34.90429   ASD
+ 3s2.3p.3d           3Po      5    39.6215    ASD
+ 3s2.3p.3d           3Po      3    39.9900    ASD
+ 3s2.3p.3d           3Po      1    40.1303    ASD
+ 3s2.3p.3d           3Do      3    40.8977    ASD
+ 3s2.3p.3d           3Do      5    41.0036    ASD
+ 3s2.3p.3d           3Do      7    41.0577    ASD
+ 3s2.3p.3d           1Fo      7    45.0635    ASD
+ 3s2.3p.3d           1Po      3    46.2201    ASD
+ 3s2.3p.4s           3Po      1    74.8285    ASD
+ 3s2.3p.4s           3Po      3    74.9620    ASD
+ 3s2.3p.4s           3Po      5    75.5279    ASD
+ 3s2.3p.4s           1Po      3    76.1374    ASD
+ 3s2.3p.(2Po<1/2>)   Limit        158.1       ASD

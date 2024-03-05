@@ -61,7 +61,3 @@ def mark_large_cuts(out_dir, in_file_name, out_file_name):
                 else:
                     comment = ""
                 rrec_out.write("%s # %s\n" % (line[:-1], comment))
-
-
-add_cut_comment("C:\\work4\\db\\O", "RREC-tmp.INP")
-mark_large_cuts("C:\\work4\\db\\O", "RREC-tmp.INP", "RREC-cut.INP")

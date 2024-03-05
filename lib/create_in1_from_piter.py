@@ -1,11 +1,10 @@
 import os
 
-from lib.current_data import NUCLEUS
 from lib.utils import read_table, add_one_to_config_in_missing
 
 
 def clean_num(s):
-    return s.rstrip("?").strip('[]').strip("+x")
+    return s.strip("?").strip("+x").strip("+y").strip("+z").rstrip("?").strip("]").strip('[]')
 
 
 def format_configuration(configuration, max_len):
@@ -21,10 +20,13 @@ def remove_braces(param):
     return param.replace("(", "").replace(")", "")
 
 
-def should_include_level(energy, energy_limit, configs):
-#    last_config_part = configs[-1]
-#    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
-#    n = int(last_config_part[0:first_letter_index])
+def should_include_level(energy, energy_limit, configs, nmax):
+    #    last_config_part = configs[-1]
+    #    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
+    #    n = int(last_config_part[0:first_letter_index])
+    if configs[0] == "?1" or (len(configs) > 1 and configs[1] == "?1"):
+        return False
+    energy = clean_num(energy)
     return energy_limit > float(energy)
 
 
@@ -41,7 +43,7 @@ def extract_configs(spec_num, configuration):
     return configs
 
 
-def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
+def write_section(outf, spec_num, spec_num_file, data_file, energy_limits, nmax):
     with open(spec_num_file, "r") as inf:
         n = 1
         outf.write(spec_num + '\n')
@@ -63,7 +65,6 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
                 if len(configs) == 1:
                     configs.insert(0, "")
 
-
                 term = parts[1]
                 g = parts[2]
                 energy_str = parts[3]
@@ -77,7 +78,7 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits):
                 if len(term) > 6:
                     term = term[0:6]
 
-                if should_include_level(energy, energy_limits, configs):
+                if should_include_level(str(energy), energy_limits, configs, nmax):
                     outf.write("%4s %4s %-8s%3s%15.3f    0.00e+00 0.00e+00  % 6d\n" % (
                         remove_braces(configs[-2]), remove_braces(configs[-1]), term, g, energy, n))
                     data_file.write("%s,%d,%f,%s,%s,%s\n" % (spec_num, n, energy, configs_one_string, g, term))
@@ -94,7 +95,7 @@ def normalize_config(conf):
     return m
 
 
-def count_levels(spec_num_file, max_energy):
+def count_levels(spec_num_file, max_energy, nmax):
     with open(spec_num_file, "r") as inf:
         levels = 0
         for line in inf:
@@ -102,7 +103,7 @@ def count_levels(spec_num_file, max_energy):
             if len(parts) == 5:
                 level_energy = clean_num(parts[3])
                 configs = normalize_config(parts[0])
-                if should_include_level(level_energy, max_energy, configs):
+                if should_include_level(level_energy, max_energy, configs, nmax):
                     levels += 1
         return levels, 0  # autoion levels = 0
 
@@ -136,19 +137,12 @@ def create_header(i_spectro, elem, table, in1_inp, spec_number_energy, levels_da
             n, levels_data[n][0], levels_data[n][1], spec_number_energy[n], spec_number_energy[n]))
 
 
-def create_in1_inp_from_piter(dir, elem, energy_limits):
+def create_in1_inp_from_piter(dir, elem, nucleus, i_spectro, energy_limits, nmax):
     print("Create IN1 from Piter in " + dir)
     levels_dir = os.path.join(dir, "levels")
     table = read_table()
     with open(os.path.join(dir, "IN1.INP"), 'w') as in1_inp:
         with open(os.path.join(dir, "IN1.csv"), 'w') as in1_csv:
-            i_spectro = sorted(list(map(lambda x: int(os.path.splitext(x)[0]),
-                                        filter(lambda f:
-                                               os.path.splitext(
-                                                   os.path.basename(f))[0].isdigit() and
-                                               os.path.splitext(os.path.basename(f))[
-                                                   1] == '.txt',
-                                               os.listdir(levels_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
 
             spec_number_max_energy = {}
@@ -157,19 +151,20 @@ def create_in1_inp_from_piter(dir, elem, energy_limits):
                 spec_number_max_energy[f] = find_ionization_potenzial(os.path.join(levels_dir, str(f) + '.txt'),
                                                                       energy_limits[str(f)])
             for f in i_spectro:
-                levels_number[f] = count_levels(os.path.join(levels_dir, str(f) + '.txt'), energy_limits[str(f)])
+                levels_number[f] = count_levels(os.path.join(levels_dir, str(f) + '.txt'), energy_limits[str(f)], nmax)
 
             create_header(i_spectro, elem, table, in1_inp, spec_number_max_energy, levels_number)
 
             # Nuclear
-            in1_inp.write("  "+str(NUCLEUS)+"    1    0  0     0.00     0      0.00   0.0000   0.0000   0.000\n")
+            in1_inp.write("  " + str(nucleus) + "    1    0  0     0.00     0      0.00   0.0000   0.0000   0.000\n")
 
             for f in i_spectro:
-                write_section(in1_inp, str(f), os.path.join(levels_dir, str(f) + '.txt'), in1_csv,
-                              energy_limits[str(f)])
+                write_section(in1_inp, str(f), os.path.join(levels_dir, str(f) + '.txt'),
+                              in1_csv,
+                              energy_limits[str(f)],
+                              nmax)
 
-            in1_inp.write(str(NUCLEUS)+"\n")
+            in1_inp.write(str(nucleus) + "\n")
             in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
 
-            i_spectro.append(NUCLEUS)
             return i_spectro

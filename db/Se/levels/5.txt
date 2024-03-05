@@ -1,0 +1,15 @@
+ 4s2            1S       1    0.0000   ASD
+ 4s.4p          3Po      1   11.1283   ASD
+ 4s.4p          3Po      3   11.3261   ASD
+ 4s.4p          3Po      5   11.7737   ASD
+ 4s.4p          1Po      3   16.3328   ASD
+ 4p2            3P       1   26.2585   ASD
+ 4s.4d          1D       5   26.4327   ASD
+ 4p2            3P       3   26.5434   ASD
+ 4p2            3P       5   27.1048   ASD
+ 4s.4d          3D       3   31.9301   ASD
+ 4s.4d          3D       5   31.9567   ASD
+ 4s.4d          3D       7   31.9982   ASD
+ 4s.5s          3S       3   35.6363   ASD
+ 4s.4f          1Fo      7   44.8138   ASD
+ 4s.(2S<1/2>)   Limit        68.3      ASD

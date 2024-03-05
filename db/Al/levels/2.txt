@@ -50,9 +50,11 @@
  3s.6p           3Po      1   16.73953    ASD
  3s.6p           3Po      3   16.739815   ASD
  3s.6p           3Po      5   16.740621   ASD
+ 3s.7s           3S       3   17.171796   ASD
  3s.6f           3Fo      5   17.17446    ASD
  3s.6f           3Fo      7   17.17663    ASD
  3s.6f           3Fo      9   17.17947    ASD
+ 3s.7s           1S       1   17.209079   ASD
  3s.6d           3D       3   17.210849   ASD
  3s.6d           3D       5   17.210849   ASD
  3s.6d           3D       7   17.210880   ASD
@@ -62,12 +64,93 @@
  3s.6g           3G       7   17.30709    ASD
  3s.6g           3G       9   17.30709    ASD
  3s.6g           3G      11   17.30709    ASD
+ 3s.7p           1Po      3   17.347741   ASD
+ 3s.7p           3Po      1   17.36894    ASD
+ 3s.7p           3Po      3   17.36918    ASD
+ 3s.7p           3Po      5   17.36965    ASD
  3p.3d           3Fo      5   17.49230    ASD
  3p.3d           3Fo      7   17.49542    ASD
  3p.3d           3Fo      9   17.49951    ASD
+ 3s.8s           3S       3   17.628436   ASD
+ 3s.8s           1S       1   17.650768   ASD
+ 3s.7d           3D       3   17.651076   ASD
+ 3s.7d           3D       5   17.651094   ASD
+ 3s.7d           3D       7   17.651130   ASD
+ 3s.7f           1Fo      7   17.680647   ASD
+ 3s.7d           1D       5   17.681294   ASD
+ 3s.7g           1G       9   17.71134    ASD
+ 3s.7g           3G       7   17.71134    ASD
+ 3s.7g           3G       9   17.71134    ASD
+ 3s.7g           3G      11   17.71134    ASD
+ 3s.8p           1Po      3   17.724928   ASD
+ 3s.8p           3Po      1   17.75025    ASD
+ 3s.8p           3Po      3   17.750414   ASD
+ 3s.8p           3Po      5   17.750821   ASD
+ 3s.7f           3Fo      5   17.762697   ASD
+ 3s.7f           3Fo      7   17.763569   ASD
+ 3s.7f           3Fo      9   17.764919   ASD
+ 3s.9s           3S       3   17.919106   ASD
+ 3s.8d           3D       3   17.93332    ASD
+ 3s.8d           3D       5   17.933343   ASD
+ 3s.8d           3D       7   17.933376   ASD
+ 3s.9s           1S       1   17.933586   ASD
+ 3s.8d           1D       5   17.950707   ASD
+ 3s.8f           1Fo      7   17.950982   ASD
+ 3s.9p           1Po      3   17.970404   ASD
+ 3s.8g           1G       9   17.97363    ASD
+ 3s.8g           3G       7   17.97363    ASD
+ 3s.8g           3G       9   17.97363    ASD
+ 3s.8g           3G      11   17.97363    ASD
+ 3s.8h           1Ho     11   17.97674    ASD
+ 3s.8h           3Ho      9   17.97674    ASD
+ 3s.8h           3Ho     11   17.97674    ASD
+ 3s.8h           3Ho     13   17.97674    ASD
+ 3s.8f           3Fo      5   17.993764   ASD
+ 3s.8f           3Fo      7   17.994064   ASD
+ 3s.8f           3Fo      9   17.994483   ASD
+ 3s.9p           3Po      1   17.995789   ASD
+ 3s.9p           3Po      3   17.996436   ASD
+ 3s.9p           3Po      5   17.997481   ASD
  3p.4s           3Po      1   18.073937   ASD
  3p.4s           3Po      3   18.081197   ASD
  3p.4s           3Po      5   18.096923   ASD
+ 3s.10s          3S       3   18.115595   ASD
+ 3s.9d           3D       3   18.12506    ASD
+ 3s.9d           3D       5   18.12506    ASD
+ 3s.9d           3D       7   18.12511    ASD
+ 3s.10s          1S       1   18.12551    ASD
+ 3s.9d           1D       5   18.13591    ASD
+ 3s.9f           1Fo      7   18.136246   ASD
+ 3s.10p          1Po      3   18.138876   ASD
+ 3s.9g           1G       9   18.15338    ASD
+ 3s.9g           3G       7   18.15338    ASD
+ 3s.9g           3G       9   18.15338    ASD
+ 3s.9g           3G      11   18.15338    ASD
+ 3s.9h           1Ho     11   18.15562    ASD
+ 3s.9h           3Ho      9   18.15562    ASD
+ 3s.9h           3Ho     11   18.15562    ASD
+ 3s.9h           3Ho     13   18.15562    ASD
+ 3s.9f           3Fo      5   18.163671   ASD
+ 3s.9f           3Fo      7   18.163806   ASD
+ 3s.9f           3Fo      9   18.163989   ASD
+ 3s.10p          3Po      1   18.175443   ASD
+ 3s.10p          3Po      3   18.175703   ASD
+ 3s.10p          3Po      5   18.176342   ASD
+ 3s.10d          3D       5   18.26122    ASD
+ 3s.10d          3D       7   18.261271   ASD
+ 3s.10d          1D       5   18.268436   ASD
+ 3s.10f          1Fo      7   18.268657   ASD
+ 3s.10g          1G       9   18.28189    ASD
+ 3s.10g          3G       7   18.28189    ASD
+ 3s.10g          3G       9   18.28189    ASD
+ 3s.10g          3G      11   18.28189    ASD
+ 3s.10h          1Ho     11   18.28358    ASD
+ 3s.10h          3Ho      9   18.28358    ASD
+ 3s.10h          3Ho     11   18.28358    ASD
+ 3s.10h          3Ho     13   18.28358    ASD
+ 3s.10f          3Fo      5   18.288010   ASD
+ 3s.10f          3Fo      7   18.288073   ASD
+ 3s.10f          3Fo      9   18.288178   ASD
  3p.3d           3Do      3   18.658727   ASD
  3p.3d           3Do      5   18.661749   ASD
  3p.3d           3Do      7   18.665096   ASD

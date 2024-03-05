@@ -1,0 +1,12 @@
+ 3d10            1S       1      0.00    ASD
+ 3d9.4p          3Po      3     87.02    ASD
+ 3d9.4p          1Po      3     88.69    ASD
+ 3d9.4p          3Do      3     89.24    ASD
+ 3d9.4f          3Po      3    136.17    ASD
+ 3d9.4f          1Po      3    136.94    ASD
+ 3d9.4f          3Do      3    138.35    ASD
+ 3d9.5f          1Po      3    157.08    ASD
+ 3d9.5f          3Do      3    158.29    ASD
+ 3d9.6f          1Po      3    168.05    ASD
+ 3d9.6f          3Do      3    169.13    ASD
+ 3d9.(2D<5/2>)   Limit        [192.76]   002

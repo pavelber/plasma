@@ -3,7 +3,6 @@ import os
 import shutil
 from collections import namedtuple
 
-from lib.current_data import NUCLEUS
 from lib.utils import skip_n_lines
 
 Field = namedtuple('Field', 'start end')
@@ -46,7 +45,7 @@ def replace_in_file(file_name, num_skip_lines, sp_num_levels_columns, mapping):
     shutil.copyfile(after_renumerate_file, file_name)
 
 
-def remove_in_file(file_name, num_skip_lines, sp_num_levels_columns, used):
+def remove_in_file(file_name, num_skip_lines, sp_num_levels_columns, used, nucleus):
     backup_file = file_name + ".backup1"
     shutil.copyfile(file_name, backup_file)
     after_remove_file = file_name + ".removed"
@@ -63,7 +62,7 @@ def remove_in_file(file_name, num_skip_lines, sp_num_levels_columns, used):
                         level_start = sp_num_level.level_num.start
                         level_end = sp_num_level.level_num.end
                         level = l[level_start:level_end].strip()
-                        if sp_num != str(NUCLEUS) and level not in used[sp_num]:
+                        if sp_num != str(nucleus) and (sp_num not in used or level not in used[sp_num]):
                             copy_line = False
 
                     if copy_line:
@@ -187,7 +186,7 @@ def renumerate_in1_inp(in1_path):
     return ret
 
 
-def remove_unused_lines_and_renumerate(elem_dir):
+def remove_unused_lines_and_renumerate(elem_dir, nucleus):
     in1_path = os.path.join(elem_dir, "IN1.INP")
     rrec_path = os.path.join(elem_dir, "RREC.INP")
     excit_path = os.path.join(elem_dir, "EXCIT.INP")
@@ -206,14 +205,14 @@ def remove_unused_lines_and_renumerate(elem_dir):
     # print(used_lines)
     remove_lines_from_in1_inp(in1_path, used_lines)
     remove_in_file(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
-                                  Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], used_lines)
+                                  Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], used_lines, nucleus)
 
-    remove_in_file(spectr_path, 1, [Level(sp_num_fun(0, 3), Field(4, 7))], used_lines)
+    remove_in_file(spectr_path, 1, [Level(sp_num_fun(0, 3), Field(4, 7))], used_lines, nucleus)
     remove_in_file(bcfp_path, 2, [Level(sp_num_fun(0, 5), Field(6, 10)), Level(sp_num_fun(11, 15), Field(16, 20))],
-                   used_lines)
+                   used_lines, nucleus)
 
     replaces = renumerate_in1_inp(in1_path)
-    replaces[str(NUCLEUS)] = {'1': '1'}
+    replaces[str(nucleus)] = {'1': '1'}
 
     replace_in_file(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
                                    Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], replaces)

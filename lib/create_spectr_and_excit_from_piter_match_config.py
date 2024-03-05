@@ -111,7 +111,7 @@ def write_spectr_section_from_piter(outf, spec_num, config_table, spec_num_file)
                     else:
                         stat_bad += 1
                 # print("Not found " + line)
-    print("C " + dec_to_roman(int(spec_num)) + "   нашли:   " + str(stat_good) + ",   не нашли:  " + str(stat_bad))
+    print(dec_to_roman(int(spec_num)) + "   нашли:   " + str(stat_good) + ",   не нашли:  " + str(stat_bad))
     return lines
 
 
@@ -125,17 +125,10 @@ def write_excit_section(outf, spec_num, lines):
                 spec_num, low_level[0], up_level[0], osc))
 
 
-def create_spectr_and_excit_from_piter_match_config(out_dir, elem):
+def create_spectr_and_excit_from_piter_match_config(out_dir, elem,i_spectro):
     lines_dir = os.path.join(out_dir, "lines")
     with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
-            i_spectro = list(sorted(map(lambda x: int(os.path.splitext(x)[0]),
-                                        filter(lambda f:
-                                               os.path.splitext(
-                                                   os.path.basename(f))[0].isdigit() and
-                                               os.path.splitext(os.path.basename(f))[
-                                                   1] == '.txt',
-                                               os.listdir(lines_dir)))))
             print("Got spectroscopic numbers " + str(i_spectro))
             table = read_table()
             configs = read_configs(out_dir)

@@ -1,0 +1,22 @@
+ 4s2.4p        2Po      2    0.0000   ASD
+ 4s2.4p        2Po      4    1.0053   ASD
+ 4s.4p2        4P       2   13.369    ASD
+ 4s.4p2        4P       4   13.785    ASD
+ 4s.4p2        4P       6   14.316    ASD
+ 4s.4p2        2D       4   17.5652   ASD
+ 4s.4p2        2D       6   17.6960   ASD
+ 4s.4p2        2S       2   20.8039   ASD
+ 4s.4p2        2P       2   22.3589   ASD
+ 4s.4p2        2P       4   22.7902   ASD
+ 4s2.4d        2D       4   27.5400   ASD
+ 4s2.4d        2D       6   27.6531   ASD
+ 4s2.5s        2S       2   34.138    ASD
+ 4p3           2Do      4   34.223    ASD
+ 4p3           2Do      6   34.475    ASD
+ 4p3           4So      4   34.561    ASD
+ 4p3           2Po      4   37.860    ASD
+ 4s2.5p        2Po      2   40.5086   ASD
+ 4s2.5p        2Po      4   40.7865   ASD
+ 4s2.4f        2Fo      8   49.264    ASD
+ 4s2.4f        2Fo      6   49.465    ASD
+ 4s2.(1S<0>)   Limit        78.49     ASD
