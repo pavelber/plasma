@@ -1,8 +1,10 @@
 import os
 from os.path import join, exists
 
+from lib.create_cut_from_formula import write_rrec_from_formula
+from lib.create_cut_from_strasburg import write_rrec_from_strasburg
 from lib.exceptions import GenericPlasmaException
-from lib.iterate_photo_cross import compute_and_iterate, supported_configs, p1
+from lib.iterate_photo_cross import compute_and_iterate, supported_configs
 
 
 def read_element(in1):
@@ -20,17 +22,6 @@ def read_n0l0(in1, sp_nums):
         else:
             sp_num_to_n0l0[l[0]] = float(l[4])
     return sp_num_to_n0l0
-
-
-def remove_last_external_electron(config_1, config_2):
-    last_digit = config_2[-1]
-    if last_digit.isdigit() and not last_digit == '1':
-        return config_2[:-1] + str(int(last_digit) - 1)
-    return config_1
-
-
-def remove_last_internal_electron(config_1, config_2):
-    return config_2
 
 
 def skip_n_lines(in1, n):
@@ -58,80 +49,30 @@ def read_sp_nums(n0l0, in1):
             level_num = int(l[7])
             config_1 = l[0]
             config_2 = l[1]
+            term = l[2]
             stat_weight = float(l[3])
             e = float(l[4])
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
                 raise GenericPlasmaException("Less than 0 e_n0l0")
-            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
+            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight, term)
             sp_num_to_level[sp_num].append(level)
         elif process and len(l) == 7:
             level_num = int(l[6])
             config_1 = ""
             config_2 = l[0]
+            term = l[1]
             stat_weight = float(l[2])
             e = float(l[3])
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
                 raise GenericPlasmaException("Less than 0 e_n0l0")
-            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight)
+            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight, term)
             sp_num_to_level[sp_num].append(level)
     return sp_num_to_level
 
 
-def add_digit(c):
-    if not c[-1].isdigit():
-        return c + "1"
-    else:
-        return c
-
-
-def remove_num_electrones(c):
-    if c[-1].isdigit():
-        return c[0:-1]
-    else:
-        return c
-
-
-def create_configs_without_one_internal_electron_in_next_sp(config_1, config_2, next_sn, atomic_number,
-                                                            levels_by_sp_num):
-    str_next_sn = str(next_sn)
-    if next_sn == atomic_number + 1:
-        next_levels = [(1, None, None, None, None, 1.0)]
-        alternative_iteration_formula = True
-    else:
-        next_sp_levels = levels_by_sp_num[str_next_sn]
-        config = add_digit(remove_last_internal_electron(config_1, config_2))
-        alternative_iteration_formula = remove_num_electrones(config_2) not in p1.keys()
-
-        next_levels = list(filter(lambda x:
-                                  (x[2][-1] == '0' and
-                                   add_digit(x[1]) == config) or
-                                  add_digit(x[2]) == config,
-                                  next_sp_levels))
-    return alternative_iteration_formula, next_levels
-
-
-def create_configs_without_one_external_electron_in_next_sp(config_1, config_2, next_sn, atomic_number,
-                                                            levels_by_sp_num):
-    str_next_sn = str(next_sn)
-    if next_sn == atomic_number + 1:
-        next_levels = [(1, None, None, None, None, 1.0)]
-        alternative_iteration_formula = True
-    else:
-        next_sp_levels = levels_by_sp_num[str_next_sn]
-        config = add_digit(remove_last_external_electron(config_1, config_2))
-        alternative_iteration_formula = remove_num_electrones(config_2) not in p1.keys()
-
-        next_levels = list(filter(lambda x:
-                                  (x[2][-1] == '0' and
-                                   add_digit(x[1]) == config) or
-                                  add_digit(x[2]) == config,
-                                  next_sp_levels))
-    return alternative_iteration_formula, next_levels
-
-
-def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus):
+def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus, use_formula=True):
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
         skip_n_lines(in1_inp, 12)
@@ -155,50 +96,13 @@ def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus):
                         level_num = level[0]
                         config_1 = level[1]
                         config_2 = level[2]
-
-                        e = level[3]
-                        e_n0l0 = level[4]
-                        (alternative_iteration_formula, next_levels) = \
-                            create_configs_without_one_external_electron_in_next_sp(config_1, config_2, next_sn,
-                                                                                    atomic_number,
-                                                                                    levels_by_sp_num)
-                        iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, config_1, config_2,
-                                            e_n0l0, level, level_num, next_levels, next_sn, o_f, s_n, sp_dir, "")
-
-                        (alternative_iteration_formula, next_levels) = \
-                            create_configs_without_one_internal_electron_in_next_sp(config_1, config_2, next_sn,
-                                                                                    atomic_number,
-                                                                                    levels_by_sp_num)
-                        iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, config_1, config_2,
-                                            e_n0l0, level, level_num, next_levels, next_sn, o_f, s_n, sp_dir,
-                                            " # internal electron")
-
-
-def iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, config_1, config_2, e_n0l0, level,
-                        level_num, next_levels, next_sn, o_f, s_n, sp_dir, comment):
-    sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
-    print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
-        next_sn) + " " + str(next_levels))
-    if len(next_levels) == 0:
-        print(" <NO LEVELS FOUND>")
-    else:
-        for lvl in next_levels:
-            stat_weight = lvl[5]
-            relative_weight = stat_weight / sum_of_stat_weights
-            # print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
-            #    next_sn) + " level " + str(
-            #    lvl[0]) + " with weight " + str(relative_weight))
-
-            lvl_to = lvl[0]
-            o_f.write("%4s  %4s\n" % (level_num, lvl_to,))
-            bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0  %s\n" %
-                         (s_n, level[0], next_sn, lvl_to, relative_weight, comment))
-            with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, level_num, lvl_to)), "w") as f_data:
-                compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
-                                    relative_weight,
-                                    o_f, f_data,
-                                    alternative_iteration_formula)
-            o_f.write("--\n")
+                        term = level[6]
+                        if use_formula:
+                            write_rrec_from_formula(atomic_number, bfcp_f, config_1, config_2, level, level_num,
+                                                    levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
+                        else:
+                            write_rrec_from_strasburg(el, bfcp_f, config_1, config_2, term, level, level_num,
+                                                      levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
 
 
 def create_rrec_for_bad_lines(in1_inp_path, out_dir, sp_nums, s_n, bad_lines):
