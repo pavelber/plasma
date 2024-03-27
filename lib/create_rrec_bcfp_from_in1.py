@@ -1,10 +1,22 @@
 import os
+from dataclasses import dataclass
 from os.path import join, exists
 
 from lib.create_cut_from_formula import write_rrec_from_formula
 from lib.create_cut_from_strasburg import write_rrec_from_strasburg
 from lib.exceptions import GenericPlasmaException
-from lib.iterate_photo_cross import compute_and_iterate, supported_configs
+from lib.strsbrg_db import read_strsbrg_db
+
+
+@dataclass
+class In1Level:
+    level_num: int
+    config_1: str
+    config_2: str
+    energy: float
+    e_n0l0: float
+    stat_weight: float
+    term: str
 
 
 def read_element(in1):
@@ -55,7 +67,7 @@ def read_sp_nums(n0l0, in1):
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
                 raise GenericPlasmaException("Less than 0 e_n0l0")
-            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight, term)
+            level = In1Level(level_num, config_1, config_2, e, e_n0l0, stat_weight, term)
             sp_num_to_level[sp_num].append(level)
         elif process and len(l) == 7:
             level_num = int(l[6])
@@ -67,12 +79,15 @@ def read_sp_nums(n0l0, in1):
             e_n0l0 = n0l0[sp_num] - e
             if e_n0l0 < 0:
                 raise GenericPlasmaException("Less than 0 e_n0l0")
-            level = (level_num, config_1, config_2, e, e_n0l0, stat_weight, term)
+            level = In1Level(level_num, config_1, config_2, e, e_n0l0, stat_weight, term)
             sp_num_to_level[sp_num].append(level)
     return sp_num_to_level
 
 
-def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus, use_formula=True):
+def create_rrec_bcfp_from_in1(in1_inp_path, elem, out_dir, sp_nums, nucleus, use_formula=True):
+    if not use_formula:
+        read_strsbrg_db(elem, sp_nums)
+
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
         skip_n_lines(in1_inp, 12)
@@ -93,77 +108,13 @@ def create_rrec_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus, use_formu
 
                 if next_sn in sp_nums or next_sn == nucleus:
                     for level in levels:
-                        level_num = level[0]
-                        config_1 = level[1]
-                        config_2 = level[2]
-                        term = level[6]
+                        level_num = level.level_num
+                        config_1 = level.config_1
+                        config_2 = level.config_2
+                        term = level.term
                         if use_formula:
                             write_rrec_from_formula(atomic_number, bfcp_f, config_1, config_2, level, level_num,
                                                     levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
                         else:
-                            write_rrec_from_strasburg(el, bfcp_f, config_1, config_2, term, level, level_num,
+                            write_rrec_from_strasburg(el, bfcp_f, level,
                                                       levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
-
-
-def create_rrec_for_bad_lines(in1_inp_path, out_dir, sp_nums, s_n, bad_lines):
-    level_2_bad = {}
-    for bad in bad_lines:
-        from_level = bad[1]
-        to_level = bad[2]
-        if from_level not in level_2_bad:
-            levels = []
-            level_2_bad[from_level] = levels
-        else:
-            levels = level_2_bad[from_level]
-        levels.append(to_level)
-
-    with open(in1_inp_path, "r+") as in1_inp:
-        el, atomic_number = read_element(in1_inp)
-        skip_n_lines(in1_inp, 12)
-        n0l0 = read_n0l0(in1_inp, sp_nums)
-        levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
-
-    sp_dir = join(out_dir, str(s_n))
-    bad_dir = join(sp_dir, "bad_lines")
-    if not exists(bad_dir):
-        os.mkdir(bad_dir)
-
-    with open(join(bad_dir, "rrec"), "w") as o_f:
-        print(s_n)
-        levels = levels_by_sp_num[str(s_n)]
-        next_sn = s_n + 1
-        str_next_sn = str(next_sn)
-        if next_sn in sp_nums:
-            next_sp_levels = levels_by_sp_num[str_next_sn]
-            for level in levels:
-                level_num = level[0]
-                config_1 = level[1]
-                config_2 = level[2]
-                e_n0l0 = level[4]
-
-                if remove_num_electrones(config_2) not in supported_configs:
-                    continue
-
-                if next_sn == atomic_number + 1:
-                    next_levels = [(1, None, None, None, None, 1.0)]
-                else:
-                    config = add_digit(remove_last_external_electron(config_1, config_2))
-                    if remove_num_electrones(config) not in supported_configs:
-                        continue
-
-                    next_levels = filter(lambda x:
-                                         (x[2][-1] == '0' and
-                                          add_digit(x[1]) == config) or
-                                         add_digit(x[2]) == config,
-                                         next_sp_levels)
-                sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
-                for lvl in next_levels:
-                    if str(level_num) in level_2_bad and str(lvl[0]) in level_2_bad[str(level_num)]:
-                        print("Recreating rrec for bad trans: " + str(level_num) + "->" + str(lvl[0]))
-                        stat_weight = level[5]
-                        relative_weight = stat_weight / sum_of_stat_weights
-                        o_f.write("%4s  %4s\n" % (level_num, lvl[0],))
-                        compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
-                                            relative_weight,
-                                            o_f, True)
-                        o_f.write("--\n")

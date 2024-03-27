@@ -1,7 +1,9 @@
 from lib.exceptions import GenericPlasmaException
 
+letters_order = ['s', 'p', 'd', 'f', 'g', 'h']
+letters_to_order = {'s': '0', 'p': '1', 'd': '2', 'f': '3', 'g': '4', 'h': '5'}
 levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f", "5g", "6s", "6p",
-                "6d", '6f', '6g', '6h', '7s', '7p', '7d', '7f', '7g', '7f']
+                "6d", '6f', '6g', '6h', '7s', '7p', '7d', '7f', '7g', '7h']
 level_to_electrons = {
     "1s": 2,
     "2s": 2,

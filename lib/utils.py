@@ -287,3 +287,25 @@ def invert_replaces(replaces):
             n_o[per_sp_num[old]] = old
         new_to_old[sp_num] = n_o
     return new_to_old
+
+
+def remove_num_electrones(c):
+    if c[-1].isdigit():
+        return c[0:-1]
+    else:
+        return c
+
+
+def add_digit(c):
+    if not c[-1].isdigit():
+        return c + "1"
+    else:
+        return c
+
+
+def energy_ryd_to_ev(e_ryd):
+    return e_ryd * 13.605693009
+
+
+def next_sn(sn_str):
+    return str(int(sn_str) + 1)

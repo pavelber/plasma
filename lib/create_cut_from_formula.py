@@ -1,6 +1,7 @@
 from os.path import join
 
 from lib.iterate_photo_cross import p1, compute_and_iterate
+from lib.utils import remove_num_electrones, add_digit
 
 
 def remove_last_external_electron(config_1, config_2):
@@ -18,19 +19,6 @@ def remove_last_internal_electron(config_1, config_2):
 # USE FORMULA TO COMPUTE CUT
 #################################################################
 
-def add_digit(c):
-    if not c[-1].isdigit():
-        return c + "1"
-    else:
-        return c
-
-
-def remove_num_electrones(c):
-    if c[-1].isdigit():
-        return c[0:-1]
-    else:
-        return c
-
 
 def create_configs_without_one_external_electron_in_next_sp(config_1, config_2, next_sn, atomic_number,
                                                             levels_by_sp_num):
@@ -44,9 +32,9 @@ def create_configs_without_one_external_electron_in_next_sp(config_1, config_2, 
         alternative_iteration_formula = remove_num_electrones(config_2) not in p1.keys()
 
         next_levels = list(filter(lambda x:
-                                  (x[2][-1] == '0' and
-                                   add_digit(x[1]) == config) or
-                                  add_digit(x[2]) == config,
+                                  (x.config_2[-1] == '0' and
+                                   add_digit(x.config_1) == config) or
+                                  add_digit(x.config_2) == config,
                                   next_sp_levels))
     return alternative_iteration_formula, next_levels
 
@@ -63,32 +51,27 @@ def create_configs_without_one_internal_electron_in_next_sp(config_1, config_2, 
         alternative_iteration_formula = remove_num_electrones(config_2) not in p1.keys()
 
         next_levels = list(filter(lambda x:
-                                  (x[2][-1] == '0' and
-                                   add_digit(x[1]) == config) or
-                                  add_digit(x[2]) == config,
+                                  (x.config_2[-1] == '0' and
+                                   add_digit(x.config_1) == config) or
+                                  add_digit(x.config_2) == config,
                                   next_sp_levels))
     return alternative_iteration_formula, next_levels
 
 
 def iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, config_1, config_2, e_n0l0, level,
                         level_num, next_levels, next_sn, o_f, s_n, sp_dir, comment):
-    sum_of_stat_weights = sum(map(lambda x: x[5], next_levels))
-    print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(
-        next_sn) + " " + str(next_levels))
+    sum_of_stat_weights = sum(map(lambda x: x.stat_weight, next_levels))
+    # print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(next_sn) + " " + str(next_levels))
     if len(next_levels) == 0:
-        print(" <NO LEVELS FOUND>")
+        print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(next_sn) + " <NO LEVELS FOUND>")
     else:
         for lvl in next_levels:
-            stat_weight = lvl[5]
+            stat_weight = lvl.stat_weight
             relative_weight = stat_weight / sum_of_stat_weights
-            # print("From " + str(s_n) + " level " + str(level[0]) + " to " + str(
-            #    next_sn) + " level " + str(
-            #    lvl[0]) + " with weight " + str(relative_weight))
-
-            lvl_to = lvl[0]
+            lvl_to = lvl.level_num
             o_f.write("%4s  %4s\n" % (level_num, lvl_to,))
             bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0  %s\n" %
-                         (s_n, level[0], next_sn, lvl_to, relative_weight, comment))
+                         (s_n, level.level_num, next_sn, lvl_to, relative_weight, comment))
             with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, level_num, lvl_to)), "w") as f_data:
                 compute_and_iterate([config_1, config_2], e_n0l0, atomic_number, s_n,
                                     relative_weight,
@@ -99,8 +82,8 @@ def iterate_next_levels(alternative_iteration_formula, atomic_number, bfcp_f, co
 
 def write_rrec_from_formula(atomic_number, bfcp_f, config_1, config_2, level, level_num, levels_by_sp_num, next_sn, o_f,
                             s_n, sp_dir):
-    e = level[3]
-    e_n0l0 = level[4]
+    e = level.energy
+    e_n0l0 = level.e_n0l0
     (alternative_iteration_formula, next_levels) = \
         create_configs_without_one_external_electron_in_next_sp(config_1, config_2, next_sn,
                                                                 atomic_number,

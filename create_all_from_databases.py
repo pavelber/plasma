@@ -77,7 +77,7 @@ create_input_from_databases(elem_dir, elem, nucleus, sp_nums_dec,
                             energy_limits,
                             nmax)
 in1 = os.path.join(elem_dir, "IN1.INP")
-create_rrec_bcfp_from_in1(in1, elem_dir, sp_nums_with_nucleus, nucleus, False)
+create_rrec_bcfp_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, False)
 
 create_rrec_inp(elem_dir, ph_fac_path, sp_nums_str)
 
