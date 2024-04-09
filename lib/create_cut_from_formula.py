@@ -1,5 +1,6 @@
 from os.path import join
 
+from lib.data import In1Level
 from lib.iterate_photo_cross import p1, compute_and_iterate
 from lib.utils import remove_num_electrones, add_digit
 
@@ -23,8 +24,8 @@ def remove_last_internal_electron(config_1, config_2):
 def create_configs_without_one_external_electron_in_next_sp(config_1, config_2, next_sn, atomic_number,
                                                             levels_by_sp_num):
     str_next_sn = str(next_sn)
-    if next_sn == atomic_number + 1:
-        next_levels = [(1, None, None, None, None, 1.0)]
+    if next_sn == atomic_number + 1: #nucleus
+        next_levels = [In1Level(1, None, None, None, None, 1.0, None)]
         alternative_iteration_formula = True
     else:
         next_sp_levels = levels_by_sp_num[str_next_sn]
@@ -43,7 +44,7 @@ def create_configs_without_one_internal_electron_in_next_sp(config_1, config_2, 
                                                             levels_by_sp_num):
     str_next_sn = str(next_sn)
     if next_sn == atomic_number + 1:
-        next_levels = [(1, None, None, None, None, 1.0)]
+        next_levels = [In1Level(1, None, None, None, None, 1.0, None)]
         alternative_iteration_formula = True
     else:
         next_sp_levels = levels_by_sp_num[str_next_sn]

@@ -137,12 +137,13 @@ def download_one_level_cut_to_file(elem, sp_num_dec, file):
             f.write(response.read())
 
 
-def read_strsbrg_db(elem, sp_nums):
+def read_strsbrg_db(elem, sp_nums, nucleus):
     for s_n in sp_nums:
-        levels_file = join(base_dir, "..", "db", elem, "strasbg-levels", "%s.txt" % s_n)
-        cuts_file = join(base_dir, "..", "db", elem, "strasbg-cuts", "%s.txt" % s_n)
-        strsbrg_levels[s_n] = parse_levels(levels_file)
-        strsbrg_cuts[s_n] = parse_cuts(cuts_file)
+        if s_n != nucleus:
+            levels_file = join(base_dir, "..", "db", elem, "strasbg-levels", "%s.txt" % s_n)
+            cuts_file = join(base_dir, "..", "db", elem, "strasbg-cuts", "%s.txt" % s_n)
+            strsbrg_levels[s_n] = parse_levels(levels_file)
+            strsbrg_cuts[s_n] = parse_cuts(cuts_file)
 
 #
 # strsbrg_levels = download_levels("O", 2)

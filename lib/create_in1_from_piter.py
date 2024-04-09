@@ -21,9 +21,11 @@ def remove_braces(param):
 
 
 def should_include_level(energy, energy_limit, configs, nmax):
-    #    last_config_part = configs[-1]
-    #    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
-    #    n = int(last_config_part[0:first_letter_index])
+    last_config_part = configs[-1]
+    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
+    n = int(last_config_part[0:first_letter_index])
+    if n > 6:
+        return False
     if configs[0] == "?1" or (len(configs) > 1 and configs[1] == "?1"):
         return False
     energy = clean_num(energy)
@@ -164,7 +166,8 @@ def create_in1_inp_from_piter(dir, elem, nucleus, i_spectro, energy_limits, nmax
                               energy_limits[str(f)],
                               nmax)
 
-            in1_inp.write(str(nucleus) + "\n")
-            in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
+            if int(i_spectro[-1]) + 1 == int(nucleus):
+                in1_inp.write(str(nucleus) + "\n")
+                in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
 
             return i_spectro

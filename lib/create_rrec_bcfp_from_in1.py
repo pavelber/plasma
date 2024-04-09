@@ -1,22 +1,11 @@
 import os
-from dataclasses import dataclass
 from os.path import join, exists
 
 from lib.create_cut_from_formula import write_rrec_from_formula
 from lib.create_cut_from_strasburg import write_rrec_from_strasburg
+from lib.data import In1Level
 from lib.exceptions import GenericPlasmaException
 from lib.strsbrg_db import read_strsbrg_db
-
-
-@dataclass
-class In1Level:
-    level_num: int
-    config_1: str
-    config_2: str
-    energy: float
-    e_n0l0: float
-    stat_weight: float
-    term: str
 
 
 def read_element(in1):
@@ -86,7 +75,7 @@ def read_sp_nums(n0l0, in1):
 
 def create_rrec_bcfp_from_in1(in1_inp_path, elem, out_dir, sp_nums, nucleus, use_formula=True):
     if not use_formula:
-        read_strsbrg_db(elem, sp_nums)
+        read_strsbrg_db(elem, sp_nums, nucleus)
 
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)

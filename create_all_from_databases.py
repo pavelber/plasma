@@ -5,7 +5,7 @@ from os.path import dirname, abspath
 
 from lib.check_and_fix import copy_checks, check_and_fix_old_rr_version2, check_and_fix_rr_version2, check_fix, \
     create_rrec_inp
-from lib.create_in1_from_databases import create_input_from_databases, parse_energy_limits
+from lib.create_in1_from_databases import create_in1_excit_spectr__from_databases, parse_energy_limits
 from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
 from lib.env import get_pathes, env
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
@@ -73,9 +73,9 @@ sp_nums_with_nucleus = sp_nums_dec[:]
 if max_sp_num + 1 == nucleus:
     sp_nums_with_nucleus.append(nucleus)
 
-create_input_from_databases(elem_dir, elem, nucleus, sp_nums_dec,
-                            energy_limits,
-                            nmax)
+create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec,
+                                        energy_limits,
+                                        nmax)
 in1 = os.path.join(elem_dir, "IN1.INP")
 create_rrec_bcfp_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, False)
 
@@ -117,8 +117,8 @@ for sp in sp_nums_with_nucleus:
 replaces = remove_unused_lines_and_renumerate(elem_dir, nucleus)
 
 from_new_to_old = invert_replaces(replaces)
-create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", "RREC.INP")
-create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP")
+#create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", "RREC.INP")
+#create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP")
 test_number_of_levels_inp1(in1)
 files_not_empty(elem_dir)
 
