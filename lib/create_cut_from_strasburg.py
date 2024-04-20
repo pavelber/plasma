@@ -1,5 +1,9 @@
 from os.path import join, dirname, abspath
 
+import numpy as np
+from scipy import interpolate
+
+from lib.data import In1Level
 from lib.levels_string import letters_to_order
 from lib.strsbrg_db import strsbrg_levels, strsbrg_cuts
 from lib.utils import energy_ryd_to_ev
@@ -55,34 +59,57 @@ def find_strasburg_level(s_n, energy):
     return level
 
 
-def get_to_in_1_levels(elem, s_n, level, in1_levels_by_sp_num):
+def get_to_in_1_levels(elem, s_n, level, in1_levels_by_sp_num, nucleus):
     from_strqasburg_level = get_strasburg_level_by_in1_level(elem, s_n, level, in1_levels_by_sp_num)
     if from_strqasburg_level is None:
         return None
     ionization_potentional = strsbrg_cuts[s_n][1].energy
+    if from_strqasburg_level.num_i not in strsbrg_cuts[s_n]:
+        return []
     transition = strsbrg_cuts[s_n][from_strqasburg_level.num_i]
     s_n_1 = s_n + 1
+    if s_n_1 == nucleus:
+        return [In1Level(1, "", "", 0.0, 0.0, 1.0, "")]
     if s_n_1 not in strsbrg_levels:
         return []
     to_strsbrg_level = find_strasburg_level(s_n_1,
                                             transition.energy - (
                                                     ionization_potentional + from_strqasburg_level.energy))
 
-    strasburg_levels = get_in1_levels_by_strasburg_level(elem, s_n_1, to_strsbrg_level, in1_levels_by_sp_num)
-    return strasburg_levels
+    to_in1_levels = get_in1_levels_by_strasburg_level(elem, s_n_1, to_strsbrg_level, in1_levels_by_sp_num)
+    return to_in1_levels
 
 
 # Потенциал ионизации иона это энергия первого перехода в таблице переходов.
 # Из энерии перехода вычитаю (потенциал ионизции - энергия уровня из которого переход).
 # Получаю энергию уровня в который переход
 
+def create_n_values_map(original_dict, n):
+    # Separate the keys and values into two lists
+    x = list(original_dict.keys())
+    y = list(original_dict.values())
+
+    # Create the interpolation function
+    f = interpolate.interp1d(x, y)
+
+    # Create an array of 100 evenly spaced points between the min and max of your original x values
+    xnew = np.linspace(min(x), max(x), num=n, endpoint=True)
+
+    # Use the interpolation function to calculate the new y values
+    ynew = f(xnew)
+
+    # Combine the new x and y values into a new dictionary
+    new_dict = dict(zip(xnew, ynew))
+    return new_dict
+
+
 def take_from_db_and_write(in1_level, e_n0l0, elem, s_n, relative_weight, levels_by_sp_num, o_f, f_data):
     srasburg_level = get_strasburg_level_by_in1_level(elem, s_n, in1_level, levels_by_sp_num)
     from_db = strsbrg_cuts[s_n][srasburg_level.num_i]
-    keys_ = list(from_db.cuts.keys())[0:99]
+    interpolated = create_n_values_map(from_db.cuts, 99)
     cut_constant = 1e-18
-    for e_ryd in keys_:
-        sigma = cut_constant * float(from_db.cuts[e_ryd]) * relative_weight
+    for e_ryd, cut in interpolated.items():
+        sigma = cut_constant * float(cut) * relative_weight
         e = energy_ryd_to_ev(float(e_ryd))
         e_relative = e / e_n0l0
         o_f.write(" %.3e   %.3e   %.3e\n" % (e_relative, sigma, e))
@@ -95,30 +122,30 @@ def find_levels_by_config_and_term(levels, level):
                levels))
 
 
-def write_rrec_from_strasburg(elem, bfcp_f, level,
-                              levels_by_sp_num, next_sn, o_f, s_n, sp_dir):
-    e_n0l0 = level.e_n0l0
+def write_rrec_from_strasburg(elem, bfcp_f, from_in1_level,
+                              levels_by_sp_num, next_sn, o_f, s_n, sp_dir,nucleus):
+    e_n0l0 = from_in1_level.e_n0l0
 
     # find all in1 "to" levels for the transition (we assume that transition always to ground state (level 1)
     # of the next sp num)
-    to_in1_levels = get_to_in_1_levels(elem, s_n, level, levels_by_sp_num)
+    to_in1_levels = get_to_in_1_levels(elem, s_n, from_in1_level, levels_by_sp_num, nucleus)
 
     if to_in1_levels is None or len(
             to_in1_levels) == 0:  # we dont found either "from" strasburg levels or "to" in1 levels
-        print("*** From " + str(s_n) + " " + level.config_1 + " " + level.config_2 +
+        print("*** From " + str(s_n) + " " + from_in1_level.config_1 + " " + from_in1_level.config_2 +
               " to " + str(next_sn) + " " + str(to_in1_levels) + " <NO LEVELS FOUND>")
     else:
-        print("*** From " + str(s_n) + " " + level.config_1 + " " + level.config_2 +
+        print("*** From " + str(s_n) + " " + from_in1_level.config_1 + " " + from_in1_level.config_2 +
               " to " + str(next_sn) + " " + str(to_in1_levels))
         sum_of_stat_weights_to = sum(map(lambda l: l.stat_weight, to_in1_levels))
         for lvl in to_in1_levels:
             stat_weight = lvl.stat_weight
             relative_weight = stat_weight / sum_of_stat_weights_to
             lvl_to = lvl.level_num
-            o_f.write("%4s  %4s\n" % (level.level_num, lvl_to,))
+            o_f.write("%4s  %4s\n" % (from_in1_level.level_num, lvl_to,))
             bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0 \n" %
-                         (s_n, level.level_num, next_sn, lvl_to, relative_weight))
-            with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, level.level_num, lvl_to)), "w") as f_data:
-                take_from_db_and_write(level, e_n0l0, elem, s_n,
+                         (s_n, from_in1_level.level_num, next_sn, lvl_to, relative_weight))
+            with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, from_in1_level.level_num, lvl_to)), "w") as f_data:
+                take_from_db_and_write(from_in1_level, e_n0l0, elem, s_n,
                                        relative_weight, levels_by_sp_num, o_f, f_data)
             o_f.write("--\n")

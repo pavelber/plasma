@@ -106,4 +106,4 @@ def create_rrec_bcfp_from_in1(in1_inp_path, elem, out_dir, sp_nums, nucleus, use
                                                     levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
                         else:
                             write_rrec_from_strasburg(el, bfcp_f, level,
-                                                      levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
+                                                      levels_by_sp_num, next_sn, o_f, s_n, sp_dir, nucleus)

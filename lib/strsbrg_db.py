@@ -59,9 +59,9 @@ def parse_cuts(f_name):
                 transition = Transition(level_from, level_to, islp, energy, cuts)
                 transitions[level_from] = transition
             elif num_parts == 2:
-                cuts[parts[0]] = parts[1]
+                cuts[float(parts[0])] = float(parts[1])
 
-    return transitions
+    return {key: value for key, value in transitions.items() if value.cuts is None or len(value.cuts) > 0}
 
 
 def parse_levels(f_name):
@@ -139,11 +139,11 @@ def download_one_level_cut_to_file(elem, sp_num_dec, file):
 
 def read_strsbrg_db(elem, sp_nums, nucleus):
     for s_n in sp_nums:
-        if s_n != nucleus:
-            levels_file = join(base_dir, "..", "db", elem, "strasbg-levels", "%s.txt" % s_n)
-            cuts_file = join(base_dir, "..", "db", elem, "strasbg-cuts", "%s.txt" % s_n)
-            strsbrg_levels[s_n] = parse_levels(levels_file)
-            strsbrg_cuts[s_n] = parse_cuts(cuts_file)
+        levels_file = join(base_dir, "..", "db", elem, "strasbg-levels", "%s.txt" % s_n)
+        cuts_file = join(base_dir, "..", "db", elem, "strasbg-cuts", "%s.txt" % s_n)
+        strsbrg_levels[s_n] = parse_levels(levels_file)
+        strsbrg_cuts[s_n] = parse_cuts(cuts_file)
+
 
 #
 # strsbrg_levels = download_levels("O", 2)
@@ -168,3 +168,4 @@ def read_strsbrg_db(elem, sp_nums, nucleus):
 #     result = list(filter(lambda levels: True, per_term.values()))
 #     if not result:
 #         print(config + " not found")
+

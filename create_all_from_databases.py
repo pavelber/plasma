@@ -117,8 +117,8 @@ for sp in sp_nums_with_nucleus:
 replaces = remove_unused_lines_and_renumerate(elem_dir, nucleus)
 
 from_new_to_old = invert_replaces(replaces)
-#create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", "RREC.INP")
-#create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP")
+create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", "RREC.INP")
+create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP", True)
 test_number_of_levels_inp1(in1)
 files_not_empty(elem_dir)
 
