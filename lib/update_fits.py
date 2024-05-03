@@ -9,7 +9,6 @@ def fun(a, b, c, d, x):
     return (a + b / x + c / (x * x)) * (1 / (pow(x, (7.0 / 2.0 + d))))
 
 
-
 def is_bad(sum_square_diffs):
     return sum_square_diffs > 1e-34
 
@@ -79,8 +78,7 @@ def create_new_fits_for_rrec2(elem_dir, method, from_new_tol_old, new_filts_file
                     newc = res.x[2]
                     newd = res.x[3]
                     sum_square_diffs = def_fun_to_minimize(res.x)
-                    if (reject_bad_fits and not (new_level_to == "1" and new_level_from == "1")):
-
+                    if reject_bad_fits and not (new_level_to == "1" and new_level_from == "1"):
                         if is_bad(sum_square_diffs):
                             print("+", end="")
                             continue
@@ -89,7 +87,7 @@ def create_new_fits_for_rrec2(elem_dir, method, from_new_tol_old, new_filts_file
                         "%s%11.3e %11.3e %11.3e %11.3e   0.000E+00   0.000E+00   0.000E+00   0.000E+00   0.000E+00   0.000E+00\n" % (
                             l[0:22], newa, newb, newc, newd))
 
-                    #print(sum_square_diffs)
+                    # print(sum_square_diffs)
                     print(".", end="")
                 else:
                     fwrite.write(l)

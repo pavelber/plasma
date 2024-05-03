@@ -40,5 +40,5 @@ old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
 #     #download_levels_to_file(elem, levels_downloaded, min_sp_num, max_sp_num)
 #     download_cuts_to_file(elem, cuts_downloaded, min_sp_num, max_sp_num)
 
-download_one_level_to_file("O", 9, join(my_dir, "db", "O", "strasbg-levels", str(9) + ".txt"))
-download_one_level_cut_to_file("O", 9, join(my_dir, "db", "O", "strasbg-cuts", str(9) + ".txt"))
+download_one_level_to_file("C", 7, join(my_dir, "db", "C", "strasbg-levels", str(7) + ".txt"))
+download_one_level_cut_to_file("C", 7, join(my_dir, "db", "C", "strasbg-cuts", str(7) + ".txt"))
