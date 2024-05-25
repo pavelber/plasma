@@ -1,9 +1,7 @@
 import os
-from os.path import join
 
 from lib.env import get_pathes, env
-from lib.strsbrg_db import download_levels_to_file, download_cuts_to_file, download_one_level_to_file, \
-    download_one_level_cut_to_file
+from lib.strsbrg_db import download_levels_to_file, download_cuts_to_file
 from lib.utils import error, read_table
 
 ################## MAIN ######################
@@ -19,14 +17,16 @@ old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
 
 (name_to_table, num_to_table) = read_table()
 
+elem = "Fe"
+
 # for elem_num in range(1, 37):
 #     elem = num_to_table[str(elem_num)]['Symbol']
 #     min_sp_num = 1
 #     max_sp_num = min(int(num_to_table[str(elem_num)]['AtomicNumber']), 8)
 #     print("DOWNLOADING " + elem)
 #     elem_dir = os.path.join(my_dir, "db", elem)
-#     levels_downloaded = os.path.join(my_dir, "db", elem, "strasbg-levels")
-#     cuts_downloaded = os.path.join(my_dir, "db", elem, "strasbg-cuts")
+levels_downloaded = os.path.join(my_dir, "db", elem, "strasbg-levels")
+cuts_downloaded = os.path.join(my_dir, "db", elem, "strasbg-cuts")
 #
 #     if not os.path.exists(elem_dir):
 #         os.mkdir(elem_dir)
@@ -40,5 +40,5 @@ old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
 #     #download_levels_to_file(elem, levels_downloaded, min_sp_num, max_sp_num)
 #     download_cuts_to_file(elem, cuts_downloaded, min_sp_num, max_sp_num)
 
-download_one_level_to_file("C", 7, join(my_dir, "db", "C", "strasbg-levels", str(7) + ".txt"))
-download_one_level_cut_to_file("C", 7, join(my_dir, "db", "C", "strasbg-cuts", str(7) + ".txt"))
+download_levels_to_file(elem, levels_downloaded, 1, 8)
+download_cuts_to_file(elem, cuts_downloaded, 1, 8)

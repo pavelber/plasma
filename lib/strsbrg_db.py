@@ -81,6 +81,8 @@ def parse_levels(f_name):
                 config = extract_config(parts[5])
             else:
                 config = extract_config(parts[5] + " " + parts[6])
+            if parts[num_parts - 1][0] == '*':
+                continue
             stat_weight = int(float(parts[num_parts - 1]))
             levels[str(config)].append(Level(config, stat_weight, num_i, energy, islp))
     return levels
@@ -100,7 +102,7 @@ def download_one_level_to_file(elem, sp_num_dec, file):
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
     req = Request(url,
                   headers=headers, method="GET")
-    with urlopen(req, timeout=5) as response:
+    with urlopen(req, timeout=50) as response:
         for i in range(URL_LINES_SKIP):
             response.readline()
         with open(file, "wb") as f:

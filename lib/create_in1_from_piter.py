@@ -54,7 +54,7 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits, nmax)
             parts = line.split()
             if ".nd" in parts[0]:
                 continue
-            if len(parts) == 5:
+            if len(parts) == 5 and parts[0] != "?":
                 configs = normalize_config(parts[0])
                 configs_copy_for_csv = configs.copy()
                 if configs_copy_for_csv[0] == "":
@@ -102,7 +102,7 @@ def count_levels(spec_num_file, max_energy, nmax):
         levels = 0
         for line in inf:
             parts = line.split()
-            if len(parts) == 5:
+            if len(parts) == 5 and parts[0] != "?":
                 level_energy = clean_num(parts[3])
                 configs = normalize_config(parts[0])
                 if should_include_level(level_energy, max_energy, configs, nmax):
