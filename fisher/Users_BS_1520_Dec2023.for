@@ -148,10 +148,10 @@ c  Print all-XE POPZ for this "La" & t = tf
       use mo1
       implicit none
       open( 13,file='Flag.inp')
-      open(111,file='QSsAL272.inp') 
-      open(112,file='ExcAL272.inp')
-      open(113,file='InzAL272.inp')
-      open(114,file='AIwAL272.inp')
+      open(111,file='QSsKR272.inp') 
+      open(112,file='ExcKR272.inp')
+      open(113,file='InzKR272.inp')
+      open(114,file='AIwKR272.inp')
 
       open(211,file='QSsMG272.inp') 
       open(212,file='ExcMG272.inp')
