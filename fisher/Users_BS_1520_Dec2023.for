@@ -1,7 +1,6 @@
       use mo1          ! Feb 14, 2024.
       implicit none
-      
-       
+
       CALL OpenFiles() ! Open Output files & write the column titles
       CALL Intro()     ! Read input files; produce atomic data arrays & initial POPs
       CALL LineList()  ! Find spectral lines possible in [hvSmo, hvmax] domain & print hv-reguladed LineList
@@ -144,13 +143,12 @@ c  Print all-XE POPZ for this "La" & t = tf
       END ! MAIN
 
 
-  
+
       SUBROUTINE OpenFiles()   ! List spectral lines to be observed in [hvSmo, hvMax] & Print hv-regulated LineList in file #30.
       use mo1
       implicit none
-      
       open( 13,file='Flag.inp')
-      open(112,file='QSsAL272.inp')
+      open(111,file='QSsAL272.inp') 
       open(112,file='ExcAL272.inp')
       open(113,file='InzAL272.inp')
       open(114,file='AIwAL272.inp')
