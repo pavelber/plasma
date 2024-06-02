@@ -10,10 +10,8 @@ from lib.utils import error, read_table
 
 ################## MAIN ######################
 
-if len(sys.argv) < 2:
-    error('\nUsage: ' + sys.argv[0] + ' element-name')
 
-elem = sys.argv[1]
+elem = "Na"
 nmax = 10
 osc = 1e-8
 min_sp_num = 1
@@ -42,7 +40,7 @@ if not os.path.exists(levels_downloaded):
 if not os.path.exists(lines_downloaded):
     os.mkdir(lines_downloaded)
 
-sp_num = "V"
+sp_num = "I"
 
 outf = os.path.join(lines_downloaded, str(roman_to_int(sp_num)) + '.txt')
 download_piter_lines_one_spnum(outf, elem, sp_num, nmax, osc)

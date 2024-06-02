@@ -33,7 +33,7 @@ def get_strasburg_level_by_in1_level(elem, s_n, in1_level, in1_levels_by_sp_num)
 
     strasburg_levels = list(filter(lambda l: l.stat_weight == sum_of_stat_weights, levels_per_config))
 
-    if len(strasburg_levels) > 1 and in1_level.term[0].isdigit():
+    if len(strasburg_levels) > 1 and in1_level.term[0].isdigit() and in1_level.term[1] != "/" and in1_level.term[1] != "[":
         islp = in1_level.term[0] + letters_to_order[in1_level.term[1].lower()]
         strasburg_levels = list(filter(lambda l: islp == l.islp[0:2], strasburg_levels))
 
