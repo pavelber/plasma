@@ -40,5 +40,5 @@ cuts_downloaded = os.path.join(my_dir, "db", elem, "strasbg-cuts")
 #     #download_levels_to_file(elem, levels_downloaded, min_sp_num, max_sp_num)
 #     download_cuts_to_file(elem, cuts_downloaded, min_sp_num, max_sp_num)
 
-download_levels_to_file(elem, levels_downloaded, 1, 8)
-download_cuts_to_file(elem, cuts_downloaded, 1, 8)
+#download_levels_to_file(elem, levels_downloaded, 1, 8)
+download_cuts_to_file(elem, cuts_downloaded, 1, 2)
