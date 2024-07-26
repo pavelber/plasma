@@ -391,6 +391,7 @@ c  Read excitation cross sections & f's from all 'ExcXE....inp' files.  Note: la
         if(abs(Fxw).gt.1.d-30) STOP 'OPEN "Fx" array'
 
         DE= E(kU,nX) - E(kL,nX) 
+		write(*,'(a20, i9, i9, i9)') '->>>>>', iSS,LL, LU
         if(DE .le. zero) STOP 'Excitation down in reading Exc...inp'
 
         MthdEX(kL,kU,nX)= mth
@@ -412,6 +413,8 @@ c       Fx(kL,kU,nX)= Fxw     ! 5th Excit coef not used in Methods #5 and #11
 
         if(iSS.eq.HSS(nX) .and. kL.eq.Nnu(nX)-2 .and. 
      +                          kU.eq.Nnu(nX)-1) goto 7                  ! It must be the last line of "ExcXE.inp"
+        if(iSS.eq.HSS(nX) .and. LL.eq.13 .and. 
+     +                          LU.eq.16) goto 7                  ! It must be the last line of "ExcXE.inp"
         if(mth.eq.-5 .or. mth.eq.0  .or. mth.eq.5 .or. mth.eq.11) goto 6 ! "-5" is "5 of low accyracy"; Lenya
 
         write(*,'(a65,5i5)') 'Excit CrosSec fit-method is unknown for XE, 
