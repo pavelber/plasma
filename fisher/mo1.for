@@ -181,7 +181,7 @@ c                             In same "TREXscans" subr, inU=8,9 are later used f
      +   Den(nXE),        ! ion number density for all XE & w-XE;  i/cc 
      +   MaBSvsMw(LaMx),  ! Mass of 1 BS vs Mw
      +   tgp(300),        ! t-points of t-grid, 300 is overestimate
-     +   DE, BEk,      ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans. 
+     +   DE, BEk,    ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans. 
      +   Scale,        ! t-Scale=10^40 for d02
      +   SumP, tstep,      ! sum POP 
      +   ti, tf, strt, tm, ! time-step [s]. Initial & final instants of present time-step: tf= ti+ tstep; tm=(ti+tf)/2. Start-value of "ti".

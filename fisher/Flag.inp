@@ -2,7 +2,7 @@
 20.    hvSmo [eV] is red edge of fine v-grid. I excluded lines at hv < hvSmo because weak vs free-free continuum.
 1250.  hvMiF [eV] First hv-point of superFine v-grid
 2400.  hvMaF [eV] Last  hv-point of superFine v-grid
-16.e3  hvMax [eV] is maximal photon energy in the hv-grid. It MUST include hard continuum, hv >> 5 keV for PCD-40 
+16.e5  hvMax [eV] is maximal photon energy in the hv-grid. It MUST include hard continuum, hv >> 5 keV for PCD-40 
 1.d-3  fluMin is Min allowed value of abso OscStren for YES spectral line. If f() < fluMin, we replace A() by A() =0 in "Intro" 
 1.d6   [1/s] AulMin is Min allowed value of A-coef for ...
 ---------

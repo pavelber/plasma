@@ -354,6 +354,8 @@ c   Read all "QSsXE....inp" files.
           do k = kAI1(j,nX), kAI2(j,nX)  
             read(nFi,'(a5,a5, f3.0, 2f11.3)') QSname1(k,nX),  
      +           QSname2(k,nX), g0(k,nX), E(k,nX) 
+c			write(*,'(a16, f10.3, i6, i6)') 
+c     +         'Read energies=', E(k,nX), nX, k
             kiSS(k,nX)= j
           enddo 
         enddo
@@ -390,8 +392,12 @@ c  Read excitation cross sections & f's from all 'ExcXE....inp' files.  Note: la
         if(LU.ge.nFAI) kU= kAI1(iSS,nX) + LU-nFAI 
         if(abs(Fxw).gt.1.d-30) STOP 'OPEN "Fx" array'
 
+		Euu= E(kU,nX)	
+		Ell= E(kL,nX)	
         DE= E(kU,nX) - E(kL,nX) 
-		write(*,'(a20, i9, i9, i9)') '->>>>>', iSS,LL, LU
+c		write(*,'(a20, i9, i9, i9)') '->>>>>', iSS, LL, LU
+c		write(*,'(a20, i9, i9, i9)') '->>>>>', iSS, kL, kU
+c		write(*,'(a20, f12.3, f12.3)') '----->>>>>', Euu, Ell
         if(DE .le. zero) STOP 'Excitation down in reading Exc...inp'
 
         MthdEX(kL,kU,nX)= mth
@@ -411,6 +417,7 @@ c       Fx(kL,kU,nX)= Fxw     ! 5th Excit coef not used in Methods #5 and #11
         A(kU,kL,nX)= 4.3450d7* flu(kL,kU,nX) *g0(kL,nX)
      +               *(E(kU,nX)-E(kL,nX))**2 /g0(kU,nX)
 
+c		write(*,'(a20, i9)') '---*-->>>>>', Nnu(nX)
         if(iSS.eq.HSS(nX) .and. kL.eq.Nnu(nX)-2 .and. 
      +                          kU.eq.Nnu(nX)-1) goto 7                  ! It must be the last line of "ExcXE.inp"
         if(iSS.eq.HSS(nX) .and. LL.eq.13 .and. 
@@ -486,7 +493,7 @@ Consistancy control 1:
 Consistancy control 2: AI transition energy DE == E(qAI) - [PIR + E(fin)], i.e. E(i) - E(f), where both E taken 
 c                      relative to common "0", which is GS of "2ex ion".  Here we check consistency of DataBases: 
 c                      compare "trEn" from "AIwXE...inp"  to  E(qAI)-[PI+E(fin)] from "QSsXE....inp".
-        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 0.002) then
+        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 2.0) then
            write(*,'(a25)') 'Inconsistency in AI transition energy:'
            write(41,'(i2, 6i4, 6e12.6)') nX, ki, iSS1, iQS1, 
      +       kf, iSS2, iQS2, trEn, E(ki,nX)-PI(iSS1,nX)-E(kf,nX), 

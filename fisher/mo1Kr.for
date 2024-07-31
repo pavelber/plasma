@@ -21,7 +21,7 @@ c                                In "Intro" & ionization we assume that state #N
      +   nFAI = 301 ,   ! in each SS, containing AI QSs, serial number of lowest AI QS.                             
      +   nvM  = 12300, ! number of hv-grid points; 100 points in soft [hvMin, hvSmo] domain & 200 points in [hvMaxf, hvMax] domain 
      +   mSpe = 6,     ! Number of spectra prints: files 61 - 76,171-176, 371-376, 
-     +   MNLe = 2600,  ! Not more than "MNLe" spectral lines are expected for all XE together (common LineList)
+     +   MNLe = 11566,  ! Not more than "MNLe" spectral lines are expected for all XE together (common LineList)
      +   LaMx = 2,     ! Number of cylindrical plasma shells in present run: HOT Interm(La=1), Vacuum(La=2) CORE (La=3) & COLD HALO(La=4)
      +   np5kap= 2272, ! Number of v-points on  5 mils kapton PCD response curve [1mil = 25.4 mcm; mils= mInch] 
      +   np10ka= 2301, ! Number of v-points on 10 mils kapton PCD  
@@ -181,7 +181,7 @@ c                             In same "TREXscans" subr, inU=8,9 are later used f
      +   Den(nXE),        ! ion number density for all XE & w-XE;  i/cc 
      +   MaBSvsMw(LaMx),  ! Mass of 1 BS vs Mw
      +   tgp(300),        ! t-points of t-grid, 300 is overestimate
-     +   DE, BEk,      ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans. 
+     +   DE, BEk, Euu, Ell,      ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans.
      +   Scale,        ! t-Scale=10^40 for d02
      +   SumP, tstep,      ! sum POP 
      +   ti, tf, strt, tm, ! time-step [s]. Initial & final instants of present time-step: tf= ti+ tstep; tm=(ti+tf)/2. Start-value of "ti".
