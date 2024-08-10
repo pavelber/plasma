@@ -1,4 +1,4 @@
-      use mo1 
+      use mo1
       implicit none
 
       CALL OpenFiles() ! Open output files and write title lines
@@ -101,10 +101,10 @@ c  Print all-XE POPZ for this "La" and t = tf
       use mo1
       implicit none
       open( 13,file='Flag.inp')
-      open(111,file='QSsAL272.inp') 
-      open(112,file='ExcAL272.inp')
-      open(113,file='InzAL272.inp')
-      open(114,file='AIwAL272.inp')
+      open(111,file='QSsKR272.inp')
+      open(112,file='ExcKR272.inp')
+      open(113,file='InzKR272.inp')
+      open(114,file='AIwKR272.inp')
 
       open(211,file='QSsMG272.inp') 
       open(212,file='ExcMG272.inp')
@@ -334,7 +334,8 @@ c  Read excitation cross sections and f's from all 'ExcXE....inp' files.  Note: 
         nFi= 12+ 100*nX             ! "ExcXE.inp" file## == 112, 212, 312, 412 
         read(nFi,'(a9)') title
         read(nFi,'(a9)') empty  
-  6     read(nFi,*) iSS, LL, LU, mth, Axw, Bxw, Cxw, Dxw, Exw, Fxw, fw 
+  6     read(nFi,*) iSS, LL, LU, mth, Axw, Bxw, Cxw, Dxw, Exw, Fxw, fw
+
         if(LL.lt.nFAI) kL= nuGS(iSS,nX)-1+LL       ! order# in XE total EL list for non-AI EL           
         if(LU.lt.nFAI) kU= nuGS(iSS,nX)-1+LU
         if(LL.ge.nFAI) kL= kAI1(iSS,nX) + LL-nFAI  ! order# in XE total EL list for AI EL
@@ -361,7 +362,8 @@ c       Fx(kL,kU,nX)= Fxw     ! 5th Excit coef not used in Methods #5 and #11
         A(kU,kL,nX)= 4.3450d7* flu(kL,kU,nX) *g0(kL,nX)
      +               *(E(kU,nX)-E(kL,nX))**2 /g0(kU,nX)
 
-        if(iSS.eq.HSS(nX) .and. kL.eq.Nnu(nX)-2 .and. 
+        write(*,'(i7, i7, i7, i7)')  HSS(nX), kL, kU, Nnu(nX)
+        if(iSS.eq.HSS(nX) .and. kL.eq.Nnu(nX)-4 .and.                    ! Pavel's change -2 to -4 to make it run for Kr
      +                          kU.eq.Nnu(nX)-1) goto 7                  ! It must be the last line of "ExcXE.inp"
         if(mth.eq.-5 .or. mth.eq.0  .or. mth.eq.5 .or. mth.eq.11) goto 6 ! "-5" is "5 of low accyracy"; Lenya
 
@@ -434,7 +436,7 @@ Consistancy control 1:
 Consistancy control 2: AI transition energy DE == E(qAI) - [PIR + E(fin)], i.e. E(i) - E(f), where both E taken 
 c                      relative to common "0", which is GS of "2ex ion".  Here we check consistency of DataBases: 
 c                      compare "trEn" from "AIwXE...inp"  to  E(qAI)-[PI+E(fin)] from "ELsXE....inp".
-        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 0.002) then
+        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 2.0) then  ! Changed to 2.0 for Kr Pavel
            write(*,'(a25)') 'Inconsistency in AI transition energy:'
            write(41,'(i2, 6i4, 6e12.6)') nX, ki, iSS1, iEL1, 
      +       kf, iSS2, iEL2, trEn, E(ki,nX)-PI(iSS1,nX)-E(kf,nX), 
@@ -747,7 +749,7 @@ c                            Lines from cut ELs and onto cut ELs came with EmiLF
      +       	         dhv*(pBB(iv)+pBB(iv-1))/2. ! To return them, cut-wings shape will be re-norm to Integ[pBB(v)dv] = 1
         enddo   ! iv
 
-        if(ArPBB(lw) .LT. 0.1) then
+        if(ArPBB(lw) .LT. 0.0) then !Pavel set 0.0 instead of 0.1
            write(*,'(/a36, i6, f10.3, 9e10.2)') 
      +       'lw, hvC, FWevGau, ArPBB(lw) =', 
      +        lw, hvC(lw), FWevGau, ArPBB(lw)

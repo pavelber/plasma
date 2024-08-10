@@ -2,13 +2,13 @@
 20.    hvSmo [eV] is red edge of "fine resolution" interval of hv. I excluded lines at hv < hvSmo because they are weak vs free-free continuum.
 1250.  hvMiF [eV] First hv-point of "superFine" interval of hv axis
 2400.  hvMaF [eV] Last  hv-point of "superFine" .....
-16.e3  hvMax [eV] is maximal photon energy on the hv axis. It MUST be >> ionization energy of H-like ground state and >> max(Te) 
+16.e5  hvMax [eV] is maximal photon energy on the hv axis. It MUST be >> ionization energy of H-like ground state and >> max(Te)
 3.d-3  fluMin is Minimal Absorption Oscillator Strength, "flu". Lines with flu < fluMin are excluded by changing Aul with zero in subroutine "Intro". 
 3.d6   [1/s] AulMin is Minimal value of Einstein A-coeficient, "Aul". Lines with Aul < AulMin are excluded by changing Aul with zero in subroutine "Intro".
 ---------
-47       Al gr.st. of Li-like ion. Serial number of the energy level for loading initial POP = 1.(nX=1)  
+47       Kr gr.st. of Li-like ion. Serial number of the energy level for loading initial POP = 1.(nX=1)
 47       Mg .................................                                                  2  
-26.98    Al ion mass, a.u.;  "Atmass(1)"
+83.80    Kr ion mass, a.u.;  "Atmass(1)"
 24.30    Mg ....................... 
 0      KeRedu= -1 or 0.  "-1" means "no reduction of inization energy, "0" means "reduction in the Ion Sphere approach"
 -----------------------------------------
