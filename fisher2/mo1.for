@@ -1,16 +1,16 @@
       module mo1     
       implicit none
       integer, public, parameter :: 
-     +     nXE= 2              ! number of chemical elements (XE). Now nX=1 is AL, nX=2 is MG. 
+     +     nXE= 1              ! number of chemical elements (XE). Now nX=1 is AL, nX=2 is MG.
       integer, public :: 
      +     FSS(nXE), HSS(nXE), ! First & H-like Spectroscopic Symbol (SpS) in database(DB); "FSS" may be any, but it must have > 1 energy level (EL).
      +     Nnu(nXE),           ! Number of non-autoionizing energy levels (ELs) in DB. "Nnu" = the serial number of nucleus in DB
      +     NST(nXE)            ! TOTAL number of ELs in DB of XE, This number includes autoionizing (AI) and non-AI ELs 
 
-      DATA FSS / 10,  9/,   ! 1st SpSs of AL & MG in DB, here Be-like ELs
-     +     HSS / 13, 12/,   ! H -like SpSs
-     +     Nnu /109, 109/,  ! serial number of nuclei in DBs of XE. This number = the number of non-AI ELs in DB 
-     +     NST /272, 272/   ! total number of ELs in databases of Al and Mg  
+      DATA FSS / 10/,   ! 1st SpSs of AL & MG in DB, here Be-like ELs
+     +     HSS / 13/,   ! H -like SpSs
+     +     Nnu /109/,  ! serial number of nuclei in DBs of XE. This number = the number of non-AI ELs in DB
+     +     NST /272/   ! total number of ELs in databases of Al and Mg
       integer, public, parameter :: 
      +     NSTm = 272,            ! max of all (here two) "NST"	   
      +     HSSm =  13,                  ! highest (of all XE) SpS of H-like ion
