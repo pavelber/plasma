@@ -1,40 +1,38 @@
-1.0    hvMin [eV] is soft edge of hv axis, DON'T INCREASE. It affects photo-induced transitions. 
+1.0    hvMin [eV] is soft edge of hv axis, DON'T INCREASE. It affects photo-induced transitions.
 20.    hvSmo [eV] is red edge of "fine resolution" interval of hv. I excluded lines at hv < hvSmo because they are weak vs free-free continuum.
 1250.  hvMiF [eV] First hv-point of "superFine" interval of hv axis
 2400.  hvMaF [eV] Last  hv-point of "superFine" .....
-16.e5  hvMax [eV] is maximal photon energy on the hv axis. It MUST be >> ionization energy of H-like ground state and >> max(Te)
-3.d-3  fluMin is Minimal Absorption Oscillator Strength, "flu". Lines with flu < fluMin are excluded by changing Aul with zero in subroutine "Intro". 
+16.e3  hvMax [eV] is maximal photon energy on the hv axis. It MUST be >> ionization energy of H-like ground state and >> max(Te)
+3.d-3  fluMin is Minimal Absorption Oscillator Strength, "flu". Lines with flu < fluMin are excluded by changing Aul with zero in subroutine "Intro".
 3.d6   [1/s] AulMin is Minimal value of Einstein A-coeficient, "Aul". Lines with Aul < AulMin are excluded by changing Aul with zero in subroutine "Intro".
 ---------
-47       Kr gr.st. of Li-like ion. Serial number of the energy level for loading initial POP = 1.(nX=1)
-47       Mg .................................                                                  2  
-83.80    Kr ion mass, a.u.;  "Atmass(1)"
-24.30    Mg ....................... 
+47       Al gr.st. of Li-like ion. Serial number of the energy level for loading initial POP = 1.(nX=1)
+26.98    Al ion mass, a.u.;  "Atmass(1)"
 0      KeRedu= -1 or 0.  "-1" means "no reduction of inization energy, "0" means "reduction in the Ion Sphere approach"
 -----------------------------------------
   t[s]    D[cm]  Te[eV]  TD[keV]  ni(AL+MG)[cm^-3]  % Mg ions in this ni
 0.00d-9   0.01,   100.,    4. ,      0.6d21 ,       5.52   start time;  5.52% in ni is 5% by mass, see comment to Den(1) & Den(2) in subroutine "Scenario"
-0.20d-9   0.01,   400.,    8. ,      0.9d21 ,       5.52   tres(1)     
-0.35d-9   0.01,   900.,   24. ,      1.5d21 ,       5.52   tres(2)   
-0.45d-9   0.01,  1500.,   32. ,      2.0d21 ,       5.52   tres(3)   
-0.50d-9   0.01,  1500.,   26. ,      2.0d21 ,       5.52   tres(4)     
-0.65d-9   0.01,   700.,   16. ,      1.4d21 ,       5.52   tres(5)   
-1.00d-9   0.01,   200.,    5. ,      0.4d21 ,       5.52   tres(6). The run ends after last print, see "if(FrNu .eq. mSpe) STOP" 
+0.20d-9   0.01,   400.,    8. ,      0.9d21 ,       5.52   tres(1)
+0.35d-9   0.01,   900.,   24. ,      1.5d21 ,       5.52   tres(2)
+0.45d-9   0.01,  1500.,   32. ,      2.0d21 ,       5.52   tres(3)
+0.50d-9   0.01,  1500.,   26. ,      2.0d21 ,       5.52   tres(4)
+0.65d-9   0.01,   700.,   16. ,      1.4d21 ,       5.52   tres(5)
+1.00d-9   0.01,   200.,    5. ,      0.4d21 ,       5.52   tres(6). The run ends after last print, see "if(FrNu .eq. mSpe) STOP"
 -------------------------------------------------
-10   "npa" is the number of t-points in (tres(j), tres(j+1)] interval. This number includes t= tres(j+1) point 
-      Results of computatiom must be independent of "npa", therefore, for each problem 
-	  try x2 and check yes/no dependence. However, the code restricts "npa" to [4 =< "npa" < 48].  
+10   "npa" is the number of t-points in (tres(j), tres(j+1)] interval. This number includes t= tres(j+1) point
+      Results of computatiom must be independent of "npa", therefore, for each problem
+	  try x2 and check yes/no dependence. However, the code restricts "npa" to [4 =< "npa" < 48].
 3  PrFr is # in "tres(#)" for printing files "LineWidth.dat', 'EmiAbsoDetails.dat'
--------------------------------------------------------------------- 
+--------------------------------------------------------------------
  62, 68, 93,  96, 122, 197   ! Population of these 6 energy levels of Al shown in file "POPs_BS_AL.dat"
  62, 68, 93, 109, 100, 227   ! Population of these 6 energy levels of Mg shown in file "POPs_BS_MG.dat".
-  A	  B	  C	  D	   E	F    ! Notation of the above levels in files "POPs_BS_AL.dat", "POPs_BS_MG.dat". 
+  A	  B	  C	  D	   E	F    ! Notation of the above levels in files "POPs_BS_AL.dat", "POPs_BS_MG.dat".
 ---------------------------------
 0     KeySmooth.  KeySmooth > 1 means "Replace broken-line Te(t) with smooth two-half-Lorentzians curve
-3     # in "tres(#)", i.e. t-point# chosen for peak of Te(t) 
-1400.   [eV] peak value of Te(t)   
-2.d-10  [s]  HWHM of before-peak Lorentzian   
-3.d-10  [s]  HWHM of after -peak Lorentzian              
+3     # in "tres(#)", i.e. t-point# chosen for peak of Te(t)
+1400.   [eV] peak value of Te(t)
+2.d-10  [s]  HWHM of before-peak Lorentzian
+3.d-10  [s]  HWHM of after -peak Lorentzian
 
-Note: no "StopTime". The run ends after last print, see "if(FrNu .eq. mSpe) STOP"  
-                       
+Note: no "StopTime". The run ends after last print, see "if(FrNu .eq. mSpe) STOP"
+

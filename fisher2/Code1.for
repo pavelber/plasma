@@ -101,10 +101,10 @@ c  Print all-XE POPZ for this "La" and t = tf
       use mo1
       implicit none
       open( 13,file='Flag.inp')
-      open(111,file='QSsKR272.inp')
-      open(112,file='ExcKR272.inp')
-      open(113,file='InzKR272.inp')
-      open(114,file='AIwKR272.inp')
+      open(111,file='QSsAL272.inp')
+      open(112,file='ExcAL272.inp')
+      open(113,file='InzAL272.inp')
+      open(114,file='AIwAL272.inp')
 
       open(211,file='QSsMG272.inp') 
       open(212,file='ExcMG272.inp')
@@ -266,6 +266,7 @@ c   Read all "ELsXE....inp" files.
         LastAI(nX)= Nnu(nX)     ! preliminary
         do i= FSS(nX), HSS(nX)  ! all SSs of nX, except for NUCL                
           read(nFi,*) nSS, nuQS(i,nX), nuAS(i,nX), PI(i,nX)
+          write(*,'(a30, 2i3)') 'i, nSS', i, nSS
           if(nSS.ne.i) then
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
@@ -492,12 +493,12 @@ c  Read 'Flag.inp'
           enddo
         enddo
       enddo 
-
+      write(*,'(a30)') '1'
       do nX= 1, nXE
         read(13,*) AtMass(nX)               ! ion mass [a.u.] for Doppler linewidth calcul
         Imas(nX) = AtMass(nX) *1.66054d-24  ! ion mass [g]  
       enddo
-
+      write(*,'(a30)') '2'
       TX1 = hvTX(2)        ! 2nd point of TREX response in 5 orders 
       TX2 = hvTX(npTX-1)   ! pre-last
       do iv = 1, nvM
@@ -508,12 +509,17 @@ c  Read 'Flag.inp'
       enddo 
 
       read(13,*) KeRedu  ! -1 means "no reduction", 0 means "IonSph"
+      write(*,'(a30)') '2.1'
       read(13,'(a9)') empty
+      write(*,'(a30)') '2.2'
       read(13,'(a9)') empty
+      write(*,'(a30)') '2.3'
       read(13,*) strt, Dstrt, TeStrt, TDstrt, nStrt, peMGst   ! initial values [cm, eV, keV, i/cc   %]
-	do i = 1, mSpe
+      write(*,'(a30)') '3'
+	  do i = 1, mSpe
          read(13,*) tres(i), Dfr(i), TeFr(i), TDfr(i), nFr(i), peMG(i)  ! s, cm, eV, keV, i/cc   perc
       enddo
+      write(*,'(a30)') '4'
       read(13,'(a9)') empty
 
       read(13,*) npa        ! umber of t-points in (tres(j), tres(j+1)] interval. This number includes t= tres(j+1) point
