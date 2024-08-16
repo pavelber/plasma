@@ -122,7 +122,7 @@ def find_levels_by_config_and_term(levels, level):
                levels))
 
 
-def write_rrec_from_strasburg(elem, bfcp_f, from_in1_level,
+def write_rrec_from_strasburg(elem, from_in1_level,
                               levels_by_sp_num, next_sn, o_f, s_n, sp_dir,nucleus):
     e_n0l0 = from_in1_level.e_n0l0
 
@@ -143,8 +143,6 @@ def write_rrec_from_strasburg(elem, bfcp_f, from_in1_level,
             relative_weight = stat_weight / sum_of_stat_weights_to
             lvl_to = lvl.level_num
             o_f.write("%4s  %4s\n" % (from_in1_level.level_num, lvl_to,))
-            bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0 \n" %
-                         (s_n, from_in1_level.level_num, next_sn, lvl_to, relative_weight))
             with open(join(sp_dir, "%s_%s_%s.txt" % (s_n, from_in1_level.level_num, lvl_to)), "w") as f_data:
                 take_from_db_and_write(from_in1_level, e_n0l0, elem, s_n,
                                        relative_weight, levels_by_sp_num, o_f, f_data)

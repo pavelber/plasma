@@ -1,7 +1,7 @@
 import os
 from os.path import join, exists
 
-from lib.create_cut_from_formula import write_rrec_from_formula
+from lib.create_cut_from_formula import write_rrec_from_formula, write_bfcp
 from lib.create_cut_from_strasburg import write_rrec_from_strasburg
 from lib.data import In1Level
 from lib.exceptions import GenericPlasmaException
@@ -73,10 +73,40 @@ def read_sp_nums(n0l0, in1):
     return sp_num_to_level
 
 
-def create_rrec_bcfp_from_in1(in1_inp_path, elem, out_dir, sp_nums, nucleus, use_formula=True):
+def create_rrec_from_in1(in1_inp_path, elem, out_dir, sp_nums, nucleus, use_formula=True):
     if not use_formula:
         read_strsbrg_db(elem, sp_nums, nucleus)
 
+    with open(in1_inp_path, "r+") as in1_inp:
+        el, atomic_number = read_element(in1_inp)
+        skip_n_lines(in1_inp, 12)
+        n0l0 = read_n0l0(in1_inp, sp_nums)
+        levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
+    levels_by_sp_num[str(nucleus)] = []
+    for s_n in sp_nums:
+        sp_dir = join(out_dir, str(s_n))
+        if not exists(sp_dir):
+            os.mkdir(sp_dir)
+        with open(join(sp_dir, "rrec"), "w") as o_f:
+            print(s_n)
+            levels = levels_by_sp_num[str(s_n)]
+            next_sn = s_n + 1
+
+            if next_sn in sp_nums or next_sn == nucleus:
+                for level in levels:
+                    level_num = level.level_num
+                    config_1 = level.config_1
+                    config_2 = level.config_2
+
+                    if use_formula:
+                        write_rrec_from_formula(atomic_number, config_1, config_2, level, level_num,
+                                                levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
+                    else:
+                        write_rrec_from_strasburg(el, level,
+                                                  levels_by_sp_num, next_sn, o_f, s_n, sp_dir, nucleus)
+
+
+def create_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus):
     with open(in1_inp_path, "r+") as in1_inp:
         el, atomic_number = read_element(in1_inp)
         skip_n_lines(in1_inp, 12)
@@ -90,20 +120,13 @@ def create_rrec_bcfp_from_in1(in1_inp_path, elem, out_dir, sp_nums, nucleus, use
             sp_dir = join(out_dir, str(s_n))
             if not exists(sp_dir):
                 os.mkdir(sp_dir)
-            with open(join(sp_dir, "rrec"), "w") as o_f:
-                print(s_n)
-                levels = levels_by_sp_num[str(s_n)]
-                next_sn = s_n + 1
+            levels = levels_by_sp_num[str(s_n)]
+            next_sn = s_n + 1
 
-                if next_sn in sp_nums or next_sn == nucleus:
-                    for level in levels:
-                        level_num = level.level_num
-                        config_1 = level.config_1
-                        config_2 = level.config_2
-                        term = level.term
-                        if use_formula:
-                            write_rrec_from_formula(atomic_number, bfcp_f, config_1, config_2, level, level_num,
-                                                    levels_by_sp_num, next_sn, o_f, s_n, sp_dir)
-                        else:
-                            write_rrec_from_strasburg(el, bfcp_f, level,
-                                                      levels_by_sp_num, next_sn, o_f, s_n, sp_dir, nucleus)
+            if next_sn in sp_nums or next_sn == nucleus:
+                for level in levels:
+                    level_num = level.level_num
+                    config_1 = level.config_1
+                    config_2 = level.config_2
+                    write_bfcp(atomic_number, bfcp_f, config_1, config_2,
+                               level, levels_by_sp_num, next_sn, s_n, sp_dir)

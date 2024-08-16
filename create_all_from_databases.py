@@ -6,7 +6,7 @@ from os.path import dirname, abspath
 from lib.check_and_fix import copy_checks, check_and_fix_old_rr_version2, check_and_fix_rr_version2, check_fix, \
     create_rrec_inp
 from lib.create_in1_from_databases import create_in1_excit_spectr__from_databases, parse_energy_limits
-from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
+from lib.create_rrec_bcfp_from_in1 import create_rrec_from_in1, create_bcfp_from_in1
 from lib.env import get_pathes, env
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
@@ -77,7 +77,8 @@ create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec,
                                         energy_limits,
                                         nmax)
 in1 = os.path.join(elem_dir, "IN1.INP")
-create_rrec_bcfp_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, True)
+create_rrec_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, False)
+create_bcfp_from_in1(in1, elem_dir, sp_nums_with_nucleus, nucleus)
 
 create_rrec_inp(elem_dir, ph_fac_path, sp_nums_str)
 
