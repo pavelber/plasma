@@ -1,3 +1,5 @@
 venv
 *.ini
 *.pyc
+*.exe
+*.obj
