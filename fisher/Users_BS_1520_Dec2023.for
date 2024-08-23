@@ -1,7 +1,6 @@
       use mo1          ! Feb 14, 2024.
       implicit none
-      
-       
+
       CALL OpenFiles() ! Open Output files & write the column titles
       CALL Intro()     ! Read input files; produce atomic data arrays & initial POPs
       CALL LineList()  ! Find spectral lines possible in [hvSmo, hvmax] domain & print hv-reguladed LineList
@@ -144,16 +143,15 @@ c  Print all-XE POPZ for this "La" & t = tf
       END ! MAIN
 
 
-  
+
       SUBROUTINE OpenFiles()   ! List spectral lines to be observed in [hvSmo, hvMax] & Print hv-regulated LineList in file #30.
       use mo1
       implicit none
-      
       open( 13,file='Flag.inp')
-      open(112,file='QSsAL272.inp')
-      open(112,file='ExcAL272.inp')
-      open(113,file='InzAL272.inp')
-      open(114,file='AIwAL272.inp')
+      open(111,file='QSsKR272.inp') 
+      open(112,file='ExcKR272.inp')
+      open(113,file='InzKR272.inp')
+      open(114,file='AIwKR272.inp')
 
       open(211,file='QSsMG272.inp') 
       open(212,file='ExcMG272.inp')
@@ -356,6 +354,8 @@ c   Read all "QSsXE....inp" files.
           do k = kAI1(j,nX), kAI2(j,nX)  
             read(nFi,'(a5,a5, f3.0, 2f11.3)') QSname1(k,nX),  
      +           QSname2(k,nX), g0(k,nX), E(k,nX) 
+c			write(*,'(a16, f10.3, i6, i6)') 
+c     +         'Read energies=', E(k,nX), nX, k
             kiSS(k,nX)= j
           enddo 
         enddo
@@ -392,7 +392,12 @@ c  Read excitation cross sections & f's from all 'ExcXE....inp' files.  Note: la
         if(LU.ge.nFAI) kU= kAI1(iSS,nX) + LU-nFAI 
         if(abs(Fxw).gt.1.d-30) STOP 'OPEN "Fx" array'
 
+		Euu= E(kU,nX)	
+		Ell= E(kL,nX)	
         DE= E(kU,nX) - E(kL,nX) 
+c		write(*,'(a20, i9, i9, i9)') '->>>>>', iSS, LL, LU
+c		write(*,'(a20, i9, i9, i9)') '->>>>>', iSS, kL, kU
+c		write(*,'(a20, f12.3, f12.3)') '----->>>>>', Euu, Ell
         if(DE .le. zero) STOP 'Excitation down in reading Exc...inp'
 
         MthdEX(kL,kU,nX)= mth
@@ -412,8 +417,11 @@ c       Fx(kL,kU,nX)= Fxw     ! 5th Excit coef not used in Methods #5 and #11
         A(kU,kL,nX)= 4.3450d7* flu(kL,kU,nX) *g0(kL,nX)
      +               *(E(kU,nX)-E(kL,nX))**2 /g0(kU,nX)
 
+c		write(*,'(a20, i9)') '---*-->>>>>', Nnu(nX)
         if(iSS.eq.HSS(nX) .and. kL.eq.Nnu(nX)-2 .and. 
      +                          kU.eq.Nnu(nX)-1) goto 7                  ! It must be the last line of "ExcXE.inp"
+        if(iSS.eq.HSS(nX) .and. LL.eq.13 .and. 
+     +                          LU.eq.16) goto 7                  ! It must be the last line of "ExcXE.inp"
         if(mth.eq.-5 .or. mth.eq.0  .or. mth.eq.5 .or. mth.eq.11) goto 6 ! "-5" is "5 of low accyracy"; Lenya
 
         write(*,'(a65,5i5)') 'Excit CrosSec fit-method is unknown for XE, 
@@ -485,7 +493,7 @@ Consistancy control 1:
 Consistancy control 2: AI transition energy DE == E(qAI) - [PIR + E(fin)], i.e. E(i) - E(f), where both E taken 
 c                      relative to common "0", which is GS of "2ex ion".  Here we check consistency of DataBases: 
 c                      compare "trEn" from "AIwXE...inp"  to  E(qAI)-[PI+E(fin)] from "QSsXE....inp".
-        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 0.002) then
+        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 2.0) then
            write(*,'(a25)') 'Inconsistency in AI transition energy:'
            write(41,'(i2, 6i4, 6e12.6)') nX, ki, iSS1, iQS1, 
      +       kf, iSS2, iQS2, trEn, E(ki,nX)-PI(iSS1,nX)-E(kf,nX), 

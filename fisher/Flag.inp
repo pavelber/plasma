@@ -2,13 +2,13 @@
 20.    hvSmo [eV] is red edge of fine v-grid. I excluded lines at hv < hvSmo because weak vs free-free continuum.
 1250.  hvMiF [eV] First hv-point of superFine v-grid
 2400.  hvMaF [eV] Last  hv-point of superFine v-grid
-16.e3  hvMax [eV] is maximal photon energy in the hv-grid. It MUST include hard continuum, hv >> 5 keV for PCD-40 
+16.e5  hvMax [eV] is maximal photon energy in the hv-grid. It MUST include hard continuum, hv >> 5 keV for PCD-40 
 1.d-3  fluMin is Min allowed value of abso OscStren for YES spectral line. If f() < fluMin, we replace A() by A() =0 in "Intro" 
 1.d6   [1/s] AulMin is Min allowed value of A-coef for ...
 ---------
-47       Al gr.st. of Li-like ion. QS# for initial POP = 1.(nX=1)  
+47       Kr gr.st. of Li-like ion. QS# for initial POP = 1.(nX=1)  
 47       Mg .                                                  2  
-26.98    Al ion mass, a.u.;  "Atmass(1)"
+83.80    Kr ion mass, a.u.;  "Atmass(1)"
 24.30    Mg 
 0      KeRedu = -1 or 0.  "-1" means "no reduction of inization energy, "0" means "reduction in the Ion Sphere approach"
 3      PrFr  : 1,2,...6 is # in "tres(#)" for printing "MgLyB_shape_transf.dat", "LineBroBS.dat', 'EmiAbsoDetails.dat'
