@@ -148,8 +148,8 @@ def check_fix(sp_path, my_dir, rrec_path, dir_bad, sp):
 
 def create_rrec_inp(elem_dir, ph_fac_path, i_spectro):
     for sn in i_spectro:
-        rrec_dir = os.path.join(elem_dir, sn)
-        create_rrec_inp_from_dir(rrec_dir, ph_fac_path, sn)
+        rrec_dir = os.path.join(elem_dir, str(sn))
+        create_rrec_inp_from_dir(rrec_dir, ph_fac_path, str(sn))
 
 
 def create_rrec_inp_from_dir(rrec_dir, ph_fac_path, sn):
