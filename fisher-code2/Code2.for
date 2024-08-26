@@ -351,7 +351,7 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
                                              
         DE= E(kU,nX) - E(kL,nX) 
         if(DE .le. zero) then
-          write(*,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=', 
+        write(*,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=',
      +                                   nX, kL, E(kL,nX), kU, E(kU,nX) 	  
 	    PAUSE 'Excitation down in reading Exc.inp'
         endif
@@ -370,8 +370,9 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
 
         if(mth.eq. 5 .or. mth.eq.11) goto 6   ! Present DaBa does not use other methods    
 
-        write(*,'(a65,5i5)')'Excit CrosSec fit method is unknown for XE, 
-	+  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
+        write(*,'(a65,5i5)')
+     +  'Excit CrosSec fit method is unknown for XE, iSS, LL, LU, mth=',
+     +                                        nX, iSS, LL, LU, mth
         PAUSE
   7     close(nFi)
       enddo        ! here XE-loop is 1 to 1, i.e. X only; C, He, D have no excited levels
@@ -623,7 +624,7 @@ Consistancy control 1:
       integer lnew, lmin, nXmin ! , LoRt,UpRt
       real(8) hvCmin,	Alamda, DEul 
       open (30, file= 'LineList.dat')
-      write(30,'( /a42, e7.1, a8, f6.4, a6, f4.3, a2, f5.1, a5)')   
+      write(30,'( /a42, e7.1, a8, f6.4, a6, f4.3, a2, f5.1, a5)')
      +    'Spectral lines with Aul >', AulMin,   ', flu >', fluMin, 
      +         'at (',  hvMin/1.d3, '-', hvMax/1.d3, ') keV'   
       write(30,'(/a112/)')     'XE  SS    hvC(eV)    Lambda(A)     A(Hz)
@@ -1857,9 +1858,9 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
 
 
       real(8) FUNCTION Voigt2(fwhmL, fwhmG, vC, dv) ! [eV], dv= v-vC, Sasha's connector to YR+Drayson's VOIGT(X,Y); WELL checked
-	use mo1code2                                       
-	implicit none
-	real(8) fwhmL, fwhmG, vC, dv, balf, x1, y1, Voi2, VOIGT
+      use mo1code2
+      implicit none
+      real(8) fwhmL, fwhmG, vC, dv, balf, x1, y1, Voi2, VOIGT
       balf= (vC/fwhmG)*1.6651092   ! 1.6651092= 2*Sq[ln(2)]
       x1= balf*abs(dv)/vC	         ! to Dr' units
       y1= 1.665109*fwhmL/2./fwhmG  ! to Dr' units
@@ -1869,12 +1870,12 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
 
 
       real(8) FUNCTION VOIGT(X,Y) ! Voigt shape normalized to sqrt(pi); From Drayson, JQSRT, v.16, pp.611-614, 1976
-	use mo1code2
-	implicit none
-	integer MAX, N, MIN, Jvo
-	real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
+      use mo1code2
+      implicit none
+      integer MAX, N, MIN, Jvo
+      real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
      +       D3(25), D4(25), HN(25), XX(3),  HH(3), NBY2(19), Cv(21),
-	+       CO, UU, VV, U, Y2, Hv, DXv, V
+     +       CO, UU, VV, U, Y2, Hv, DXv, V
       DATA B/0.,.7093602d-7,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,
      + .0,.0,.0,.0,.0,.0/, XN/10.,9.,2*8.,7.,6.,5.,4.,7*3./,
      + YN/3*.6,.5,2*.4,4*.3,1.,.9,.8,2*.7/, Hv/.201/, XX/.5246476,
