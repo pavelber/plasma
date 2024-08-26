@@ -52,7 +52,7 @@ c                        Note: the RF computation for any zone requires radii of
 
 ***   Print governing params [D,Te,TD,ni, part of Mg in denI (<=1)] on the screen. 
 ***   I show them at the end of (ti-tf] interval because used them for t-integration of POPs from "ti" to "tf". 
-      write(*,'(f8.4,  f7.3,    f10.1,   f8.2,    e11.3, f7.2, )') 
+      write(*,'(f8.4,  f7.3,    f10.1,   f8.2,    e11.3, f7.2 )')
      +       tf*1.d9, 2*R2*10.,  Te,   TiD/1000., DenI,  paMG*100.  							      
 
       nX= 0
@@ -367,8 +367,8 @@ c       Fx(kL,kU,nX)= Fxw     ! 5th Excit coef not used in Methods #5 and #11
      +                          kU.eq.Nnu(nX)-1) goto 7                  ! It must be the last line of "ExcXE.inp"
         if(mth.eq.-5 .or. mth.eq.0  .or. mth.eq.5 .or. mth.eq.11) goto 6 ! "-5" is "5 of low accyracy"; Lenya
 
-        write(*,'(a65,5i5)')'Excit CrosSec fit-method is unknown for XE, 
-	+  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
+        write(*,'(a65,5i5)') 'Excit CrosSec fit-method is unknown for XE,
+     +  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
         STOP
   7     close(nFi)
       enddo        ! for XE-loop, which reads "ExcXE.inp" files 
@@ -1685,12 +1685,12 @@ c     Fs= Fx(k,kf,nX)      ! 5th coef not used im methods 0, 5, 11
 
 
       real(8) FUNCTION VOIGT(X,Y) ! Voigt shape normalized to sqrt(pi); From Drayson, JELRT, v.16, pp.611-614, 1976
-	use mo1
-	implicit none
-	integer MAX, N, MIN, Jvo
-	real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
+      use mo1
+      implicit none
+      integer MAX, N, MIN, Jvo
+      real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
      +       D3(25), D4(25), HN(25), XX(3),  HH(3), NBY2(19), Cv(21),
-	+       CO, UU, VV, U, Y2, Hv, DXv, V
+     +       CO, UU, VV, U, Y2, Hv, DXv, V
       DATA B/0.,.7093602d-7,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,
      + .0,.0,.0,.0,.0,.0/, XN/10.,9.,2*8.,7.,6.,5.,4.,7*3./,
      + YN/3*.6,.5,2*.4,4*.3,1.,.9,.8,2*.7/, Hv/.201/, XX/.5246476,
