@@ -225,6 +225,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   Wing, dhv, SpInPL, TPL, 
      +   MaxExch, POPexch, 
      +   hvKey, WingCut,         ! restricts hv-length of line wing via Wing = hvC(line)*WingCut      
-     +   hvIns1, hvIns2, Ains, Bins, Cins
+     +   hvIns1, hvIns2, A1ins, B1ins, A2ins, B2ins, A3ins, B3ins
       end module	  
 

@@ -406,9 +406,7 @@ c                        are omitted because weak vs continuum and/or noise in e
 
       read(13,*) hvIns1, hvIns2   ! hv-edges of applicability of instrumental function given by coefficiens Ains, Bins, Cins, 
 c                                   these edges are the edges of convolution in subroutine "GauInstrConvo(Simul, Co)"
-      read(13,*) Ains, Bins, Cins ! 3 coefs of quadratic fit to the instrumental function which gives
-c                                   line broadening "Bro"== hv/(FWHM of instr Gaus) = Ains + Bins*hv[keV] + Cins*hv[keV]^2;
-c                                           e.g. Bro=1000 gives GausFWHM = hv/1000
+      read(13,*) A1ins, A2ins, A3ins, B1ins, B2ins, B3ins ! 6 coefs of exponent
       read(13,*) hvPrint1, hvPrint2  ! [eV] edges of PrintOut interval of "Frames.dat" 
       close(13)
 
@@ -1836,8 +1834,10 @@ c                                                  ! but it can cause huge SigPh
         v0 = hvV(i1)
         if(v0.LE.hvIns1) cycle
         if(v0.GE.hvIns2) cycle
-        Bro= Ains + Bins*(v0/1.d3) + Cins*(v0/1.d3)**2  ! quadratic fit to instrumental broadening "Bro"== hv/(FWHM of instrum Gauss)
-c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/1000 
+
+        Bro= A1ins * DEXP(B1ins*(v0/1.d3)) +
+     +     A1ins * DEXP(B2ins * (v0/1.d3)) +
+     +     A3ins * DEXP(B3ins * (v0/1.d3))
         FWin= v0/Bro    ! FWHM [eV] of instr Gaussian. By the above definition of "Bro".  
 	  Sver= zero      ! Svertka for v0
         prF = zero
