@@ -1835,17 +1835,16 @@ c                                                  ! but it can cause huge SigPh
         if(v0.LE.hvIns1) cycle
         if(v0.GE.hvIns2) cycle
 
-        Bro= A1ins * DEXP(B1ins*(v0/1.d3)) +
-     +     A1ins * DEXP(B2ins * (v0/1.d3)) +
-     +     A3ins * DEXP(B3ins * (v0/1.d3))
+        Bro= A1ins * DEXP(-B1ins*((v0/1.d3)**2)) +
+     +     A1ins * DEXP(-B2ins * ((v0/1.d3)**2)) +
+     +     A3ins * DEXP(-B3ins * ((v0/1.d3)**2))
         FWin= v0/Bro    ! FWHM [eV] of instr Gaussian. By the above definition of "Bro".  
 	  Sver= zero      ! Svertka for v0
         prF = zero
         do iw= 2, nvM-1           ! loop over hv points for integral {...dv'}: convolution over v'
           dhv= hvV(iw)- hvV(iw-1)
           dev= abs(hvV(iw) - v0)       ! hv' - hv
-          if(dev .gt. 2.5*FWin) cycle  ! this point is too far from v0:  exp[-(dev/[FWHM/1.6651])^2] is too small [ < 4d-8]
-          FuIns= Gauss(FWin, dev)      ! Gaussian of known FWHM == FWin
+          FuIns= Bro
           Sver = Sver+ (prF+ Simul(iw)*FuIns)*dhv/two
           prF  = Simul(iw) *FuIns 
 	  enddo
