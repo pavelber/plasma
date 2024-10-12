@@ -1,7 +1,7 @@
   0.d-12 [s] start time of the computation 
  10.d-12 [s] first t-step of the computation; each next t-step is 20% longer than previous t-step, but not longer than 10 ps. 
  25.d-12 [s] "FrL" is duration of each Frame. Each frames lasts from ["central time" -FrL/2] to ["central time" +FrL/2]   
-280.d-12 [s] "StopTime" is the time to complete a computation. "StopTime" must be > [central time of last WANTED frame +FrL/2 + 10ps]       
+80.d-12 [s] "StopTime" is the time to complete a computation. "StopTime" must be > [central time of last WANTED frame +FrL/2 + 10ps]       
 250.d-12 [s] "tiInf" is the time to print "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
 ..............................
           50.d-12, 100.d-12,  150.d-12,  200.d-12, 250.d-12,  300.d-12,  350.d-12, 400.d-12  [s] central time of 8 frames [s]  
