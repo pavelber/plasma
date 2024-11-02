@@ -148,7 +148,10 @@ c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first u
       character*1 po1     ! for conversion of EL name symbols (1 position) in p.q.n., Lorb, ...
       integer char2int                      ! symbol-to-integer convertor function
       integer iniQS, nSS, mth, LL, LU, ki,  
-     +        iSS1, iQS1, iSS2, iQS2,  nFi                 
+     +        iSS1, iQS1, iSS2, iQS2,  nFi
+      integer num_coeff
+
+
       real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, thre  
 
       read(12,*) FSS(1), FSS(2), FSS(3), FSS(4)  ! "FSS" is the # of first   SS of XX, C, He, D in the DaBa;  31 for C-like Kr
@@ -406,8 +409,23 @@ c                        are omitted because weak vs continuum and/or noise in e
 
       read(13,*) hvIns1, hvIns2   ! hv-edges of applicability of instrumental function given by coefficiens Ains, Bins, Cins, 
 c                                   these edges are the edges of convolution in subroutine "GauInstrConvo(Simul, Co)"
-      read(13,*) A1ins, A2ins, A3ins, B1ins, B2ins, B3ins ! 6 coefs of exponent
-      read(13,*) hvPrint1, hvPrint2  ! [eV] edges of PrintOut interval of "Frames.dat" 
+      read(13,*) func_type
+
+      select case (trim(func_type))
+      case ('GAUSSIAN')
+        FWin = 1.0
+        num_coeff = 3
+      case ('INSTRUMENT')
+        num_coeff = 6
+      case default
+        print *, "Unknown function of convolution: ", trim(func_type)
+        stop
+      end select
+
+      read(13,*) FWin
+      read(13,*) (convC(i), i = 1, num_coeff)
+
+      read(13,*) hvPrint1, hvPrint2  ! [eV] edges of PrintOut interval of "Frames.dat"
       close(13)
 
 c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp"
@@ -1827,23 +1845,42 @@ c                                                  ! but it can cause huge SigPh
       use mo1code2                         ! at hvIn1 <= hv <= hvIn2	        
       implicit none  
       integer i1 
-      real(8) Simul(nvL), Co(nvL), Bro, v0, FWin, Sver, dev, FuIns,    
+      real(8) Simul(nvL), Co(nvL), Bro, v0, Sver, dev, FuIns,
      +                                                  Gauss, prF   
-      FWin = 1.0
       Co= Simul       ! Initial; at least, "Simul" will remain non-Convo
       do i1= 1, nvM
         v0 = hvV(i1)
         if(v0.LE.hvIns1) cycle
         if(v0.GE.hvIns2) cycle
- 	  Sver= zero      ! Svertka for v0
+        Bro= convC(1) + convC(2)*(v0/1.d3) + convC(3)*(v0/1.d3)**2  ! quadratic fit to instrumental broadening "Bro"== hv/(FWHM of instrum Gauss)
+c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/1000
+        select case (trim(func_type))
+          case ('GAUSSIAN')
+            FWin= v0/Bro    ! FWHM [eV] of instr Gaussian. By the above definition of "Bro".
+          case ('INSTRUMENT')
+          case default
+            print *, "Unknown function of convolution "
+            stop
+          end select
+
+
+        Sver= zero      ! Svertka for v0
         prF = zero
         do iw= 2, nvM-1           ! loop over hv points for integral {...dv'}: convolution over v'
           dhv= hvV(iw)- hvV(iw-1)
           dev= abs(hvV(iw) - v0)       ! hv' - hv
           if(dev .gt. 2.5*FWin) cycle  ! this point is too far from v0
-        FuIns= A1ins * DEXP(-B1ins*((dev/1.d3)**2)) +
-     +     A1ins * DEXP(-B2ins * ((dev/1.d3)**2)) +
-     +     A3ins * DEXP(-B3ins * ((dev/1.d3)**2))
+          select case (trim(func_type))
+          case ('GAUSSIAN')
+            FuIns= Gauss(FWin, dev)      ! Gaussian of known FWHM == FWin
+          case ('INSTRUMENT')
+            FuIns= convC(1) * DEXP(-convC(2)*((dev/1.d3)**2)) +
+     +          convC(3) * DEXP(-convC(4) * ((dev/1.d3)**2)) +
+     +          convC(5) * DEXP(-convC(6) * ((dev/1.d3)**2))
+          case default
+            print *, "Unknown function of convolution "
+          stop
+          end select
 
           Sver = Sver+ (prF+ Simul(iw)*FuIns)*dhv/two
           prF  = Simul(iw) *FuIns 

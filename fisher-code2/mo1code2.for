@@ -48,6 +48,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
 
       character*24, public :: QSname(nQSm,nXE)     ! part 1, according to 'Inz.inp' list
       character*9,  public :: title, empty, comme  ! in input files reading
+      character*10,  public ::   func_type
 
       integer, public :: 
      +  nuAS(HSSm,nXE),   ! Number of AutoIonizing (AI) ELs in each SpS
@@ -225,6 +226,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   Wing, dhv, SpInPL, TPL, 
      +   MaxExch, POPexch, 
      +   hvKey, WingCut,         ! restricts hv-length of line wing via Wing = hvC(line)*WingCut      
-     +   hvIns1, hvIns2, A1ins, B1ins, A2ins, B2ins, A3ins, B3ins
+     +   hvIns1, hvIns2, convC(10), FWin
       end module	  
 

@@ -15,5 +15,7 @@
 1.5d-4  "hvAxiRe" is minimal (finest) dv/v in full hv-interval (this dv/v is reached at hv = hvFine); then dv/v increases linearly towards "hvMin" and "hvMax" where dv/v reaches 2*minimal. 
 13113.         "hvFine" [eV] is hv at which spectral resolution is the best, here at Kr He-A
 12000., 18000. "hvIns1", "hvIns2" are the edges of convolution of computed spectrograms with the instrumental function
-55.81, 27.25, 3.916, 0.000018, 0.00414, 0.03   f(x) = a1*e^b1x+a2*e^b2x+a3*e^b3x, a1,a2,a3,b1,b2,b3
-12500., 30000.  [eV]  edges of print "Frames.dat" and "EvoluHotLOS.dat"(91 
+GAUSSIAN   !INSTRUMENT or GAUSSIAN
+1.0          !Fwin Ignored for GAUSSIAN
+55.81, 27.25, 3.916, 0.000018, 0.00414, 0.03  !6 params for INSTRUMENT or 3 for GAUSSIAN
+12500., 30000.
