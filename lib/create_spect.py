@@ -76,7 +76,7 @@ def read_fac_tr(out_dir, spec_numbers, translation_table):
     return transition_to_line
 
 
-def create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef):
+def create_spectr(out_dir, spec_numbers, translation_table,  min_eins_coef):
     from_fac_tr = read_fac_tr(out_dir, spec_numbers, translation_table)
     file_path = out_dir + os.path.sep + "SPECTR.INP"
     print("Creation of " + file_path)
