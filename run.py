@@ -193,7 +193,8 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
             os.remove(warnings_file_path)
         spec_numbers = run_for_all_numbers(in_dir, out_dir, old_path, dont_run_all_tools, exc_fac_path, ph_fac_path)
         check_and_fix(my_dir, out_dir)
-        ionization_potential, translation_table = create_tables(out_dir)
+        #ionization_potential, translation_table = create_tables(out_dir)
+        translation_table = {}
         next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
         if int(next_spec_number) - int(spec_numbers[0]) != len(spec_numbers):
             error("Missing or redundant spec numbers directories: " + str(spec_numbers))
