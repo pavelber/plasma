@@ -133,19 +133,19 @@ def check_and_fix(my_dir, out_dir):
     if code != 0:
         error("Exit code = " + str(code))
 
-    for spn in os.listdir(out_dir):
-
-        number_dir = os.path.join(out_dir, spn)
-        if isdir(number_dir):
-            check_and_fix_rr(number_dir)
+    # for spn in os.listdir(out_dir):
+    #
+    #     number_dir = os.path.join(out_dir, spn)
+    #     if isdir(number_dir):
+    #         check_and_fix_rr(number_dir)
 
 
 def check_and_fix_in_main_dir(out_dir):
     code, std_out, std_err = runcommand("perl check_all.pl", out_dir)
-    check_and_fix_rr(out_dir)
-    check_and_fix_old_rr(out_dir)
-    if code != 0:
-        error("Exit code = " + str(code))
+    #check_and_fix_rr(out_dir)
+    #check_and_fix_old_rr(out_dir)
+    #if code != 0:
+    #    error("Exit code = " + str(code))
 
 
 def run_old_fac(in_dir_spn, out_dir_spn, old_path):
@@ -199,12 +199,12 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
             error("Missing or redundant spec numbers directories: " + str(spec_numbers))
         translation_table[next_spec_number] = {"1": "1"}
         create_aiw(out_dir, spec_numbers, translation_table)
-        create_bcfp(out_dir, spec_numbers, translation_table)
+        #create_bcfp(out_dir, spec_numbers, translation_table)
         create_excit(out_dir, spec_numbers, translation_table)
-        create_rrec(out_dir, spec_numbers, translation_table)
+        #create_rrec(out_dir, spec_numbers, translation_table)
         element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
-        create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-        run_for_fisher(dont_run_all_tools, element, out_dir)
+        create_spectr(out_dir, spec_numbers, translation_table, min_eins_coef)
+        #run_for_fisher(dont_run_all_tools, element, out_dir)
         replace_from_mz(el_num, out_dir)
         check_and_fix_in_main_dir(out_dir)
     except GenericPlasmaException as e:

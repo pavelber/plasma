@@ -94,17 +94,17 @@ spectr_path = os.path.join(elem_dir, "SPECTR.INP")
 
 bcfp_path = os.path.join(elem_dir, "BFCP.INP")
 
-with open(rrec_path, "w") as rrec:
-    for sp in sp_nums_with_nucleus:
-        sp_path = os.path.join(elem_dir, str(sp))
-        rrec_sp = os.path.join(sp_path, "RREC.INP")
-        with open(rrec_sp, "r") as sp_rrec:
-            for line in sp_rrec:
-                rrec.write(line)
+# with open(rrec_path, "w") as rrec:
+#     for sp in sp_nums_with_nucleus:
+#         sp_path = os.path.join(elem_dir, str(sp))
+#         rrec_sp = os.path.join(sp_path, "RREC.INP")
+#         with open(rrec_sp, "r") as sp_rrec:
+#             for line in sp_rrec:
+#                 rrec.write(line)
 
 copy_checks(my_dir, elem_dir)
-check_and_fix_rr_version2(elem_dir)
-check_and_fix_old_rr_version2(elem_dir)
+#check_and_fix_rr_version2(elem_dir)
+#check_and_fix_old_rr_version2(elem_dir)
 
 for sp in sp_nums_with_nucleus:
     print("**********************")
@@ -117,9 +117,9 @@ for sp in sp_nums_with_nucleus:
 
 replaces = remove_unused_lines_and_renumerate(elem_dir, nucleus)
 
-from_new_to_old = invert_replaces(replaces)
-create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", "RREC.INP")
-create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP", True)
+# from_new_to_old = invert_replaces(replaces)
+# create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", "RREC.INP")
+# create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP", True)
 test_number_of_levels_inp1(in1)
 files_not_empty(elem_dir)
 

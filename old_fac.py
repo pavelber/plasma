@@ -178,9 +178,9 @@ tr_pass_2_processors = [tr_processor.change_ntrans]
 
 convert(in_dir + ai, out_dir + ai, ai_processors, True)
 convert(in_dir + ce, out_dir + ce, ce_processors)
-convert(in_dir + ci, out_dir + ci, ci_processors)
+#convert(in_dir + ci, out_dir + ci, ci_processors)
 convert(in_dir + lev, out_dir + lev, lev_processors)
-convert(in_dir + rr, out_dir + rr, rr_processors)
+#convert(in_dir + rr, out_dir + rr, rr_processors)
 
 convert(in_dir + tr, out_dir + tr + '.tmp', tr_pass_1_processors)
 tr_processor.block_num = 0

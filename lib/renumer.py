@@ -55,6 +55,7 @@ def create_tables(out_dir):
     translation_table = {}
 
     for num in i_spectro:
-        translation_table[num] = create_translation_table(out_dir, num, ionization_potential[num])
+        if ionization_potential[num]:
+            translation_table[num] = create_translation_table(out_dir, num, ionization_potential[num])
 
     return ionization_potential, translation_table
