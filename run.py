@@ -186,20 +186,19 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
     try:
         env()
         old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
-        if not dont_run_all_tools:
-            check_dirs(in_dir, out_dir)
+        #if not dont_run_all_tools:
+        #    check_dirs(in_dir, out_dir)
         warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
         if os.path.exists(warnings_file_path):
             os.remove(warnings_file_path)
         spec_numbers = run_for_all_numbers(in_dir, out_dir, old_path, dont_run_all_tools, exc_fac_path, ph_fac_path)
-        check_and_fix(my_dir, out_dir)
-        #ionization_potential, translation_table = create_tables(out_dir)
-        translation_table = {}
+        #check_and_fix(my_dir, out_dir)
+        ionization_potential, translation_table = create_tables(out_dir)
         next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
         if int(next_spec_number) - int(spec_numbers[0]) != len(spec_numbers):
             error("Missing or redundant spec numbers directories: " + str(spec_numbers))
         translation_table[next_spec_number] = {"1": "1"}
-        create_aiw(out_dir, spec_numbers, translation_table)
+        #create_aiw(out_dir, spec_numbers, translation_table)
         #create_bcfp(out_dir, spec_numbers, translation_table)
         create_excit(out_dir, spec_numbers, translation_table)
         #create_rrec(out_dir, spec_numbers, translation_table)

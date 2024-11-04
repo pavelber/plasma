@@ -154,10 +154,10 @@ if len(sys.argv) != 3:
 in_dir = sys.argv[1]
 out_dir = sys.argv[2]
 
-if os.path.exists(out_dir):
-    error('Output directory ' + out_dir + ' should not exist')
-else:
-    os.makedirs(out_dir)
+#if os.path.exists(out_dir):
+#    error('Output directory ' + out_dir + ' should not exist')
+#else:
+#    os.makedirs(out_dir)
 
 ai = os.path.sep + "fac.ai"
 ce = os.path.sep + "fac.ce"
