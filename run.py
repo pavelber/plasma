@@ -15,6 +15,7 @@ from lib.process_mz import replace_from_mz
 from lib.renumer import create_tables
 from lib.utils import error, copy_and_run, runcommand_print
 from lib.utils import runcommand
+from lib.verify_results import test_number_of_levels_inp1, files_not_empty
 
 MAX_LINES = 80000
 
@@ -205,8 +206,10 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
         element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
         create_spectr(out_dir, spec_numbers, translation_table, min_eins_coef)
         #run_for_fisher(dont_run_all_tools, element, out_dir)
-        replace_from_mz(el_num, out_dir)
-        check_and_fix_in_main_dir(out_dir)
+#        replace_from_mz(el_num, out_dir)
+#        check_and_fix_in_main_dir(out_dir)
+        test_number_of_levels_inp1( out_dir + os.path.sep + "IN1.INP")
+        files_not_empty(out_dir)
     except GenericPlasmaException as e:
         error(e.message)
 

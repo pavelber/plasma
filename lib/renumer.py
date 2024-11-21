@@ -42,6 +42,7 @@ def create_translation_table(out_dir, spectral_num, potential):
                     else:
                         table[str(int(n) + 1)] = str(count_autoion)
                         count_autoion -= 1
+    return table
 
 
 def create_tables(out_dir):
@@ -51,7 +52,7 @@ def create_tables(out_dir):
     ionization_potential = {}
 
     for num in i_spectro:
-        ionization_potential[num] = 0.0
+        ionization_potential[num] = 100000.0
 
     translation_table = {}
 

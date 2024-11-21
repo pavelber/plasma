@@ -44,7 +44,7 @@ def create_rrec(out_dir, spec_numbers, translation_table):
 
 def create_excit(out_dir, spec_numbers, translation_table):
     create_union(out_dir, spec_numbers, EXCIT_HEADER, "EXCIT.INP", "outpp.dat",
-                 {8: lambda n: translation_table.get(n), 15: lambda n: translation_table[n]}, "EXC",
+                 {8: lambda n: n, 15: lambda n: n}, "EXC",
                  excit_line_improver, {8: True, 15: True})
     sort_file_by_levels(out_dir, "EXCIT.INP", 0, 1, 2, 2, True)
 
@@ -93,12 +93,7 @@ def create_output_line(line, n, position_3_chars_to_translation_table, positions
         new_line += line[pred_pos: pos]
         num = line[pos: pos + field_width]
         num_stripped = num.strip()
-        transition_table = position_3_chars_to_translation_table[pos](n)
-        if not num_stripped in transition_table:
-            new_num = num_stripped
-        else:
-            new_num = transition_table[num_stripped]
-
+        new_num = num_stripped
         new_line += "%3s" % new_num
         pred_pos = pos + field_width
     new_line += line[pred_pos:]
