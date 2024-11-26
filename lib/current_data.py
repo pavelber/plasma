@@ -1,2 +1,2 @@
 NUCLEUS = 9
-SPNUMS_TO_USE = ['I', 'II', 'III', 'IV', 'V', 'VI','VII','VIII']
+SPNUMS_TO_USE = ['IX','X']

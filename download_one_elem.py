@@ -15,8 +15,8 @@ if len(sys.argv) < 2:
 elem = sys.argv[1]
 nmax = 10
 osc = 1e-8
-min_sp_num = 1
-max_sp_num = 8
+min_sp_num = 9
+max_sp_num = 10
 
 (name_to_table, num_to_table) = read_table()
 

@@ -149,10 +149,15 @@ def check_and_fix_in_main_dir(out_dir):
 
 
 def run_old_fac(in_dir_spn, out_dir_spn, old_path):
-    cmd = "python " + old_path + " " + in_dir_spn + " " + out_dir_spn
+    #cmd = "python " + old_path + " " + in_dir_spn + " " + out_dir_spn
+    cmd = "mkdir" + " " + out_dir_spn
     print(cmd)
     code, std_out, std_err = runcommand(cmd)
-    print(std_out + " " + std_out)
+
+    cmd = "copy" + " " + in_dir_spn + "\* " + out_dir_spn
+    print(cmd)
+    code, std_out, std_err = runcommand(cmd)
+    print(std_out + " " + std_err)
     if code != 0:
         error("Exit code = " + str(code))
 
