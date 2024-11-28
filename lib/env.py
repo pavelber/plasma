@@ -46,7 +46,7 @@ def env():
     if env_error is not None:
         raise GenericPlasmaException(env_error)
 
-    env_error = check_version("Python", "python --version")
+    env_error = check_version("Python", python_path+" --version")
     if env_error is not None:
         raise GenericPlasmaException(env_error)
 

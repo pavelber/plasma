@@ -1,0 +1,33 @@
+1.0    hvMin [eV] is soft edge of hv-grid, DON'T INCREASE. It affects photo-induced transitions. 
+20.    hvSmo [eV] is red edge of fine v-grid. I excluded lines at hv < hvSmo because weak vs free-free continuum.
+1250.  hvMiF [eV] First hv-point of superFine v-grid
+2400.  hvMaF [eV] Last  hv-point of superFine v-grid
+16.e5  hvMax [eV] is maximal photon energy in the hv-grid. It MUST include hard continuum, hv >> 5 keV for PCD-40 
+1.d-3  fluMin is Min allowed value of abso OscStren for YES spectral line. If f() < fluMin, we replace A() by A() =0 in "Intro" 
+1.d6   [1/s] AulMin is Min allowed value of A-coef for ...
+---------
+47       Kr gr.st. of Li-like ion. QS# for initial POP = 1.(nX=1)  
+47       Mg .                                                  2  
+83.80    Kr ion mass, a.u.;  "Atmass(1)"
+24.30    Mg 
+0      KeRedu = -1 or 0.  "-1" means "no reduction of inization energy, "0" means "reduction in the Ion Sphere approach"
+3      PrFr  : 1,2,...6 is # in "tres(#)" for printing "MgLyB_shape_transf.dat", "LineBroBS.dat', 'EmiAbsoDetails.dat'
+-----------------------------------------
+  t[s]   D [cm]  Te[eV]  TD[keV]   ni(AL+MG)[i/cc]  % Mg in total ni (that is denoted "DenI")
+0.00d-9   0.01,   100.,    4. ,      0.6d21 ,       5.52   start time, 5.52% in ni is 5% by mass, see comment to Den(1) & Den(2) 
+0.20d-9   0.01,   400.,    8. ,      0.9d21 ,       5.52   tres(1)     
+0.35d-9   0.01,   900.,   24. ,      1.5d21 ,       5.52   tres(2)   
+0.45d-9   0.01,  1500.,   32. ,      2.0d21 ,       5.52   tres(3)   
+0.50d-9   0.01,  1500.,   26. ,      2.0d21 ,       5.52   tres(4)     
+0.65d-9   0.01,   700.,   16. ,      1.4d21 ,       5.52   tres(5)   
+1.00d-9   0.01,   200.,    5. ,      0.4d21 ,       5.52   tres(6)
+-------------------------------------------------------------------------
+ 62, 68, 93,  96, 122, 197   ! Population of these 6 energy levels of Al shown in file "POPs_BS_AL.dat"
+ 62, 68, 93, 109, 100, 227   ! Population of these 6 energy levels of Mg shown in file "POPs_BS_MG.dat".
+  A	  B	  C	  D	   E	F    ! Notation of the above levels in these two files 
+---------------------------------
+2  KeySmooth > 1 means "Replace broken-line Te(t) with smooth two-half-Lorentzians curve
+3     # in "tres(#)", i.e. t-point# chosen for peak of Te(t) 
+1400.   [eV] peak value of Te(t)   
+2.d-10  [s]  HWHM of before-peak Lorentzian   
+3.d-10  [s]  HWHM of after -peak Lorentzian                                     

@@ -6,7 +6,7 @@ from os.path import dirname, abspath
 from lib import current_data
 from lib.check_and_fix import create_rrec_inp, check_fix, copy_checks, check_and_fix_rr_version2, \
     check_and_fix_old_rr_version2
-from lib.create_in1_from_databases import parse_energy_limits, create_input_from_databases
+from lib.create_in1_from_databases import parse_energy_limits, create_in1_excit_spectr__from_databases
 from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
 from lib.env import env, get_pathes
 from lib.exceptions import GenericPlasmaException
@@ -90,7 +90,7 @@ class Runner:
             sp_nums_str = list(map(lambda x: str(x), range(min_sp_num, max_sp_num + 1)))
 
             sp_nums = self.run_and_set_good(
-                lambda: create_input_from_databases(elem_dir, elem, nucleus, sp_nums_dec, energy_limits, nmax),
+                lambda: create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec, energy_limits, nmax),
                 "Create IN1, SPECTR, EXCIT")
 
             in1 = os.path.join(elem_dir, "IN1.INP")

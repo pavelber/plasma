@@ -73,7 +73,7 @@ def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, o
         'wacc': '',
         'akival': osc,
         'akitype': 'f_ik',
-        'akizero': 'excl',
+        'akizero': 'incl',
         'abun': '',
         'depl': '',
         'elo': '100000',

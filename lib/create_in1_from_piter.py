@@ -21,9 +21,11 @@ def remove_braces(param):
 
 
 def should_include_level(energy, energy_limit, configs, nmax):
-    #    last_config_part = configs[-1]
-    #    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
-    #    n = int(last_config_part[0:first_letter_index])
+    last_config_part = configs[-1]
+    first_letter_index = last_config_part.find(next(filter(str.isalpha, last_config_part)))
+    n = int(last_config_part[0:first_letter_index])
+    if n > 6:
+        return False
     if configs[0] == "?1" or (len(configs) > 1 and configs[1] == "?1"):
         return False
     energy = clean_num(energy)
@@ -52,7 +54,7 @@ def write_section(outf, spec_num, spec_num_file, data_file, energy_limits, nmax)
             parts = line.split()
             if ".nd" in parts[0]:
                 continue
-            if len(parts) == 5:
+            if len(parts) == 5 and parts[0] != "?":
                 configs = normalize_config(parts[0])
                 configs_copy_for_csv = configs.copy()
                 if configs_copy_for_csv[0] == "":
@@ -100,7 +102,7 @@ def count_levels(spec_num_file, max_energy, nmax):
         levels = 0
         for line in inf:
             parts = line.split()
-            if len(parts) == 5:
+            if len(parts) == 5 and parts[0] != "?":
                 level_energy = clean_num(parts[3])
                 configs = normalize_config(parts[0])
                 if should_include_level(level_energy, max_energy, configs, nmax):
@@ -164,7 +166,8 @@ def create_in1_inp_from_piter(dir, elem, nucleus, i_spectro, energy_limits, nmax
                               energy_limits[str(f)],
                               nmax)
 
-            in1_inp.write(str(nucleus) + "\n")
-            in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
+            if int(i_spectro[-1]) + 1 == int(nucleus):
+                in1_inp.write(str(nucleus) + "\n")
+                in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
 
             return i_spectro

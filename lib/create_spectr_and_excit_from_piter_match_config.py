@@ -73,6 +73,8 @@ def write_spectr_section_from_piter(outf, spec_num, config_table, spec_num_file)
         for line in inf:
             if not line.startswith('***'):
                 parts = line.strip().split()
+                if 8 < len(parts) < 16:
+                    raise GenericPlasmaException("Check file, 12 fields in " + line)
                 if len(parts) == 16:
                     config = parts[4].split("-")
                     config_k = normalize_config(config[1])
@@ -125,7 +127,7 @@ def write_excit_section(outf, spec_num, lines):
                 spec_num, low_level[0], up_level[0], osc))
 
 
-def create_spectr_and_excit_from_piter_match_config(out_dir, elem,i_spectro):
+def create_spectr_and_excit_from_piter_match_config(out_dir, elem, i_spectro):
     lines_dir = os.path.join(out_dir, "lines")
     with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
@@ -140,7 +142,7 @@ def create_spectr_and_excit_from_piter_match_config(out_dir, elem,i_spectro):
                 sp_num_str = str(f)
                 section_lines = write_spectr_section_from_piter(spectr_inp, sp_num_str, configs,
                                                                 os.path.join(lines_dir, sp_num_str + '.txt'))
-                if len(section_lines) == 0:
-                    raise GenericPlasmaException("No lines for " + elem + " " + sp_num_str)
+                # if len(section_lines) == 0:
+                #    raise GenericPlasmaException("No lines for " + elem + " " + sp_num_str)
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0][0]), int(l[1][0])))
                 write_excit_section(exit_inp, sp_num_str, sorted_lines)
