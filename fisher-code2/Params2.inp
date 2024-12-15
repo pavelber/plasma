@@ -1,54 +1,51 @@
-  0.d-12 [s] start time of the computation 
- 10.d-12 [s] first t-step of the computation; each next t-step is 20% longer than previous t-step, but not longer than 10 ps. 
- 25.d-12 [s] "FrL" is duration of each Frame. Each frames lasts from ["central time" -FrL/2] to ["central time" +FrL/2]   
-80.d-12 [s] "StopTime" is the time to complete a computation. "StopTime" must be > [central time of last WANTED frame +FrL/2 + 10ps]       
-250.d-12 [s] "tiInf" is the time to print "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
-..............................
-          50.d-12, 100.d-12,  150.d-12,  200.d-12, 250.d-12,  300.d-12,  350.d-12, 400.d-12  [s] central time of 8 frames [s]  
--10.d-12, 50.d-12, 100.d-12,  150.d-12,  200.d-12, 250.d-12,  300.d-12,  350.d-12, 400.d-12  [s] nine t-points in the broken-line scenario.  
-......................                                                                                
-   3,       4,        5,         5,         6,        5,         4,        3,        3    number of BSs in the core. This number must be > 2  
-   1.,      1.,       1.,        1.,        1.,       1.,        1.,       1.,       1.   radius [um] of BSs; 9 t-points
-  60.,     50.,      45.,       40.,       35.,      35.,       40.,      50.,      60.   radius [um] of core; 9 t-points
-  80.,     62.,      55.,       45.,       40.,      40.,       50.,      70.,      90.   radius [um] of capsule; 9 t-points
-..............................                                       Note: R2 must be >> R1, see (II.1) in  Manual 2 
- 1.0d20,  2.0d20,   3.0d20,    4.0d20,    5.0d20,   5.0d20,    4.0d20,   2.0d20,  1.0d20  ni [i/cc] of Kr in BS.  
- 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9   ni [i/cc] of C  in BS.   Note: C  is given low density to  show "missing"
- 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9   ni [i/cc] of He in BS.         He is given ..........  
- 1.0d24,  2.0d24,   3.0d24,    4.0d24,    5.0d24,   5.0d24,    4.0d24,   2.0d24,  1.0d24  ni [i/cc] of D  in BS
+ 25.d-12 [s] "FrL" is duration of each Frame. Each frame lasts from [ its central time -FrL/2] to [its central time +FrL/2] 
+  0.d-12 [s]  start time of the computation    
+  2.0d-12 [s] "tstep" is dt of the computation. If you try "tstep" > FrL/10 then the code will change "tstep" to FrL/10.  
+115.0d-12 [s] "StopTime" is the time to complete a computation. "StopTime" must be > [central time of last WANTED frame +FrL/2 + tstep]       
+ 50.0d-12 [s] "tiInf" is the time to print "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
+               Note: central time of 1st frame must be >= StartTime + 2*FrL.
+.................................
+          50.d-12,  100.d-12,  200.d-12,  300.d-12, 350.d-12,  400.d-12,  450.d-12, 500.d-12             [s] central time of 8 frames [s]  
+ -1.d-12, 50.d-12,  100.d-12,  200.d-12,  300.d-12, 350.d-12,  400.d-12,  450.d-12, 500.d-12,  550.d-12  [s] 10 t-points in the broken-line scenario.  
+......................  
+   3,       3,        3,         3,         3,        5,         4,        3,        3,         3   number of BSs in the core. This number must be > 2  
+   1.d-3,   1.d-3,    1.d-3,     1.d-3,     1.d-3,    1.,       1.,       1.,       1.,        1.  radius [um] of BSs; 9 t-points
+  46.,     46.,      46.,       46.,       46.,      46,       40.,      50.,      60.,       70.  radius [um] of core; 9 t-points
+  52.,     52.,      52.,       52.,       52.,      52.,      50.,      70.,      90.,      110.  radius [um] of capsule; 9 t-points
+..............................        Note: R2 must be >> R1, see (II.1) in  Manual 2 
+ 5.0d18,  5.0d18,   5.0d18,    5.0d18,    5.0d18,   5.0d18,    4.0d18,   2.0d18,  1.0d18,    1.0d18  ni [i/cc] of Kr in BS.  
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of C  in BS.  Note: C  is given low density to  show "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of He in BS.        He is given low density to  show "missing"
+ 5.0d22,  5.0d22,   5.0d22,    5.0d22,    5.0d22,   5.0d22,    4.0d22,   2.0d22,  1.0d22,    1.0d22  ni [i/cc] of D  in BS
 ...............................
- 1.0d20,  1.2d20,   1.5d20,    1.8d20,    2.2d20,   2.2d20,    1.7d20,   1.2d20,  1.0d20  ni [i/cc] of Kr in core
- 1.1d22,  1.3d22,   1.6d22,    2.0d22,    2.5d22,   2.5d22,    1.9d22,   1.4d22,  1.1d22  ni [i/cc] of C  in core
- 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9   ni [i/cc] of He in core  Note: He is given low density to  show "missing"
- 1.0d24,  1.2d24,   1.5d24,    1.8d24,    2.2d24,   2.2d24,    1.7d24,   1.2d24,  1.0d24  ni [i/cc] of D  in core
+ 2.0d18,  2.0d18,   2.0d18,    2.0d18,    2.0d18,   2.0d18,    1.7d18,   1.2d18,  1.0d18,    1.0d18  ni [i/cc] of Kr in core
+ 1.0d9,   1.0d9 ,   1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of C  in core  Note: C  is given low density to  show "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of He in core        He is given low density to  show "missing"
+ 2.0d22,  2.0d22,   2.0d22,    2.0d22,    2.0d22,   2.0d22,    1.7d22,   1.2d22,  1.0d22,    1.0d22  ni [i/cc] of D  in core
 ...............................
- 1.0d20,  2.0d20,   3.0d20,    4.0d20,    5.0d20,   5.0d20,    4.0d20,   2.0d20,  1.0d20  ni [i/cc] of Kr in capsule
- 2.0d23,  4.0d23,   6.0d23,    8.0d23,    1.0d24,   1.0d24,    8.0d23,   4.0d23,  2.0d23  ni [i/cc] of C  in capsule
- 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9   ni [i/cc] of He in capsule
- 1.0d24,  2.0d24,   3.0d24,    4.0d24,    5.0d24,   5.0d24,    4.0d24,   2.0d24,  1.0d24  ni [i/cc] of D  in capsule
+ 5.0d18,  5.0d18,   5.0d18,    5.0d18,    5.0d18,   5.0d18,    4.0d18,   2.0d18,  1.0d18,    1.0d22  ni [i/cc] of Kr in capsule
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1 0d9,    4.0d23,  2.0d23,    1.0d23  ni [i/cc] of C  in capsule
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of He in capsule
+ 5.0d22,  5.0d22,   5.0d22,    5.0d22,    5.0d22,   5.0d22,    4.0d22,   2.0d22,  1.0d22,    1.0d24  ni [i/cc] of D  in capsule
 ................................
- 2500.,	  3500.,    4000.,     4500.,     5000.,    5000.,     4500.,    4000.,   3500.   Te=Ti [eV] in BSs 
- 2000.,	  2500.,    3000.,     3500.,     4000.,    4500.,     4000.,    3000.,   2000.   Te=Ti [eV] in core
- 1500.,	  1700.,    2000.,     2300.,     2700.,    3000.,     2600.,    2000.,   1500.   Te=Ti [eV] in capsule
+ 3500.,	  3500.,    3500.,     3500.,     3500.,    5000.,     4500.,    4000.,   3500.,     3000.  Te=Ti [eV] in BSs 
+ 3500.,	  3500.,    3500.,     3500.,     3500.,    4500.,     4000.,    3000.,   2000.,     2000.  Te=Ti [eV] in core
+ 2000.,	  2000.,    2000.,     2000.,     2000.,    3000.,     2600.,    2000.,   1500.,     1500.  Te=Ti [eV] in capsule
 ......................                         "u3D" [cm/s] is mean absolute velocity of ins in their collective (hydro) motion in zone
- 1.0d7,	  1.0d7,    1.0d7,     1.0d7,     1.0d7,    1.0d7,     1.0d7,    1.0d7,   1.0d7  "u3D" in BSs and due to their relative motion in the core
- 1.0d6,	  1.0d6,    1.0d6,     1.0d6,     1.0d6,    1.0d6,     1.0d6,    1.0d6,   1.0d6  "u3D" in core. 
- 1.0d6,	  1.0d6,    1.0d6,     1.0d6,     1.0d6,    1.0d6,     1.0d6,    1.0d6,   1.0d6  "u3D" in capsule
+ 1.0d7,	  1.0d7,    1.0d7,     1.0d7,     1.0d7,    1.0d7,     1.0d7,    1.0d7,   1.0d7,     1.0d7  "u3D" in BSs and due to their relative motion in the core
+ 1.0d6,	  1.0d6,    1.0d6,     1.0d6,     1.0d6,    1.0d6,     1.0d6,    1.0d6,   1.0d6,     1.0d7  "u3D" in core. 
+ 1.0d6,	  1.0d6,    1.0d6,     1.0d6,     1.0d6,    1.0d6,     1.0d6,    1.0d6,   1.0d6,     1.0d7  "u3D" in capsule
 ................................  
-  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.   e-beam part of the electron energy distribution in BS
-  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.   in core 
-  0.      0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.   in capsule
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,         0.   e-beam part of the electron energy distribution in BS
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,         0.   in core 
+  0.      0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,         0.   in capsule
 ................................
- 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.   central energy [keV] of the electrom beam in BS
- 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.   in core 
- 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.   in capsule
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,        20.   central energy [keV] of the electrom beam in BS
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,        20.   in core 
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,        20.   in capsule
 ................................
-  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.   width [keV] of the electron beam in BS
-  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.   in core 
-  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.   in capsule
-......................
-2        "nqInf" is the number of ELs of X (<101) to be given info on contacts with other ELs.  File "Contacts.dat"
-2        "LaInf" is serial number of zone to display  this info: 1=BS, 2=core, 3=capsule.          
-251  Example:  state #251 is 1s2  1S0, the ground state of He-like Kr .
-257  Example:  state #257 is 1s2p 1P1, the upper EL of He-alfa of Kr  
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,         5.   width [keV] of the electron beam in BS
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,         5.   in core 
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,         5.   in capsule
+
 

@@ -1,26 +1,18 @@
       use mo1code2     
       implicit none   
-      CALL OpenFiles() ! Open Output files and write titles of columnss
-      CALL Intro()     ! Read input files; fill in the atomic data arrays 
-c                        and initial population ("POPs") of energy levels ("ELs")
-      CALL LineList()  ! Find spectral lines in full [hvmin, hvmax] interval, print "LineList.dat"
-      CALL hvPoints()  ! Build a sequence of hv points if full [hvMin, hvMax] interval 
-      Count = 0        ! This integer counts lines read from Database (control)
+      CALL OpenFiles() ! Open Output files, write titles of columns
+      CALL Intro()     ! Read input files; fill in atomic data arrays and 
+c                        initial population ("POPs") of energy levels ("ELs")
+      CALL LineList()  ! Find spectral lines in full [hvmin, hvmax] interval, print file "LineList.dat"
+      CALL hvPoints()  ! Build a sequence of hv points in full [hvMin, hvMax] interval 
+      Count = 0        ! This integer counts lines read from Database
 
       tf= strt
   1   ti= tf  
-
-      tstep = tstep *1.2   
-      if(tstep .GT. 10.d-12) tstep = 10.d-12  ! 10 ps  
-
       tf= ti+ tstep  
- 
-      write(*,'(/a32, f6.0, a3)') 'Start ti =', ti*1.d12, 'ps'
+      write(*,'(/a40, f8.3, a4)') 'Start ti =', ti*1.d12, 'ps:'
 
-      if(ti.GE.StopTime) then
-	   write (*,'(/a53/)') 'ti >= StopTime.  The End.'
-	   STOP  
-      endif
+      if(ti.GE.StopTime) STOP '   ti >= StopTime.  The End.'
 
       do La = 1, LaMx     ! # of zone; 1=BS, 2=Core, 3=Capsule     
         CALL SCENARIO()   ! for t= ti compute R, Te, u3D, DenI, ZC1, Dene
@@ -28,12 +20,12 @@ c                        and initial population ("POPs") of energy levels ("ELs"
      +          'Zone, R(cm), Te, u3D, ne, Z(X) =', 
      +           La, CeR(La), Te(La), u3D(La), Dene(La), ZC(1,La)  
 
-        write(30+La,'(f7.0, e10.2, 2f7.3, e11.4, 2f10.5, 3f7.2, e11.4,    ! files "BSinfo.dat", "CoreInfo.dat", "CapInfo.dat"      
+        write(30+La,'(f7.2, e10.2, 2f7.3, e11.4, 2f10.5, 3f7.2, e11.4,   ! files "BSinfo.dat", "CoreInfo.dat", "CapInfo.dat"      
      +                 3e10.3, f6.3, 2f8.2)')  ti*1.d12,  CeR(La)*1.d4, 
      +                      Te(La)/1.d3, u3D(La)/1.d7, Dene(La), 
-     +                 ZC1(La), ZC(1,La), ZC(2,La), ZC(3,La), ZC(4,La),   ! ZC(nX,La) is mean ion charge of (nX,La), computed in Scenario  
-     +                      Den(1,La), Den(2,La), Den(3,La), Den(4,La),   ! using "POPi", see "POPi(k,nX,La) = POPf(k,nX,La)" just there
-     +                                bp(La), bc(La)/1.d3, bw(La)/1.d3    ! [keV]
+     +                 ZC1(La), ZC(1,La), ZC(2,La), ZC(3,La), ZC(4,La),  ! ZC(nX,La) is mean ion charge of (nX,La), computed in Scenario  
+     +                      Den(1,La), Den(2,La), Den(3,La), Den(4,La),  ! using "POPi", see "POPi(k,nX,La) = POPf(k,nX,La)" just there
+     +                                bp(La), bc(La)/1.d3, bw(La)/1.d3   ! [keV]
  
         do nX = 1, 1 ! nXE  ! For Te=Ti, Den(nX,La) of t = ti. Note: only X has lines and DPI 
            CALL LevWi()     ! For these La,nX compu FWHM [eV] of all E-LEVELs "LvJW(La,nX,k)" [eV] 
@@ -57,14 +49,15 @@ c                         via params of t=ti and POPi(k,nX,La).
 c                       La-loop is inside this subr because each "La" has contribs from other "La"s.  
 c                      "SpInEf(La,iv)" is needed for Win, Wab, WphI, WiRR at t= ti" for d02 of POPs towards "tf".
 
-      CALL PowYie()   ! Compute Spectral Power from the target, print frames in file (181
+      CALL PowYie()   ! Compute Spectral Power from the target using EmTot, AmTot computed
+c	                  for params of t=ti and POPi(k,nX,La).  Print frames in file (181
 
          nX = 1 
       do La = 1, LaMx
          CALL AtKins()  ! For each La compu Ws and PM for X; run d02 for POPs from "ti" to "tf" with params of "ti"; 
 c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first used in Scenario of NEXT "ti".
       enddo   
-      goto 1  ! to start next t-step, where present "tf" will be "ti", thus present "POPf" will be used for compu all quantities of "ti" 
+      goto 1  ! for next t-step, where present "tf" will be "ti", thus present "POPf" will be used for compu all quantities of "ti" 
       END     ! MAIN
 
 
@@ -124,12 +117,12 @@ c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first u
         write(45+k7,'(a135)')      'Info on FWHM [eV] of spectral lines.
      +    Note: Baranger = 0 means "Upper or Lower level is cut by conti
      +nuum lowering".'
-        write(45+k7,'(/a164)') 'hvCeV  XE  SS   Lambda(A)  Upper        
+        write(45+k7,'(/a164)') 'hvCeV  ChE  SpS  Lambda(A)  Upper        
      +      Upper                 Lower                Lower       viaTi
      +    via3D  Baranger  Lorentz   Voigt   PopUpper    flu'
       enddo
  
-      open(181, file= 'Frames.dat')   ! Frames [J/eV/sr]. Instrum-Convolved. 
+      open(181, file= 'Frames.dat')   ! Frames [J/eV/sr]. Note: no instrumental function n this code 
       FrYie     = zero
       write(181,'(a108)') 'hvKeV     YieFr1     YieFr2     YieFr3     Yi
      +eFr4     YieFr5     YieFr6     YieFr7     YieFr8    tIntegY'    
@@ -148,11 +141,11 @@ c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first u
       character*1 po1     ! for conversion of EL name symbols (1 position) in p.q.n., Lorb, ...
       integer char2int                      ! symbol-to-integer convertor function
       integer iniQS, nSS, mth, LL, LU, ki,  
-     +        iSS1, iQS1, iSS2, iQS2,  nFi
+     +        iSS1, iQS1, iSS2, iQS2,  nFi                 
       integer num_coeff
 
 
-      real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, thre  
+      real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, thre
 
       read(12,*) FSS(1), FSS(2), FSS(3), FSS(4)  ! "FSS" is the # of first   SS of XX, C, He, D in the DaBa;  31 for C-like Kr
       read(12,*) HSS(1), HSS(2), HSS(3), HSS(4)  ! "HSS" is the # of H -like SS of XX, C, He, D in the DaBa;  36 for H-like Kr
@@ -354,7 +347,7 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
                                              
         DE= E(kU,nX) - E(kL,nX) 
         if(DE .le. zero) then
-        write(*,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=',
+          write(*,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=', 
      +                                   nX, kL, E(kL,nX), kU, E(kU,nX) 	  
 	    PAUSE 'Excitation down in reading Exc.inp'
         endif
@@ -365,17 +358,17 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
         Cx(kL,kU) = Cxw
         Dx(kL,kU) = Dxw
         Ex(kL,kU) = Exw
+		Fx(kL,kU) = Fxw     ! VB
         flu(kL,kU,nX)= -fw   ! correct (positive) value of Absorption Oscillator Strength
 
         A(kU,kL,nX)= 4.339192d7*flu(kL,kU,nX)*DE**2 *g0(kL,nX)/g0(kU,nX)
 
         if(CountExc .GE. StrExc) goto 7  ! The last line of "Exc.inp"
 
-        if(mth.eq. 5 .or. mth.eq.11) goto 6   ! Present DaBa does not use other methods    
+        if(mth.eq. 5 .or. mth.eq.11 .or. mth.eq.16) goto 6   ! Present DaBa does not use other methods    
 
-        write(*,'(a65,5i5)')
-     +  'Excit CrosSec fit method is unknown for XE, iSS, LL, LU, mth=',
-     +                                        nX, iSS, LL, LU, mth
+        write(*,'(a65,5i5)')'Excit CrosSec fit method is unknown for XE, 
+	+  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
         PAUSE
   7     close(nFi)
       enddo        ! here XE-loop is 1 to 1, i.e. X only; C, He, D have no excited levels
@@ -403,11 +396,11 @@ c                        are omitted because weak vs continuum and/or noise in e
 
       read(13,*) hvMin   ! [eV]; soft edge of hv(i) sequence of points
       read(13,*) hvMax   ! [eV]; hard edge of hv(i) sequence of points
-      read(13,*) hvAxiRe ! the finest spectral resolution, dv/v, is  reached at hv = "hvFine".   
-        ReduReso = 4.    ! dv/v increases linearly towards "hvMin" and "hvMax" where dv/v reaches "ReduReso"*"hvAxiRe".
+      read(13,*) hvRe    ! the finest spectral resolution, dv/v, is  reached at hv = "hvFine".   
+        ReduReso = 4.    ! dv/v increases linearly towards "hvMin" and "hvMax" where dv/v reaches "ReduReso"*"hvRe".
       read(13,*) hvFine  ! hv [eV] at which spectral resolution is the best, usually hv of He-A or He-B
 
-      read(13,*) hvIns1, hvIns2   ! hv-edges of applicability of instrumental function given by coefficiens Ains, Bins, Cins, 
+      read(13,*) hvIns1, hvIns2   ! hv-edges of applicability of instrumental function given by coefficiens Ains, Bins, Cins,
 c                                   these edges are the edges of convolution in subroutine "GauInstrConvo(Simul, Co)"
       read(13,*) func_type
 
@@ -516,22 +509,28 @@ Consistancy control 1:
         close(nFi)
       enddo
 
-      read(14,*) strt    ! start time of the run, s
-      read(14,*) tstep   ! 1st time-step in this run [s], later changed in the code
-      read(14,*) FrL     ! [s] length (duration) of TREX frame 
+      read(14,*) FrL    ! [s] length (duration) of each frame 
+      read(14,*) strt   ! [s] start time of the run,
+      read(14,*) tstep  ! [s] time step of the computation. 
+      if(tstep .GT. FrL/10.) tstep = FrL/10.
+         tstep = tstep*(1.+1.e-7) 
+
       read(14,*) StopTime  
-      read(14,*) tiInf    ! time to print "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
+      read(14,*) tiInf       ! time to print "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
+      read(14,'(a9)') comme  ! Note: centran time of 1st frame must be >= StartTime + 2*FrL.
       read(14,'(a9)') empty  
 
       read(14,*) FrP     ! time [s] of centers of 8 frames from "Params2.inp"  
-      read(14,*) tPo     ! t-points including 1 point after last spectra printout
-      read(14,'(a9)') empty  
+      read(14,*) tPo     ! ten t-points of scenario
+      if(tPo(2) .LT. strt+2.*FrL*0.99999) 
+     +                               STOP 'Move tPo(2) to >= strt+2*FrL' 
+      read(14,'(a9)') comme  
 
       read(14,*) nuBSst  ! number of BSs in the core ("ntp" t-points)
       read(14,*) R1t     ! radius [um] of BSs in "ntp" t-points
       read(14,*) R2t     ! radius [um] of core in "ntp" t-points
       read(14,*) R3t     ! radius [um] of Capsule in "ntp" t-points
-      read(14,'(a9)') empty  ! comment
+      read(14,'(a9)') comme
 
       do iw = 1, ntp 
          if(nuBSst(iw).lt.3) PAUSE '   STOP. The model assumes > 2 BSs.'
@@ -597,6 +596,14 @@ Consistancy control 1:
          enddo
       enddo
       close(14)
+
+c  Find "LastFr" that is number of frames before StopTime
+      do k = 1, mSpe        
+         if((FrP(k)+FrL/2.) .LT. StopTime) LastFr= k 
+      enddo 
+c     write(*,'(/a20, i3)') 'LastFr =', LastFr
+      SpeY = 0.
+      kfrp = 0
       Return
       END	     ! of INTRO subr
 
@@ -640,10 +647,10 @@ Consistancy control 1:
       integer lnew, lmin, nXmin ! , LoRt,UpRt
       real(8) hvCmin,	Alamda, DEul 
       open (30, file= 'LineList.dat')
-      write(30,'( /a42, e7.1, a8, f6.4, a6, f4.3, a2, f5.1, a5)')
+      write(30,'( /a42, e7.1, a8, f6.4, a6, f4.3, a2, f5.1, a5)')   
      +    'Spectral lines with Aul >', AulMin,   ', flu >', fluMin, 
      +         'at (',  hvMin/1.d3, '-', hvMax/1.d3, ') keV'   
-      write(30,'(/a112/)')     'XE  SS    hvC(eV)    Lambda(A)     A(Hz)
+      write(30,'(/a112/)')     'ChE SpS   hvC(eV)    Lambda(A)     A(Hz)
      +          Upper Level                     Lower Level                  
      +   flu'
 
@@ -720,13 +727,13 @@ c      write(*,'(a22,f11.4,a4)') ' last line has hvC =', hvC(linM4),'eV.'
 
 
 
-      SUBROUTINE hvPoints() ! sequence of hv points provides best spectral resolution "hvAxiRe" at "hvFine".       
+      SUBROUTINE hvPoints() ! sequence of hv points provides best spectral resolution "hvRe" at "hvFine".       
 	use mo1code2          ! With v-deviation from "hvFine" the resolution decreases monotonicaly to
-	implicit none         ! ReduReso*"hvAxiRe" towards "hvMin" and towards "hvMax".
+	implicit none         ! ReduReso*"hvRe" towards "hvMin" and towards "hvMax".
       hvV(1)= hvMin    
       do iv = 2, nvL
         ReReiv= dexp(log(ReduReso)*(hvFine-hvV(iv-1))/(hvFine-hvMin))  ! Log is ln, natural logarithm
-        hvV(iv)= hvV(iv-1)*(one+ hvAxiRe * ReReiv) 
+        hvV(iv)= hvV(iv-1)*(one+ hvRe * ReReiv) 
         if(iv.eq.nvL) then
             write(*,'(/a14, i6, a15, f10.3, a9, f10.3)') 
      +           'Came to nvL=', nvL, 'but hvV(hvL) =', hvV(nvL), 
@@ -740,7 +747,7 @@ c      write(*,'(a22,f11.4,a4)') ' last line has hvC =', hvC(linM4),'eV.'
       do iv = nvMF+1, nvL
         ReReiv= dexp(log(ReduReso)*(hvV(iv-1)-hvFine)/(hvFine))
         if(ReReiv.gt.ReduReso) ReReiv= ReduReso 
-        hvV(iv)= hvV(iv-1)*(one+ hvAxiRe * ReReiv) 
+        hvV(iv)= hvV(iv-1)*(one+ hvRe * ReReiv) 
         if(iv.eq.nvL) then
             write(*,'(/a14, i6, a15, f10.3, a9, f10.3)') 
      +           'Came to nvL=', nvL, 'but hvV(hvL) =', hvV(nvL), 
@@ -990,8 +997,7 @@ c                                       This simple Esti is accurate to better t
         SpInEf(1,iv)= Exte1 + Self1   ! La=1 is BS; [W/eV/sr/cm2],  solution of ERT: two terms 
 
 *******************   La=2 is core. We treat it as spherical, thus characterize with one param R2.
-c                          Note: distBS= R2*(4pi/3/nuBSs)^0.333 is mean dist betw BSs; computed in "read(14";
-c                                where condition on R2 (or R1) was "distBS > 10.*R1"
+c                          Note: distBS= R2*(4pi/3/nuBSs)^0.333 is mean dist betw BSs;
 
         Self2 = So2*(one-dexp(-ta2))  ! "Due-to-Core-itself" part of SpIn [W/eV/sr/cm2] in Core RP; 
 c                                       R2 is reasonable	estim of OM-average LOS path [because
@@ -1059,8 +1065,7 @@ c       if(iv.eq.1) write(*,'(/a16, f7.4/)') 'CoPa =', CoPa
       SUBROUTINE PowYie()  ! is CALLed at each t. Computes from-target Spectral Power and Yield in each TREX frame, see (181. 
       use mo1code2         ! This subr is CALLed from outside La-loop, thus on the entry La = LaMx+1 	
       implicit none   
-      integer LastFr   
-      real(8) PeriSpIn(nvL), HotSpIn(nvL), Ww(nvL), Wconv(nvL), 
+      real(8) PeriSpIn(nvL), HotSpIn(nvL),  Ww(nvL), Wconv(nvL),
      +        So1, So2, So3, ab1, ab2, ab3, Lper,   
      +        tau1, tau2, tau3, tau3p, yHOT, SpIn1, SpIn2
 
@@ -1108,65 +1113,70 @@ c  Typical Hot (thru-core) LOS is that at y = R2*(sqrt(5)/3) = 0.7454 R2 which p
          HotSpIn(iv)=                       ! [W/eV/sr/cm2] from Capsule to TREX along hot LOS, see (17)
      +               SpIn2*dexp(-tau3) +    ! from Core, attanuared in Capsule 
      +               So3*(one-dexp(-tau3))  ! added by Capsule
+
+         RadPow(iv)= HotSpIn(iv)*pin*R2**2 +PeriSpIn(iv)*Aper  ! [W/eV/sr] target radiation power computed 
+c                                                                using EmTot, AmTot of t=ti and POPi(k,nX,La)
       enddo  ! iv
 
-c  Find "LastFr" that in number of frames before StopTime
-      do k = 1, mSpe        
-         if((FrP(k)+FrL/2.) .LT. StopTime) LastFr= k 
-      enddo 
+cCheck all print-frame times: maybe "tf"" is just the time to print a frame [J/eV/sr]
+c      do k = 1, LastFr                              
+c        if(ti.LE.FrP(k) .and. FrP(k).LE.tf) then 
+c           do iv = 1, nvM 
+c             FrYie(iv,k)= FrL*RadPow(iv)   ! [s]*[W/eV/sr]  
+c           enddo
+c        endif
+c      enddo
 
-Collect Radiation Yield for proper frame [J/eV/sr]
-      do k = 1, LastFr                              
-         if((FrP(k)-FrL/2.).LT.tf .and. tf.LE.(FrP(k)+FrL/2.)) then ! tf is inside Frame #k 
-            do iv = 1, nvM 
-               FrYie(iv,k)= FrYie(iv,k) +                         ! Yield during the frame [J/eV/sr]
-     +         tstep*(HotSpIn(iv)*pin*R2**2 + PeriSpIn(iv)*Aper)  ! [s]*[W/eV/sr/cm2]*[cm2]  
-            enddo
-         endif
-      enddo     
+Collect Radiation Yield during proper frame [J/eV/sr]
+      do kfr = 1, LastFr                              
+        if((FrP(kfr)-FrL/2.).LE.ti .and. ti.LT.(FrP(kfr)+FrL/2.)) then   ! ti is inside Frame #kfr
+          if(kfr.ne.kfrp) then  ! new frame
+		   CoFr = 0
+             kfrp = kfr
+          endif
+          CoFr= CoFr+1
+          write(*,'(a30, 2i3)') 'Frame#, +# =', kfr, CoFr
+          do iv = 1, nvM 
+            FrYie(iv,kfr)= FrYie(iv,kfr) + tstep*RadPow(iv)  ! [J/eV/sr] Radiation Yield during the frame
+          enddo                                              ! Note: RadPow of ti, see above 
+        endif
+      enddo   
+
 Collect full-time radiation yield [J/eV/sr] since t0 till StopTime  
       do iv = 1, nvM 
-         SpeY(iv)=  SpeY(iv) +                                         ! [J/eV/sr]                     
-     +              tstep*(HotSpIn(iv)*pin*R2**2 + PeriSpIn(iv)*Aper)  ! [s]*[W/eV/sr/cm2]*[cm2]  
+         SpeY(iv)=  SpeY(iv) + tstep*RadPow(iv)    ! [J/eV/sr]                       
       enddo
 	                                                     
       if(tf.GE.StopTime) then  ! Last visit to subr "PowYie"	
         do k = 1, LastFr
-          do iv = 1, nvM 
-             Ww(iv)= FrYie(iv,k)    ! [J/eV/sr]  
-          enddo		    
-		Wconv = zero              
-          CALL GauInstrConvo(Ww, Wconv)  ! Convolution with Gaussian instrumental function 
-          do iv = 1, nvM 
-             FrYie(iv,k)= Wconv(iv) ! [J/eV/sr]     
-          enddo  ! iv				              
+          do iv = 1, nvM
+             Ww(iv)= FrYie(iv,k)    ! [J/eV/sr]
+          enddo
+		Wconv = zero
+          CALL GauInstrConvo(Ww, Wconv)  ! Convolution with Gaussian instrumental function
+          do iv = 1, nvM
+             FrYie(iv,k)= Wconv(iv) ! [J/eV/sr]
+          enddo  ! iv
         enddo	   ! k
 
-	  do iv = 1, nvM 
-           Ww(iv)= SpeY(iv)    ! [J/eV/sr]  
-        enddo		    
-        Wconv = zero              
-        CALL GauInstrConvo(Ww, Wconv)  ! Convolution with Gaussian instrumental function 
-        do iv = 1, nvM 
-           SpeY(iv)= Wconv(iv) ! [J/eV/sr]     
-        enddo  ! iv				              
+	  do iv = 1, nvM
+           Ww(iv)= SpeY(iv)    ! [J/eV/sr]
+        enddo
+        Wconv = zero
+        CALL GauInstrConvo(Ww, Wconv)  ! Convolution with Gaussian instrumental function
+        do iv = 1, nvM
+           SpeY(iv)= Wconv(iv) ! [J/eV/sr]
+        enddo  ! iv
 
-c       ScaF = 1/(FrL*1.d9)  ! Factor for conversion of "FrYie" from [J/keV/sr] to [J/keV/sr/ns] shown on expt spectrograms 
-c                              that means "Mean Power [GW/keV/sr] during the frame. 
-c                              In the computation: FrL [s]; 1.d9 [ns/s] 
         do iv = 1, nvM		
            if(hvPrint1.LE.hvV(iv) .and. hvV(iv).LE.hvPrint2)             ! hv-interval for printing frame
      +        write(181,'(f10.6, 19e11.4)') hvV(iv)/1.e3,                ! [keV]   
      +            FrYie(iv,1)*1.e3, FrYie(iv,2)*1.e3, FrYie(iv,3)*1.e3,  ! [J/keV/sr] Radiation Yield gathered during one frame. 
 c                                                                                     In other words, Energy radiated by the target during one frame
-     +            FrYie(iv,4)*1.e3, FrYie(iv,5)*1.e3, FrYie(iv,6)*1.e3,  !          . Yv is convolved with instrumental gaussian in [hvCon1, hvCon2] interval   
+     +            FrYie(iv,4)*1.e3, FrYie(iv,5)*1.e3, FrYie(iv,6)*1.e3,     
      +            FrYie(iv,7)*1.e3, FrYie(iv,8)*1.e3,                    !            Here "*1.e3" for [J/eV/sr] to [J/keV/sr]
-     +                              SpeY(iv)*1.e3                        ! [J/keV/sr] Radiation Yield gathered since t0 till "StopTime"; convolved with instrumental function.  
-c     +          , HotSpIn(iv),                                          ! [W/eV/sr/cm2] from Capsule to TREX along hot LOS in the last frame, see (III.15)
-c     +            PeriSpIn(iv),                                         ! [W/eV/sr/cm2] Out from Capsule along cold LOS in the last frame, see (III.20)
-c     +            HotSpIn(iv)*pin*R2**2 + PeriSpIn(iv)*Aper,            ! [W/eV/sr] Radiation Power from the target in the last frame  
-c     +            pin*R2**2, Aper                                       ! [cm2]                            
-        enddo                                                            ! 
+     +                              SpeY(iv)*1.e3                        ! [J/keV/sr] Radiation Yield gathered since t0 till "StopTime"  
+        enddo                                                            
       endif  
       Return 					  
       END     ! of 'PowYie' subr
@@ -1249,7 +1259,7 @@ Calculate POPZ(SS) of nX passed thru d02
       do j= FSS(1), HSS(1)+1                                ! all SS of nX = 1
          if(POPZ(j,1,La) .lt. 1.d-40) POPZ(j,1,La)= 1.d-40  ! FOR ORIGIN processing 
       enddo
-      write(115+La,'(f7.0, f7.3, 20e10.4)') tf*1.d12, Te(La)/1000.,    
+      write(115+La,'(f7.2, f7.3, 20e10.4)') tf*1.d12, Te(La)/1000.,    
      +                         Dene(La), Den(1,La), POPZ(HSS(1)-6,1,La), 
      +                         POPZ(HSS(1)-5,1,La), POPZ(HSS(1)-4,1,La),.
      +    POPZ(HSS(1)-3,1,La), POPZ(HSS(1)-2,1,La), POPZ(HSS(1)-1,1,La), 
@@ -1260,19 +1270,19 @@ Calculate POPZ(SS) of nX passed thru d02
 
 
 
-      SUBROUTINE redPI()  ! For this La,nX=1 gives from-the-ground-state ionization energy of ions (PIR) 
-      use mo1code2        ! in the Ion-Sphere approach           
+      SUBROUTINE redPI()  ! For this La and nX=1 this subr gives from-the-ground-state  
+      use mo1code2        ! ionization energy of ions (PIR) in the Ion-Sphere approach           
       implicit none                                    
-      real(8) DPIsph(HSSm+1), SpheR  ! = (3./FoPi/DenI(La))**third  [cm], Radius of ion sphere from 1= 4piR^3*ni/3; Gr3 (7.36),,Ropke-2019 PRE (2)     
+      real(8) SpheR       
 
-      do jSS = FSS(nX), HSS(nX)                           ! all ionizible SSs; jSS is spectroscopic symbol    
-        SpheR= (3.*(jSS-1)/FoPi/Dene(La))**third          ! [cm], jSS-1 is the ion charge (like all ions in "ni" are of this charge)         
-        DPIsph(jSS)= 2.*RyeV *jSS *a0/SpheR               ! [eV], MANUAL, (II.7)  Differs from (7.43) of Griem-3 by my factor 2 instead of his 3/2 
-        DPI(jSS,nX,La)= min(DPIsph(jSS), 0.7*PI(jSS,nX))  ! Ion sphere BUT not more than 0.7*PI 
-        PIR(jSS,nX,La)= PI(jSS,nX) - DPI(jSS,nX,La)       ! thus not less than 0.3*PI  
+      do jSS = FSS(nX), HSS(nX)                       ! all ionizible SSs; jSS is spectroscopic symbol    
+        SpheR= ( 3.*(jSS-1)/FoPi/Dene(La) )**third    ! [cm], jSS-1 is the charge of ion, see Manual (A.2)         
+        DPI(jSS,nX,La)= 2.*RyeV *jSS *a0/SpheR        ! [eV], Manual (A.5). 
+        PIR(jSS,nX,La)= PI(jSS,nX) - DPI(jSS,nX,La)         
+        if(PIR(jSS,nX,La) .LT. PI(jSS,nX)/2.)	PAUSE '  PIR too low'
       enddo    
 
-      write(540+La,'(f7.0, f7.3, 20e10.4)') ti*1.d12, Te(La)/1000.,    
+      write(540+La,'(f7.2, f7.3, 20e10.4)') ti*1.d12, Te(La)/1000.,    
      +                          Dene(La), Den(1,La), 
      +                          PIR(HSS(1)-6,1,La)/PI(HSS(1)-6,1), 
      +                          PIR(HSS(1)-5,1,La)/PI(HSS(1)-5,1),
@@ -1718,10 +1728,12 @@ c                                                                               
       SigInz= 3.8101e-16* OM /eeV /g0(k,nX)        ! see FAC guide (2.10): "in A.U. e-imp SigInz= OM/k0^2/g(k)". 
 
       if(SigInz .LT. zero)       SigInz= zero        ! Avoid Sig < 0 that can happen in case of bad interpolation between FAC points 
-      if(SigInz .GT. SigMax(La)) SigInz= SigMax(La)  ! We assume scaling of from-FAC ioniz cross-secs over eeV/BEk 
-      END                                            ! but it can cause huge SigInz for "k" with small BEk, therefore
-c                                                      I restrict "SigInz" and "SigPhi", no need in restricting recombination because expressed via inz 
 
+      if(SigInz .GT. SigMax(La)) SigInz= SigMax(La)  ! (i)  We assume scaling of from-FAC ioniz cross-secs over eeV/BEk 
+c                                                           but it can cause huge SigInz for "k" with small BEk.
+c                                                      (ii) Bad fit to from-FAC points can cause huge SigInz.
+c        therefore I restrict "SigInz", "SigPhi", no need in restricting recombination because expressed via SigInz, SigPhi 
+      END
 
 
       real(8) function FVStbr(eeV)  ! 3B recombination in notations   (SS=j+1,kf) + 2e --> (j,k) + e; 
@@ -1756,9 +1768,12 @@ c                                                      I restrict "SigInz" and "
      +                         xw**(3.5+ Hix(k,kf))   
 c                              SigPhi= 7.9d-18* (BEk/hv)**3 /HSS(nX)**2  ! Kramers;  see BlackFold(42); single-e, nucl charge
       if(SigPhi.LT.zero)       SigPhi= zero        ! Bad fits to FAC points may cause Sig < 0 
-      if(SigPhi.GT.SigMax(La)) SigPhi= SigMax(La)  ! We assume scaling of from-FAC ioniz cross-secs over eeV/BEk
-c                                                  ! but it can cause huge SigPhi (if BEk is small), therefore 
-      END                                          ! I restrict "SigInz" and "SigPhi", no need in restricting recom because expressed via inz 
+
+      if(SigPhi.GT.SigMax(La)) SigPhi= SigMax(La)  ! (i)  We assume scaling of from-FAC ioniz cross-secs over eeV/BEk
+c                                                         but it can cause huge SigPhi (if BEk is small), 
+c                                                    (ii) Bad fit to from-FAC points can cause huge SigPhi.
+c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombination because they are expressed via SigInz, SigPhi 
+      END 
 
 
       real(8) function FVSEx(ev)
@@ -1775,20 +1790,22 @@ c                                                  ! but it can cause huge SigPh
       real(8) ev, V, SigDx, SigExc, EED       
         SigDx= SigExc(ev+DE)*(ev+DE)*g0(k,nX)/g0(kf,nX)/ev    ! Klein-Rosseland, Sobelman-Vainstein-Yukov, 95, p5    
         V = 5.93096887d7*sqrt(ev)
-        FVSDx = EED(ev) * V * SigDx
-      END                          
+        FVSDx = EED(ev) * V * SigDx  ! Don't restrict SigDx because you restricted SigExc,
+      END                            ! otherwise no transition to Boltzmann
+
 
                                           
       real(8) function SigExc(eeV)  ! 'k' is lower,  'kf' is upper
       use mo1code2
       implicit none
       integer Me
-      real(8) eeV, As, Bs, Cs, Ds, Es, X, X2, Sig 
+      real(8) eeV, As, Bs, Cs, Ds, Es, Fs, X, X2, Sig , ALPHA, F, XN, E1 ! Vstavil Fs VB
       As= Ax(k,kf)
       Bs= Bx(k,kf)
       Cs= Cx(k,kf)
       Ds= Dx(k,kf)
       Es= Ex(k,kf)
+	  Fs= Fx(k,kf)   !VB
       Me= MthdEX(k,kf)
       if(KiSS(k,nX) .ne. j) PAUSE 'In SigExc: wrong SS'
 
@@ -1798,7 +1815,7 @@ c                                                  ! but it can cause huge SigPh
         PAUSE 
       endif 
 
-      X= eeV/DE      
+      X= eeV/DE      ! Tekushaq energiq w porogowih edinicah VB coment 
       if(X.LT.1.) then
         write(*,'(a40, 3i5, f9.4)') 'X < 1 in SigExc; XE, k, kf, DE=', 
      +                                                nX, k, kf, DE 
@@ -1816,10 +1833,22 @@ c                                                  ! but it can cause huge SigPh
           else
              Sig= (Cs +Bs*X +As*X2)/(X+Ds)**4 /X**Es 
           endif
+          
+        Case(16)            ! a-la splines with Gauss functions 0..1 from NOMAD VB
+	          ALPHA = 0.9899495D0 * DSQRT(Fs/(Fs - 1.D0)) ! numerical coefficient is 0.7 * dsqrt(2)
+	          XN = DSQRT((X-1.D0)/(X+Fs))*ALPHA
+	          E1 = 1.D0/Es
+	          Sig = (As*DEXP(-XN*XN*E1) +
+     &         Bs*DEXP(-(XN-0.333D0)**2*E1) +
+     &         Cs*DEXP(-(XN-0.666D0)**2*E1) +
+     &         Ds*DEXP(-(XN-1.000D0)**2*E1)) / X
+     
       END SELECT
 
-      if(Sig .lt. zero) Sig= zero    ! Bad fits to FAC points may have Sig < 0 even far from threshold 
-      SigExc= Sig
+      if(Sig .LT. zero      ) Sig= zero        ! Bad fits to FAC points may have Sig < 0 even far from threshold 
+      if(Sig .GT. SigMax(La)) Sig= SigMax(La)  ! Bad fits to FAC points may cause huge Sig
+
+      SigExc= Sig   ! Don't restrict SigDx [expressed via Klein-Rosseland] for Boltzmann limit
       END 
 
 
@@ -1842,11 +1871,11 @@ c                                                  ! but it can cause huge SigPh
 
     
       SUBROUTINE GauInstrConvo(Simul, Co)  ! Convolution with Gaussian instrumental function
-      use mo1code2                         ! at hvIn1 <= hv <= hvIn2	        
-      implicit none  
-      integer i1 
+      use mo1code2                         ! at hvIn1 <= hv <= hvIn2
+      implicit none
+      integer i1
       real(8) Simul(nvL), Co(nvL), Bro, v0, Sver, dev, FuIns,
-     +                                                  Gauss, prF   
+     +                                                  Gauss, prF
       Co= Simul       ! Initial; at least, "Simul" will remain non-Convo
       do i1= 1, nvM
         v0 = hvV(i1)
@@ -1883,20 +1912,20 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
           end select
 
           Sver = Sver+ (prF+ Simul(iw)*FuIns)*dhv/two
-          prF  = Simul(iw) *FuIns 
+          prF  = Simul(iw) *FuIns
 	  enddo
-        Co(i1)= Sver 
-      enddo  
+        Co(i1)= Sver
+      enddo
       Return
-      END     ! of 'GauInstrConvo' subr 
+      END     ! of 'GauInstrConvo' subr
 
 
 
 
       real(8) FUNCTION Voigt2(fwhmL, fwhmG, vC, dv) ! [eV], dv= v-vC, Sasha's connector to YR+Drayson's VOIGT(X,Y); WELL checked
-      use mo1code2
-      implicit none
-      real(8) fwhmL, fwhmG, vC, dv, balf, x1, y1, Voi2, VOIGT
+	use mo1code2                                       
+	implicit none
+	real(8) fwhmL, fwhmG, vC, dv, balf, x1, y1, Voi2, VOIGT
       balf= (vC/fwhmG)*1.6651092   ! 1.6651092= 2*Sq[ln(2)]
       x1= balf*abs(dv)/vC	         ! to Dr' units
       y1= 1.665109*fwhmL/2./fwhmG  ! to Dr' units
@@ -1906,12 +1935,12 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
 
 
       real(8) FUNCTION VOIGT(X,Y) ! Voigt shape normalized to sqrt(pi); From Drayson, JQSRT, v.16, pp.611-614, 1976
-      use mo1code2
-      implicit none
-      integer MAX, N, MIN, Jvo
-      real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
+	use mo1code2
+	implicit none
+	integer MAX, N, MIN, Jvo
+	real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
      +       D3(25), D4(25), HN(25), XX(3),  HH(3), NBY2(19), Cv(21),
-     +       CO, UU, VV, U, Y2, Hv, DXv, V
+	+       CO, UU, VV, U, Y2, Hv, DXv, V
       DATA B/0.,.7093602d-7,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,.0,
      + .0,.0,.0,.0,.0,.0/, XN/10.,9.,2*8.,7.,6.,5.,4.,7*3./,
      + YN/3*.6,.5,2*.4,4*.3,1.,.9,.8,2*.7/, Hv/.201/, XX/.5246476,
@@ -2057,10 +2086,10 @@ c                  POP(k)*Wout(k)  > 10^17  print details in "Happened.dat", fil
      +                'ps level #', k, 'of XE=', nX,
      +                'has FluxOut =', Wout(k)*POPi(k,nX,La), 
      +                '> d17;   POP=', POPi(k,nX,La) 
-           close(341)
-           write(*,'(//a56)') 
-     +       'POP(k)*Wout(k) > 10^17; see details in "Happened".dat' 
-           PAUSE
+c           close(341)
+c           write(*,'(//a56)') 
+c     +       'POP(k)*Wout(k) > 10^17; see details in "Happened".dat' 
+c           PAUSE
         endif
 
         if(k.ne.kf .and. abs(PM(k,kf))*POPi(k,nX,La) .gt. 1.d17) then 
@@ -2068,7 +2097,7 @@ c                  POP(k)*Wout(k)  > 10^17  print details in "Happened.dat", fil
      +        'In La=', La, 'at ti=', ti*1.d12,  
      +           'ps found |PM(k,kf)|*POPk > 10^17 for XE, k, kf=',   
      +            nX, k, kf,   ';  see details:'
-           write(341,'(a137)')  'POPk     POPkf      A        WI        
+           write(341,'(/a137)') 'POPk     POPkf      A        WI        
      +  WTB      WPhI      WRR       WEX       WDX       WAiz      WDC     
      +    WInd      Wab       WiRR' 
            write(341,'(19e10.3)') POPi(k,nX,La), POPi(kf, nX,La), 
@@ -2139,8 +2168,7 @@ c                  POP(k)*Wout(k)  > 10^17  print details in "Happened.dat", fil
 
       distII = one/DenI(La)**third   ! cm; mean ion-ion distance in La; 
 c                  DenI(La) is total (all-XE) ion density [i/cc] in the Layer
-      SigMax(La)= 3.14*distII**2     ! Geom Upper limit on ionization cross-sec, see comment of Oct 16, 2020. 
-
+      SigMax(La)= 3.14*distII**2     ! Geom Upper limit on inelastic cross-sec. 
       Return
       END     ! Scenario	   
 

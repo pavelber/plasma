@@ -1,21 +1,21 @@
-1  Serial number of ion energy level (EL) to be given initial population of chemical element #1 (Kr); note: one EL for all xones; here this EL is the ground state of N-like Kr
+1  Serial number of ion energy level (EL) to be given initial population of chemical element #1 (Cr); note: one EL for all zones; here this EL is the ground state of N-like Kr
 2                                                                                             2 (C )                            ; here nuclei C^+6.     
 2                                                                                             3 (He)                            ; here nuclei He++
 2                                                                                             4 (D )                            ; here nuclei D+. 
-83.8    Kr ion mass in atomic units           
+51.996  Cr ion mass in atomic units           
 12.0    C  ion mass  
  4.     He ion mass           
  2.     D  ion mass
 ------- 
-0.01   "fluMin". Spectral lines with absorption oscillator strength < "fluMin" are excluded from computations	
-3.d8   "AulMin". Spectral lines with Einstein A coefficient < "AulMin" are excluded from computations			 
+0.003   "fluMin". Spectral lines with absorption oscillator strength < "fluMin" are excluded from computations	
+3.d8    "AulMin". Spectral lines with Einstein A coefficient < "AulMin" are excluded from computations			 
                   because these lines are weak vs continuum and/or uncertainty (noise) in spectrograms. 
  3.     "hvMin" is soft edge of full hv interval. DON'T INCREASE "hvMin" because computation of photoinduced probabilities requires FULL hv interval 
 40.d3   "hvMax" is hard edge of full hv interval. DON'T DECREASE "hvMax" because computation of photoinduced probabilities requires FULL hv interval                                    
-1.5d-4  "hvAxiRe" is minimal (finest) dv/v in full hv-interval (this dv/v is reached at hv = hvFine); then dv/v increases linearly towards "hvMin" and "hvMax" where dv/v reaches 2*minimal. 
-13113.         "hvFine" [eV] is hv at which spectral resolution is the best, here at Kr He-A
+1.5d-4  "hvRe"  is minimal (finest) dv/v in full hv-interval (this dv/v is reached at hv = hvFine); then dv/v increases linearly towards "hvMin" and "hvMax" where dv/v reaches 4*minimal. 
+5682.      "hvFine" [eV] is hv at which spectral resolution is the best, here at Cr He-A
 12000., 18000. "hvIns1", "hvIns2" are the edges of convolution of computed spectrograms with the instrumental function
 GAUSSIAN   !INSTRUMENT or GAUSSIAN
 1.0          !Fwin Ignored for GAUSSIAN
 55.81, 27.25, 3.916, 0.000018, 0.00414, 0.03  !6 params for INSTRUMENT or 3 for GAUSSIAN
-12500., 30000.
+5400., 30000.  [eV]  edges of print "Frames.dat"

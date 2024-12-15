@@ -9,7 +9,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +     NST(nXE)            ! number of ELs in each of 4 DaBa [non-AI and AI] : .
 
       integer, public, parameter :: 
-     +     nQSm = 1650,                 ! number of ELs in X (nX=1). For HSSm=36 it must be <= 2300 but for HSSm>36 integer nQSm must be < 2300, to be found in compilation	   
+     +     nQSm = 1620,                 ! number of ELs in X (nX=1). For HSSm=36 it must be <= 2300 but for HSSm>36 integer nQSm must be < 2300, to be found in compilation	   
      +     HSSm = 36,                   ! max SpS of H-like ion in DaBa; [36 for Kr]
      +    Nwork = 50+ 12*nQSm+ nQSm**2  ! For NAG d02eaf workArea 'WEAF'	
       integer, public, parameter :: 
@@ -17,7 +17,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   MNLe = 16000,  ! Not more than "MNLe" spectral lines are expected for all XE together (common LineList)
      +   LaMx = 3,      ! Number of types of zones
      +   mSpe = 8,      ! Number of frames.
-     +   ntp  = mSpe+1  ! Number of t-points in Scenario   
+     +   ntp  = mSpe+2  ! Number of t-points in Scenario   
 
       real(8), public, parameter ::    
      +   c    = 2.99792458d10,  ! cm/s  ADT
@@ -68,34 +68,36 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +  La,    ! serial # of plasma layer under study (w-layer)
      +  nX,    ! variable (current) number of Chemical Element (XE)
      +  mePh,          
-     +  nvMF, nvM,       ! number of hv-points in full interval, see subr "hvPoints"   
-     +  k, kf, j, jx, i,                       ! variable integers
-     +  iv, kw, k7, k1, k2, iSS, jSS, kQS, kS, ! variable integers
-     +  kU, kL, lin, nLam, nXw, n7, lw,        ! variable integers
-     +  npts, Nlim, Ifail,                     ! integers in D01ahf and d02
-     +  nC, nw,            ! # of central point of r-grid for vertical (radial) scans 
-     +  iX,      
-     +  nuBSs,   ! number of BSs in the core  
-     +  nqInf,   ! for how many ELs you want detailed PM-info in file (49	?
-     +  LaInf,   ! cell# of this info
-     +  nFine,
-     +  Count, StrExc, CountExc, StrInz, CountInz, 
-     +  StrAIw, CountAIw, iw
+     +  nvMF, nvM, LastFr,       ! number of hv-points in full interval, see subr "hvPoints"   
+     +  k, kf, j, i, iX, iv, iw,    ! variable integers
+     +  kw, k7, k1, k2, kfr, kfrp,
+     +  iSS, jSS, kQS, kS, kU, kL,  ! variable integers
+     +  lin, nLam, nXw, n7, lw, nw, ! variable integers
+     +  npts, Nlim, Ifail,          ! integers in D01ahf and d02
+     +  nuBSs,                      ! number of BSs in the core  
+     +  Count, StrExc, CountExc,  
+     +  StrInz, CountInz, StrAIw, CountAIw, CoFr
 
       real(8), public :: 
-     +   EmTot(LaMx, nvL),        ! plasma emissivity [W/cc/sr/eV] in LaMx shells 
-     +   AbTot(LaMx, nvL),        ! plasma absorption coefficient corrected for stimulated emission [1/cm] in the same shells
+     +   EmTot(LaMx, nvL),  ! plasma emissivity [W/cc/sr/eV] in LaMx shells 
+     +   AbTot(LaMx, nvL),  ! plasma absorption coefficient corrected for stimulated emission [1/cm] in the same shells
+     +   SpInEf(LaMx,nvL),        ! OMEGA-mean RF intensity in 3 zones [W/cm2/sr/eV]
      +   absoFF(nvL), emisFF(nvL),  
      +   absoBF(nvL), emisFB(nvL),  
      +   absoBB(nvL), emisBB(nvL),  
+     +     SpeY(nvL),              ! t-depe spectral yield [J/eV/sr] gathered since t0 till "StopTime" 
+     +    FrYie(nvL,mSpe),  ! array of 8 frames [J/eV/sr] 
+     +      hvV(nvL),       ! hv-grid [eV]
+     +   RadPow(nvL),       ! [W/eV/sr] target radiation power 
+
      +     LvJW(LaMx, nXE, nQSm),  ! LEVEL Stark width [eV], J-formulary 
      +   LvLorW(LaMx, nXE, nQSm),  ! same corrected for uncertainty principle
      +    PI(HSSm,nXE),            ! Ionization Potential of each GS, table value
      +   PIR(HSSm,nXE,LaMx),  ! Ionization Potential of each GS, reduced by continuum lowering
-     +   DPI(HSSm,nXE,LaMx),  ! Reduction of Ionization Potential according to 'KeRedu'
-     +  Price(nQSm,nXE,LaMx), ! EL energy relative to E(1). Commonly GS ATOM has E=0, but it may have E>0 if term; "Price" accounts for continuum lowering
-     +    E(nQSm,nXE),        ! EL Energy relative to THIS-SS ground state
-     +   g0(nQSm,nXE),        ! EL degeneracy: table value
+     +   DPI(HSSm,nXE,LaMx),  ! Continuum lowering
+
+     +     E(nQSm,nXE),       ! EL Energy relative to THIS-SS ground state
+     +    g0(nQSm,nXE),       ! EL degeneracy: table value
      +    BE(nQSm,nXE,LaMx),  ! Binding Energy of each EL 'ti'-corrected in 'AtKins' after continuum lowering
      +   BEp(nQSm,nXE,LaMx),  ! after 'call AtKins', 'tf'-Binding Energy of w-layer is saved until next visit to this 'La'; then previous-t BE may be needed for restart of dead EL.
      +   bra(nQSm,nQSm,nXE),  ! with FAC bases, we assign bra= 1/0 based on yes/no single-e ioniz cross-Sec for this i/f couple in "InzXE....inp" file.  
@@ -106,7 +108,8 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +    Bx(nQSm,nQSm),      ! e-impact excitation cross-sections of 
      +    Cx(nQSm,nQSm),      ! high-Z dopant, see Exc.inp 
      +    Dx(nQSm,nQSm),
-     +    Ex(nQSm,nQSm), 
+     +    Ex(nQSm,nQSm),
+     +    Fx(nQSm,nQSm),	  ! VB
      +   Aix(nQSm,nQSm),  ! Aix-Dix are 4 coefs of e-impact ioniz cross-section of high-Z dopant, see "Inz.inp"
      +   Bix(nQSm,nQSm),  
      +   Cix(nQSm,nQSm), 
@@ -116,11 +119,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   Gix(nQSm,nQSm), 
      +   Hix(nQSm,nQSm), 
      +   Eth(nQSm,nQSm),  ! State-to-state Ionization Threshold (for ioniz cross-secs) 
-     +   SpInEf(LaMx,nvL),  ! OMEGA-mean RF intensity in 3 shells [W/cm2/sr/eV]
-     +   SpeP(LaMx,nvL),    ! Spectral power of radiation from single BS & from DT core [W/eV] 
-     +   SpePowOut(nvL),  ! same in 1D array for Gau-convo subr           
-     +   SpePowConv(nvL), ! Same instr-Conv
-     +   SpeY(nvL),       ! t-depe spectral yield [J/keV/sr] gathered since t0 till "StopTime" 
      +    WI(nQSm,nQSm),                   ! single ionization probability (1/s), removal of one electron per e-impact
      +   WEX(nQSm,nQSm),  WDX(nQSm,nQSm),  ! e-impact excitation & deexcitation probabilities (1/s)
      +   WRR(nQSm,nQSm),  WTB(nQSm,nQSm),  ! radiative & 3-body recombination probabilities (1/s)
@@ -151,7 +149,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   bpt(ntp, LaMx),      ! t-points of e-beam part of EED in La
      +   bct(ntp, LaMx),      ! t-points of e-beam center [eV] in e-beam part of EED in La
      +   bwt(ntp, LaMx),      ! t-points of e-beam width  [eV] in e-beam part of EED in La
-     +  FrYie(nvL,mSpe), ! array of 8 frames [J/keV/sr] 
      +   ceR(LaMx),      ! [cm] outer radius of spherical zone            
      +   u3D(LaMx),   ! mean absolute velocity of ions in their isotropic collective (hydro) 3D motion in zone number La.
      +   Te(LaMx),    ! electron  temperature in La-layer [eV], prescribed in Scenario
@@ -185,9 +182,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   FWkVcGAU(LaMx,nXE),  ! FWHMgau/hvC via u3D, same for all lines of XE. 
      +   FWevLor(MNLe,LaMx),  ! Lorentzian (Stark) part of FWHM [eV]  
      +   Xc(LaMx), uC(LaMx),  ! X-coord of the La-center & plasma flow velocity re-calculated to the cell center 
-     +   hvV(nvL),                 ! hv-grid [eV] & current value at any grid point: hveV= hvV(iv)
-     +   Yield(nvL), YieConv(nvL),
-     +   dis(mSpe),                ! distance to periph LOS in TREX scans
+     +   dis(mSpe),           ! distance to periph LOS in TREX scans
      +   DiZ2(LaMx),                             ! XE-sum of Den*Z^2 for FF emission
      +   Zdot(LaMx), ZdotPr(LaMx), ZdotN(LaMx),  ! XE-mean dZ/dt; revious
      +   dZpdt(nXE),                             ! XE-resolved dZ/dt
@@ -195,7 +190,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   tiInf,                         ! time to display "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
      +   wBS, ScaF,  
      +   hvMin, hvMax, hveV, ! edges of the v-grid [eV] from FLAG
-     +   RadPow, RadPowFF,   ! outgoing Radiation Power thru plasma surf & FF part of this RadPower, [W]
      +   totSt,              ! A.U., LEVEL Stark width due to all e,i 
      +   wwr, tiS, tfS,  ! work ratio
      +   TeAU, TiAU,     ! Te, Ti in A.U. = hartree = 2*Ry = 27.211396 eV
@@ -214,7 +208,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   POPk, POPkr,     ! used for PhI with  
      +   rPSI, distII,    ! used in functions SigExc, SigInz, SigPhi for avoiding too large values via FAC fit errors.  No corre in REVERSE processes as (1) they are expre via direct & (2) must provide equilibration.             
      +   upTB, Incr, frac,  
-     +   LambA, hvAxiRe,  ! the finest resolution (dv/hvC) on hv axis  
+     +   LambA, hvRe,     ! the finest resolution (dv/hvC) reached in one hv point  
      +   ReduReso, ReReiv,    
      +   distBS, hvFine,     ! hv at which spectral resolution is the finest
      +   Asum, R1, R2, R3,   ! more practical than "CeR(La)"  
@@ -226,6 +220,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   Wing, dhv, SpInPL, TPL, 
      +   MaxExch, POPexch, 
      +   hvKey, WingCut,         ! restricts hv-length of line wing via Wing = hvC(line)*WingCut      
-     +   hvIns1, hvIns2, convC(10), FWin
+     +   hvIns1, hvIns2, convC(10), FWin,
+     +   Ains, Bins, Cins
       end module	  
 

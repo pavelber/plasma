@@ -1,8 +1,8 @@
-  30  6  2  1  "FSS" is the first Spectroscopic Symbol (SpS) of X, C, He, D in the database, e.g. 30 for N-like Kr
-  36  6  2  1  "HSS" is SpS of H-like X, C, He, D in the database; If newr X has HSS>36, increase "HSSm" in "mo1code2.for" 
- 298  2  2  2  "Nnu" is the serial number of nuclei in "QSs.inp". 													  
-1612  2  2  2  "NST" is the number of energy levels in database of each chemical element. For HSSm=36 integer NST must be < 2300
+  15  6  2  1  "FSS" is the first Spectroscopic Symbol (SpS) of X, C, He, D in the database, e.g. 30 for N-like Kr
+  24  6  2  1  "HSS" is SpS of H-like X, C, He, D in the database; If newr X has HSS>36, increase "HSSm" in "mo1code2.for" 
+ 353  2  2  2  "Nnu" is the serial number of nuclei in "QSs.inp". 													  
+1225  2  2  2  "NST" is the number of energy levels in database of each chemical element. For HSSm=36 integer NST must be < 2300
 ----------------------
- 43920  "StrExc" is the number of strings in file "Exc.inp" (including the title)
- 18006  "StrInz" is the number of strings in file "Inz.inp" (including the title)
-  4586  "StrAIw" is the number of strings in file "AIw.inp" (including the title)
+ 13717  "StrExc" is the number of strings in file "Exc.inp" (including the title)
+  2477  "StrInz" is the number of strings in file "Inz.inp" (including the title)
+  2500  "StrAIw" is the number of strings in file "AIw.inp" (including the title)
