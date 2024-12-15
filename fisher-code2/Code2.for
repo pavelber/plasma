@@ -142,7 +142,7 @@ c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first u
       integer char2int                      ! symbol-to-integer convertor function
       integer iniQS, nSS, mth, LL, LU, ki,  
      +        iSS1, iQS1, iSS2, iQS2,  nFi                 
-      integer num_coeff
+      integer num_coeff ! PB
 
 
       real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, thre
@@ -402,6 +402,7 @@ c                        are omitted because weak vs continuum and/or noise in e
 
       read(13,*) hvIns1, hvIns2   ! hv-edges of applicability of instrumental function given by coefficiens Ains, Bins, Cins,
 c                                   these edges are the edges of convolution in subroutine "GauInstrConvo(Simul, Co)"
+C     ****** START PB ***********
       read(13,*) func_type
 
       select case (trim(func_type))
@@ -417,6 +418,7 @@ c                                   these edges are the edges of convolution in 
 
       read(13,*) FWin
       read(13,*) (convC(i), i = 1, num_coeff)
+C     ****** END PB ***********
 
       read(13,*) hvPrint1, hvPrint2  ! [eV] edges of PrintOut interval of "Frames.dat"
       close(13)
@@ -1874,13 +1876,15 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
       use mo1code2                         ! at hvIn1 <= hv <= hvIn2
       implicit none
       integer i1
-      real(8) Simul(nvL), Co(nvL), Bro, v0, Sver, dev, FuIns,
+      real(8) Simul(nvL), Co(nvL), Bro, v0, Sver, dev, FuIns,          ! PB
      +                                                  Gauss, prF
       Co= Simul       ! Initial; at least, "Simul" will remain non-Convo
       do i1= 1, nvM
         v0 = hvV(i1)
         if(v0.LE.hvIns1) cycle
         if(v0.GE.hvIns2) cycle
+
+C     ****** START PB ***********
         Bro= convC(1) + convC(2)*(v0/1.d3) + convC(3)*(v0/1.d3)**2  ! quadratic fit to instrumental broadening "Bro"== hv/(FWHM of instrum Gauss)
 c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/1000
         select case (trim(func_type))
@@ -1891,6 +1895,7 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
             print *, "Unknown function of convolution "
             stop
           end select
+C     ****** END PB ***********
 
 
         Sver= zero      ! Svertka for v0
@@ -1899,6 +1904,7 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
           dhv= hvV(iw)- hvV(iw-1)
           dev= abs(hvV(iw) - v0)       ! hv' - hv
           if(dev .gt. 2.5*FWin) cycle  ! this point is too far from v0
+C     ****** START PB ***********
           select case (trim(func_type))
           case ('GAUSSIAN')
             FuIns= Gauss(FWin, dev)      ! Gaussian of known FWHM == FWin
@@ -1910,6 +1916,7 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
             print *, "Unknown function of convolution "
           stop
           end select
+C     ****** END PB ***********
 
           Sver = Sver+ (prF+ Simul(iw)*FuIns)*dhv/two
           prF  = Simul(iw) *FuIns
