@@ -3,3 +3,4 @@ venv
 *.pyc
 *.exe
 *.obj
+git-ssh-command

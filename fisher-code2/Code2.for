@@ -7,16 +7,20 @@ c                        initial population ("POPs") of energy levels ("ELs")
       CALL hvPoints()  ! Build a sequence of hv points in full [hvMin, hvMax] interval 
       Count = 0        ! This integer counts lines read from Database
 
+      open(99, file='Protocol.dat')
+
       tf= strt
   1   ti= tf  
       tf= ti+ tstep  
       write(*,'(/a40, f8.3, a4)') 'Start ti =', ti*1.d12, 'ps:'
+      write(99,'(/a40, f8.3, a4)') 'Start ti =', ti*1.d12, 'ps:'
 
       if(ti.GE.StopTime) STOP '   ti >= StopTime.  The End.'
 
       do La = 1, LaMx     ! # of zone; 1=BS, 2=Core, 3=Capsule     
         CALL SCENARIO()   ! for t= ti compute R, Te, u3D, DenI, ZC1, Dene
-        write(*,'(a34, i2, e9.2, f7.0, e9.2, e11.4, f10.4)') 
+        write(*,'(a34, i2, e9.2, f7.0, e9.2, e11.4, f10.4)')
+        write(99,'(a34, i2, e9.2, f7.0, e9.2, e11.4, f10.4)')
      +          'Zone, R(cm), Te, u3D, ne, Z(X) =', 
      +           La, CeR(La), Te(La), u3D(La), Dene(La), ZC(1,La)  
 
@@ -57,7 +61,8 @@ c	                  for params of t=ti and POPi(k,nX,La).  Print frames in file 
          CALL AtKins()  ! For each La compu Ws and PM for X; run d02 for POPs from "ti" to "tf" with params of "ti"; 
 c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first used in Scenario of NEXT "ti".
       enddo   
-      goto 1  ! for next t-step, where present "tf" will be "ti", thus present "POPf" will be used for compu all quantities of "ti" 
+      goto 1  ! for next t-step, where present "tf" will be "ti", thus present "POPf" will be used for compu all quantities of "ti"
+      close(99)
       END     ! MAIN
 
 
@@ -164,8 +169,11 @@ c   Read "QSsXE.inp" files of C, He, D.
           read(nFi,*) nSS, nuQS(i,nX), nuAS(i,nX), PI(i,nX)
           if(nSS.ne.i) then
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
+             write(99,'(a34, i2, e9.2, f7.0, e9.2, e11.4, f10.4)')
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
+             write(99,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
              write(*,'(a50)') 'Re-Compile mo1code2.for'
+             write(99,'(a50)') 'Re-Compile mo1code2.for'
 		   PAUSE 'this is the inconsistency #1'
           endif
           if(i.gt.FSS(nX)) nuGS(i,nX)= nuGS(i-1,nX)+ nuQS(i-1,nX)     ! this GS #  in the EL list of XE  
@@ -245,8 +253,12 @@ c          write(*,'(/a30, 3i5, f11.3)') 'nX, FSS, HSS, PI=',
 c     +                                   nX, FSS(nX), HSS(nX), PI(i,nX)
           if(nSS.ne.i) then
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
+             write(99,'(a30, 2i3)') 'Inconsistency for XE#, SS=',
+     +                                     nX, nSS
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
+             write(99,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
              write(*,'(a50)')      'Re-Compile mo1code2.for'
+             write(99,'(a50)')      'Re-Compile mo1code2.for'
 		   PAUSE 'this is the inconsistency #1'
           endif
           if(i.gt.FSS(nX)) nuGS(i,nX)= nuGS(i-1,nX)+ nuQS(i-1,nX)         ! this GS #  in the EL list of XE  
@@ -349,6 +361,8 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
         if(DE .le. zero) then
           write(*,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=', 
      +                                   nX, kL, E(kL,nX), kU, E(kU,nX) 	  
+          write(99,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=',
+     +                                   nX, kL, E(kL,nX), kU, E(kU,nX)
 	    PAUSE 'Excitation down in reading Exc.inp'
         endif
 
@@ -368,6 +382,8 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
         if(mth.eq. 5 .or. mth.eq.11 .or. mth.eq.16) goto 6   ! Present DaBa does not use other methods    
 
         write(*,'(a65,5i5)')'Excit CrosSec fit method is unknown for XE, 
+	+  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
+        write(99,'(a65,5i5)')'Excit CrosSec fit method is unknown for XE,
 	+  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
         PAUSE
   7     close(nFi)
@@ -441,6 +457,7 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
 
         if(kiSS(kf,nX) .ne. kiSS(ki,nX)+1) then
 	     write(*,*) 'XE, ki, kf =', nX, ki, kf 
+	     write(99,*) 'XE, ki, kf =', nX, ki, kf
            PAUSE 'Error in "InzXE...inp" level numbers'
         endif
 
@@ -448,7 +465,8 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
            bra(ki,kf,nX)= one  ! "one" means yes ionization channel (e-impact and phot) from "ki" to "kf". When using FAC-bases: "bra" is either 1 or 0
         else
            write(*,'(a30, 4i6)') 'XE, ki, kf, mePh =', nX, ki, kf, mePh	! print error info
-           PAUSE 'in "Inz.inp" mePh ne 4'  
+           write(99,'(a30, 4i6)') 'XE, ki, kf, mePh =', nX, ki, kf, mePh	! print error info
+           PAUSE 'in "Inz.inp" mePh ne 4'
         endif
 
         Aix(ki,kf)= Axw    ! Aix-Dix are 4 coefs of e-impact ioniz cross-section (formula #4), see "InzXE....inp"
@@ -483,10 +501,14 @@ c       write(*,'(4i5, e14.6, i6)') iSS1,iQS1, iSS2,iQS2, AIw, CountAIw
         if(iQS2.gt.nuQS(iSS2,nX)) then
           write(*,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
      +                           iSS1, iQS1, iSS2, iQS2
-          PAUSE 'In "AIw.inp" afterAI EL has # > available in SpS' 
+          write(99,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
+     +                           iSS1, iQS1, iSS2, iQS2
+          PAUSE 'In "AIw.inp" afterAI EL has # > available in SpS'
         endif     
         if(iQS2.LT.0  .and. abs(iQS2).gt.nuAS(iSS2,nX)) then
           write(*,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
+     +                           iSS1, iQS1, iSS2, iQS2
+          write(99,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
      +                           iSS1, iQS1, iSS2, iQS2
           PAUSE 'In "AIw.inp" AI into AI EL # > available in SpS'
         endif
@@ -499,9 +521,12 @@ c       write(*,'(4i5, e14.6, i6)') iSS1,iQS1, iSS2,iQS2, AIw, CountAIw
 Consistancy control 1: 
         if(kiSS(kf,nX) .ne. kiSS(ki,nX)+1) then
           write(*,'(/a50)') 'In "AIwXE.inp" SS(kf) ne SS(ki)+1:' 
-          write(*,'(/   4i5,   f12.3)') nX, ki, iSS1, iQS1, E(ki,nX)   
-          write(*,'( i10, 2i5, f12.3)')     kf, iSS2, iQS2, E(kf,nX)  
-          PAUSE 'My STOP in consistency control, reading AIw.inp' 
+          write(99,'(/a50)') 'In "AIwXE.inp" SS(kf) ne SS(ki)+1:'
+          write(*,'(/   4i5,   f12.3)') nX, ki, iSS1, iQS1, E(ki,nX)
+          write(99,'(/   4i5,   f12.3)') nX, ki, iSS1, iQS1, E(ki,nX)
+          write(*,'( i10, 2i5, f12.3)')     kf, iSS2, iQS2, E(kf,nX)
+          write(99,'( i10, 2i5, f12.3)')     kf, iSS2, iQS2, E(kf,nX)
+          PAUSE 'My STOP in consistency control, reading AIw.inp'
         endif
 
         EAI(ki,kf)= trEn  
@@ -544,6 +569,10 @@ Consistancy control 1:
             write(*,'(a52)') 
      +        'We assume negligible backlighting of BS by others.'
             write(*,'(a47)') 
+     +        'Increase R2 or reduce R1 for "distBS > 10*R1"'
+            write(99,'(a52)')
+     +        'We assume negligible backlighting of BS by others.'
+            write(99,'(a47)')
      +        'Increase R2 or reduce R1 for "distBS > 10*R1"'
             PAUSE 'My STOP'
          endif
@@ -688,6 +717,7 @@ c         Supress weak lines
 
       if(linM4.ge.MNLe) then
         write(*,'(a20,i6, a4,i6)') 'Increase MNLe=', MNLe, 'to', linM4 
+        write(99,'(a20,i6, a4,i6)') 'Increase MNLe=', MNLe, 'to', linM4
         PAUSE
       endif																															    
 
@@ -740,6 +770,9 @@ c      write(*,'(a22,f11.4,a4)') ' last line has hvC =', hvC(linM4),'eV.'
             write(*,'(/a14, i6, a15, f10.3, a9, f10.3)') 
      +           'Came to nvL=', nvL, 'but hvV(hvL) =', hvV(nvL), 
      +           ' < hvMax=', hvMax
+            write(99,'(/a14, i6, a15, f10.3, a9, f10.3)')
+     +           'Came to nvL=', nvL, 'but hvV(hvL) =', hvV(nvL),
+     +           ' < hvMax=', hvMax
             PAUSE 'hvV(nvL) < hvMax; incr nvL'
         endif
         nvMF= iv
@@ -753,6 +786,9 @@ c      write(*,'(a22,f11.4,a4)') ' last line has hvC =', hvC(linM4),'eV.'
         if(iv.eq.nvL) then
             write(*,'(/a14, i6, a15, f10.3, a9, f10.3)') 
      +           'Came to nvL=', nvL, 'but hvV(hvL) =', hvV(nvL), 
+     +           ' < hvMax=', hvMax
+            write(99,'(/a14, i6, a15, f10.3, a9, f10.3)')
+     +           'Came to nvL=', nvL, 'but hvV(hvL) =', hvV(nvL),
      +           ' < hvMax=', hvMax
             PAUSE 'hvV(nvL) < hvMax; incr nvL'
         endif
@@ -770,7 +806,9 @@ Control of consistency:
          if(hvV(iv) .le. hvV(iv-1)) then
            write(*,'(a9,i7, a11, f14.7, a15, f14.7)') 'For iv =', iv, 
      +               'hvV(iv)=', hvV(iv),  '<= hvV(iv-1)=', hvV(iv-1)             
-           PAUSE 'Error #1 in hv sequence'	  
+           write(99,'(a9,i7, a11, f14.7, a15, f14.7)') 'For iv =', iv,
+     +               'hvV(iv)=', hvV(iv),  '<= hvV(iv-1)=', hvV(iv-1)
+           PAUSE 'Error #1 in hv sequence'
          endif
       enddo
       Return
@@ -874,7 +912,10 @@ c                                                      	    To return these phot
            write(*,'(/a36, i6, f10.3, 9e10.2)') 
      +       'lw, hvC, FWevDop, ArPBB(lw) =', 
      +        lw, hvC(lw), FWevDop, ArPBB(lw)
-	     PAUSE '  ArPBB(lw) < d-5)' 
+           write(99,'(/a36, i6, f10.3, 9e10.2)')
+     +       'lw, hvC, FWevDop, ArPBB(lw) =',
+     +        lw, hvC(lw), FWevDop, ArPBB(lw)
+	     PAUSE '  ArPBB(lw) < d-5)'
          endif
 
          do iv= 1, nvM                             
@@ -1138,7 +1179,8 @@ Collect Radiation Yield during proper frame [J/eV/sr]
           endif
           CoFr= CoFr+1
           write(*,'(a30, 2i3)') 'Frame#, +# =', kfr, CoFr
-          do iv = 1, nvM 
+          write(99,'(a30, 2i3)') 'Frame#, +# =', kfr, CoFr
+          do iv = 1, nvM
             FrYie(iv,kfr)= FrYie(iv,kfr) + tstep*RadPow(iv)  ! [J/eV/sr] Radiation Yield during the frame
           enddo                                              ! Note: RadPow of ti, see above 
         endif
@@ -1217,6 +1259,9 @@ Consistency Control of POPs obtained:
           write(*,'(a36, i4, a29)') 'After d02 found POP on dead lev#',
      +    k, ', which has BE, POP and POPi ='
           write(*,'(f9.4, 2e11.3)')  BE(k,nX,La), POP(k), POPi(k,nX,La)	  
+          write(99,'(a36, i4, a29)') 'After d02 found POP on dead lev#',
+     +    k, ', which has BE, POP and POPi ='
+          write(99,'(f9.4, 2e11.3)')  BE(k,nX,La), POP(k), POPi(k,nX,La)
 	    PAUSE 'POP in dead EL'
         endif       
 
@@ -1224,7 +1269,10 @@ Consistency Control of POPs obtained:
 	     Write(*,'(//a29, e10.2, a17, i2, i4, e14.6/)')     ! Some very small POPs may be negative |POP|<1.e-12
      +       'found POP < -1.d-9;  POP=', POP(k),             ! If these negative values are < -1.e-9 we send screen info 
      +       'for XE, EL, BE=', nX, k, BE(k,nX,La)
-           POP(k) = zero                                ! change them to 0     	
+	     Write(99,'(//a29, e10.2, a17, i2, i4, e14.6/)')     ! Some very small POPs may be negative |POP|<1.e-12
+     +       'found POP < -1.d-9;  POP=', POP(k),             ! If these negative values are < -1.e-9 we send screen info
+     +       'for XE, EL, BE=', nX, k, BE(k,nX,La)
+           POP(k) = zero                                ! change them to 0
         endif 
         sumP= sumP+ POP(k)
       enddo
@@ -1470,12 +1518,16 @@ CHECK   "BE" and POPs < 0
         if(abs(BE(k,nX,La) +13.d0) .lt. 3.d-7) then  ! means "BE' remained initial "-13" 
 	    write(*,'(2(a9,i4), a33)')
      +         'EL#', k, 'of XE#', nX, 'not given binding energy BE(k)'
+	    write(99,'(2(a9,i4), a33)')
+     +         'EL#', k, 'of XE#', nX, 'not given binding energy BE(k)'
 		PAUSE
         endif
 
         if(POPi(k,nX,La).lt.-1.d-9) then
            write(*,'(a46, i2, i5)')    
      +         'In BE-check found POP < -1.d-9 in XE, k=', nX, k 
+           write(99,'(a46, i2, i5)')
+     +         'In BE-check found POP < -1.d-9 in XE, k=', nX, k
            PAUSE 'My STOP'
         endif
       enddo
@@ -1551,7 +1603,10 @@ c                                                   ! To return them, the cut sh
             write(*,'(a26, i6, f10.3, 9e10.2)') 
      +      'lw, hvC, FWevDop, ArPv =', 
      +       lw, hvC(lw), FWevDop, ArPv
-	      PAUSE '  ArPv < d-5)' 
+            write(99,'(a26, i6, f10.3, 9e10.2)')
+     +      'lw, hvC, FWevDop, ArPv =',
+     +       lw, hvC(lw), FWevDop, ArPv
+	      PAUSE '  ArPv < d-5)'
          endif
 
          AbSpIn = zero  ! v-integral of {dv*p(v)*SpInEff(v)} [W/eV/cm2/sr]
@@ -1584,6 +1639,7 @@ c                                        To avoid de-POP, I gave them BE= 77777.
 c                                            Go to photo-ionization
 
           if(BEk .LT. 1.) write(*,'(/a20, i4)') 'BEk < 1eV for k=', k
+          if(BEk .LT. 1.) write(99,'(/a20, i4)') 'BEk < 1eV for k=', k
 
 ******  Electron-impact ionization probability WI(k,kf) for transition   (SS=j, k) + e  --> (j+1, kf) + 2e, i.e. removal of ONE electron
           Ifail= -1
@@ -1718,7 +1774,9 @@ c                                                                               
   	if(eeV.LT. BEk ) then
         write(*,'(a23, 4i4, 2e15.7)') 'XE, j, k, kf, E, BEk =', 
      +                                 nX, j, k, kf, eeV, BEk 
-                          PAUSE '  Came in SigInz with Ee < BEk' 
+        write(99,'(a23, 4i4, 2e15.7)') 'XE, j, k, kf, E, BEk =',
+     +                                 nX, j, k, kf, eeV, BEk
+                          PAUSE '  Came in SigInz with Ee < BEk'
       endif
       if(j.ne.KiSS(k,nX)) PAUSE ' Came in SigInz with j =/= KiSS(k)'    ! j is input of this func
       if(k.eq.Nnu(nX))    PAUSE ' STOPped because came to ionize nucl.'
@@ -1762,6 +1820,9 @@ c        therefore I restrict "SigInz", "SigPhi", no need in restricting recombi
          write(*,'(/a40, 2i5, 2f12.3, e11.2)') 
      +          'In func SigPhi: k, kf, BEk, hv =',           
      +           k, kf, BEk, hv 
+         write(99,'(/a40, 2i5, 2f12.3, e11.2)')
+     +          'In func SigPhi: k, kf, BEk, hv =',
+     +           k, kf, BEk, hv
          PAUSE 'i.e. came in SigPhi with hv < BEk'
       endif
 
@@ -1814,13 +1875,17 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
       if(DE.LE.zero) then   
         write(*,'(a40, 3i5,f15.4)') 'DE <= 0 in SigExc; XE, k, kf, DE=', 
      +                                                  nX, k, kf, DE
-        PAUSE 
+        write(99,'(a40, 3i5,f15.4)')'DE <= 0 in SigExc; XE, k, kf, DE=',
+     +                                                  nX, k, kf, DE
+        PAUSE
       endif 
 
       X= eeV/DE      ! Tekushaq energiq w porogowih edinicah VB coment 
       if(X.LT.1.) then
         write(*,'(a40, 3i5, f9.4)') 'X < 1 in SigExc; XE, k, kf, DE=', 
      +                                                nX, k, kf, DE 
+        write(99,'(a40, 3i5, f9.4)') 'X < 1 in SigExc; XE, k, kf, DE=',
+     +                                                nX, k, kf, DE
         PAUSE
       endif      
       X2= X*X
@@ -2113,7 +2178,8 @@ c           PAUSE
      +             WDC(k,kf), WInd(k,kf), Wab(k,kf), WiRR(k,kf)
            close(341)
            write(*,'(//a55)') 
-     +	   'My STOP:  POP(k)*PM(k,kf) > 10^17; see "Happened.dat"' 
+           write(99,'(//a55)')
+     +	   'My STOP:  POP(k)*PM(k,kf) > 10^17; see "Happened.dat"'
            PAUSE
         endif
       enddo
