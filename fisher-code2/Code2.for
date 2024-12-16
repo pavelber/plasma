@@ -15,14 +15,19 @@ c                        initial population ("POPs") of energy levels ("ELs")
       write(*,'(/a40, f8.3, a4)') 'Start ti =', ti*1.d12, 'ps:'
       write(99,'(/a40, f8.3, a4)') 'Start ti =', ti*1.d12, 'ps:'
 
-      if(ti.GE.StopTime) STOP '   ti >= StopTime.  The End.'
+      if(ti.GE.StopTime) then
+        close(99)
+        STOP '   ti >= StopTime.  The End.'
+      endif
 
       do La = 1, LaMx     ! # of zone; 1=BS, 2=Core, 3=Capsule     
         CALL SCENARIO()   ! for t= ti compute R, Te, u3D, DenI, ZC1, Dene
         write(*,'(a34, i2, e9.2, f7.0, e9.2, e11.4, f10.4)')
+     +          'Zone, R(cm), Te, u3D, ne, Z(X) =',
+     +           La, CeR(La), Te(La), u3D(La), Dene(La), ZC(1,La)
         write(99,'(a34, i2, e9.2, f7.0, e9.2, e11.4, f10.4)')
-     +          'Zone, R(cm), Te, u3D, ne, Z(X) =', 
-     +           La, CeR(La), Te(La), u3D(La), Dene(La), ZC(1,La)  
+     +          'Zone, R(cm), Te, u3D, ne, Z(X) =',
+     +           La, CeR(La), Te(La), u3D(La), Dene(La), ZC(1,La)
 
         write(30+La,'(f7.2, e10.2, 2f7.3, e11.4, 2f10.5, 3f7.2, e11.4,   ! files "BSinfo.dat", "CoreInfo.dat", "CapInfo.dat"      
      +                 3e10.3, f6.3, 2f8.2)')  ti*1.d12,  CeR(La)*1.d4, 
@@ -428,7 +433,11 @@ C     ****** START PB ***********
       case ('INSTRUMENT')
         num_coeff = 6
       case default
-        print *, "Unknown function of convolution: ", trim(func_type)
+        write(*, 'a(40), a(40)') 'Unknown function of convolution: ',
+     +         trim(func_type)
+        write(99, 'a(40), a(40)') 'Unknown function of convolution: ',
+     +         trim(func_type)
+        close(99)
         stop
       end select
 
@@ -526,6 +535,7 @@ Consistancy control 1:
           write(99,'(/   4i5,   f12.3)') nX, ki, iSS1, iQS1, E(ki,nX)
           write(*,'( i10, 2i5, f12.3)')     kf, iSS2, iQS2, E(kf,nX)
           write(99,'( i10, 2i5, f12.3)')     kf, iSS2, iQS2, E(kf,nX)
+          close(99)
           PAUSE 'My STOP in consistency control, reading AIw.inp'
         endif
 
@@ -549,8 +559,10 @@ Consistancy control 1:
 
       read(14,*) FrP     ! time [s] of centers of 8 frames from "Params2.inp"  
       read(14,*) tPo     ! ten t-points of scenario
-      if(tPo(2) .LT. strt+2.*FrL*0.99999) 
-     +                               STOP 'Move tPo(2) to >= strt+2*FrL' 
+      if(tPo(2) .LT. strt+2.*FrL*0.99999) then
+         close(99)
+         STOP 'Move tPo(2) to >= strt+2*FrL'
+      endif
       read(14,'(a9)') comme  
 
       read(14,*) nuBSst  ! number of BSs in the core ("ntp" t-points)
@@ -559,8 +571,11 @@ Consistancy control 1:
       read(14,*) R3t     ! radius [um] of Capsule in "ntp" t-points
       read(14,'(a9)') comme
 
-      do iw = 1, ntp 
-         if(nuBSst(iw).lt.3) PAUSE '   STOP. The model assumes > 2 BSs.'
+      do iw = 1, ntp
+         if(nuBSst(iw).lt.3) then
+            close(99)
+            PAUSE '   STOP. The model assumes > 2 BSs.'
+          endif
          R1t(iw)= R1t(iw)/1.d4   ! [um] to [cm]   
          R2t(iw)= R2t(iw)/1.d4   ! [um] to [cm]   
          R3t(iw)= R3t(iw)/1.d4   ! [um] to [cm]   
@@ -574,6 +589,7 @@ Consistancy control 1:
      +        'We assume negligible backlighting of BS by others.'
             write(99,'(a47)')
      +        'Increase R2 or reduce R1 for "distBS > 10*R1"'
+            close(99)
             PAUSE 'My STOP'
          endif
       enddo
@@ -1250,7 +1266,10 @@ c  Integrate the rate equations:
 
       CALL D02EAF(tiS, tfS, NST(nX), POP, tolD02, POPdot, WEAF, Nwork,  
      +            ifail) 
-      if(ifail.ne.0) PAUSE 'ifail =/= 0 in d02. My STOP'   
+      if(ifail.ne.0) then
+        close(99)
+        PAUSE 'ifail =/= 0 in d02. My STOP'
+      endif
 
 Consistency Control of POPs obtained:
       SumP= zero 
@@ -1280,6 +1299,9 @@ Consistency Control of POPs obtained:
       if (abs(SumP-one) .gt. 1.d-5) then 	     
           write( *,'(/a68, 1pe9.1)')  'My STOP after d02 because SumPOPs
      + differs MUCH from 1, namely, by',  SumP-one 
+          write( 99,'(/a68, 1pe9.1)')  'My STOP after d02 because SumPOPs
+     + differs MUCH from 1, namely, by',  SumP-one
+          close(99)
           PAUSE
       endif
 
@@ -1467,7 +1489,34 @@ c       The LifeTime is taken in Baranger' manner,
       Return
       END     ! of 'LevWi' subr
 
-
+      SUBROUTINE WRITETOFILE(FILENAME, FORMAT_STRING, DATA, N)
+C
+C     FILENAME: NAME OF THE FILE TO WRITE TO
+C     FORMAT_STRING: FORMAT SPECIFIER FOR THE WRITE OPERATION
+C     DATA: ARRAY OF REAL NUMBERS TO WRITE
+C     N: NUMBER OF ELEMENTS IN DATA ARRAY
+C
+      CHARACTER*(*) FILENAME, FORMAT_STRING
+      REAL DATA(*)
+      INTEGER N
+      INTEGER FILE_UNIT, IO_STATUS
+C
+C     OPEN THE FILE
+      OPEN(UNIT=10, FILE=FILENAME, STATUS='UNKNOWN', IOSTAT=IO_STATUS)
+      IF (IO_STATUS .NE. 0) THEN
+         WRITE(*,100) IO_STATUS
+100      FORMAT('ERROR OPENING FILE:', I5)
+         RETURN
+      END IF
+C
+C     WRITE DATA TO THE FILE
+      WRITE(10, FORMAT_STRING) (DATA(I), I=1,N)
+C
+C     CLOSE THE FILE
+      CLOSE(UNIT=10)
+C
+      RETURN
+      END
 
       SUBROUTINE LineLorWi(li)  ! Compute Lorentz FWHM of spectral Line "FWevLor(li,La)"; to be used for Voigt line shape. 
       use mo1code2               
@@ -1528,6 +1577,7 @@ CHECK   "BE" and POPs < 0
      +         'In BE-check found POP < -1.d-9 in XE, k=', nX, k 
            write(99,'(a46, i2, i5)')
      +         'In BE-check found POP < -1.d-9 in XE, k=', nX, k
+           close(99)
            PAUSE 'My STOP'
         endif
       enddo
@@ -1957,7 +2007,9 @@ c 	  .   											  e.g. Bro = 1000 means that FWHM of Instr Gaussian = hv/100
             FWin= v0/Bro    ! FWHM [eV] of instr Gaussian. By the above definition of "Bro".
           case ('INSTRUMENT')
           case default
-            print *, "Unknown function of convolution "
+            write(*, "Unknown function of convolution ")
+            write(99, "Unknown function of convolution ")
+            close(99)
             stop
           end select
 C     ****** END PB ***********
@@ -1978,8 +2030,10 @@ C     ****** START PB ***********
      +          convC(3) * DEXP(-convC(4) * ((dev/1.d3)**2)) +
      +          convC(5) * DEXP(-convC(6) * ((dev/1.d3)**2))
           case default
-            print *, "Unknown function of convolution "
-          stop
+            write(*, "Unknown function of convolution ")
+            write(88, "Unknown function of convolution ")
+            close(99)
+            stop
           end select
 C     ****** END PB ***********
 
@@ -2178,8 +2232,10 @@ c           PAUSE
      +             WDC(k,kf), WInd(k,kf), Wab(k,kf), WiRR(k,kf)
            close(341)
            write(*,'(//a55)') 
+     +	   'My STOP:  POP(k)*PM(k,kf) > 10^17; see "Happened.dat"'
            write(99,'(//a55)')
      +	   'My STOP:  POP(k)*PM(k,kf) > 10^17; see "Happened.dat"'
+           close(99)
            PAUSE
         endif
       enddo
