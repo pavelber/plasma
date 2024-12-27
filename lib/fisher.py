@@ -10,14 +10,14 @@ HEADER = "  iSS  iQS  fSS  fQS                     Electron Impact Ionization   
 def compute_energy_diff(spectr_num_low, level_low, spectr_num_high, level_high, spectr_num_to_aion_energy,
                         spectr_num_level_to_energy):
     return spectr_num_level_to_energy[(spectr_num_high, level_high)] - \
-           spectr_num_level_to_energy[(spectr_num_low, level_low)] + \
-           spectr_num_to_aion_energy[spectr_num_low]
+        spectr_num_level_to_energy[(spectr_num_low, level_low)] + \
+        spectr_num_to_aion_energy[spectr_num_low]
 
 
 def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy,
-                  spectr_num_level_to_energy):
+                  spectr_num_level_to_energy, bcfp):
     dir_path = os.path.join(o_dir, "fisher")
-    in_file_path_1 = os.path.join(o_dir, "BCFP.INP.before.AIW")
+    in_file_path_1 = os.path.join(o_dir, bcfp)
     in_file_path_2 = os.path.join(o_dir, "RREC.INP")
     out_file_path = os.path.join(dir_path, "Inz" + element + levels_num + ".INP")
     print("Creation of " + out_file_path)
@@ -54,13 +54,16 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                     outf.write(bsfp + rrec + "\n")
 
 
-def run_qsege(dont_run_all_tools, element, o_dir):
+def run_qsege(dont_run_all_tools, element, o_dir, use_fac_lev=True):
     dir_path = os.path.join(o_dir, "fisher")
     if not dont_run_all_tools:
         os.mkdir(dir_path)
     file_path = os.path.join(dir_path, "QSs" + element + ".inp")
     print("Creation of " + file_path)
-    create_qsege(os.path.join(o_dir, "IN1.INP"), o_dir, file_path)
+    if use_fac_lev:
+        create_qsege(os.path.join(o_dir, "IN1.INP"), o_dir, file_path)
+    else:
+        create_qsege(os.path.join(o_dir, "IN1.INP"), None, file_path)
 
     with open(file_path, 'r') as inf:
         for line in inf:
@@ -90,13 +93,18 @@ def get_energy_from_in1_inp(file_path):
                 energy_lines = True
             if energy_lines and len(parts) == 7:
                 levels_energy[(spect_num, parts[6])] = float(parts[3])
+            if energy_lines and len(parts) == 8:
+                levels_energy[(spect_num, parts[7])] = float(parts[4])
             if energy_lines and parts[0] == "Nucleus":
-                levels_energy[(spect_num, parts[5])] = 0.0
+                levels_energy[(spect_num, '1')] = 0.0
     return ain_energy, levels_energy
 
 
-def run_for_fisher(dont_run_all_tools, element, o_dir):
+def run_for_fisher(dont_run_all_tools, element, o_dir, bcfp="BCFP.INP.before.AIW", use_fac_lev=True):
     path_to_in1_inp = os.path.join(o_dir, "IN1.INP")
     (spectr_num_to_aion_energy, spectr_num_level_to_energy) = get_energy_from_in1_inp(path_to_in1_inp)
-    levels_num = run_qsege(dont_run_all_tools, element, o_dir)
-    createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy, spectr_num_level_to_energy)
+    levels_num = run_qsege(dont_run_all_tools, element, o_dir, use_fac_lev)
+    createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy, spectr_num_level_to_energy, bcfp)
+
+
+run_for_fisher(True, "O", "C:\work4\db\O", "BFCP.INP",False)

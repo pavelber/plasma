@@ -26,8 +26,7 @@ def verify_fac(el, fac_dir):
         raise GenericPlasmaException("Expected file fac lev at " + path)
 
 
-def copy_lines(f, element, fac_dir, name_to_table, num_to_table,
-               outf):
+def copy_lines(f, element, name_to_table, num_to_table, outf):
     el = int(name_to_table[element]["AtomicNumber"])
     # verify_fac(el, fac_dir)
     for line in f:
@@ -50,7 +49,7 @@ def read_until(file, prefix):
         line = file.readline()
 
 
-def copy_atomic(f, element, fac_dir, name_to_table, num_to_table, outf):
+def copy_atomic_from_fac_lev(f, element, fac_dir, name_to_table, num_to_table, outf):
     el = int(name_to_table[element]["AtomicNumber"])
     counter = 1
     block_counter = 1
@@ -125,6 +124,73 @@ def copy_atomic(f, element, fac_dir, name_to_table, num_to_table, outf):
             counter += 1
 
 
+def copy_atomic_from_in1(f, element, name_to_table, num_to_table, outf):
+    el = int(name_to_table[element]["AtomicNumber"])
+    counter = 1
+    block_counter = 1
+    autoionization = False
+    autoionization_levels = {}
+
+    for line in f:
+        columns = line.split()
+        if len(columns) == 1:
+            autoionization = False
+            sp_n = columns[0]
+            num = el - int(sp_n) + 1
+            if num == 0:
+                outf.write(sp_n + "\n")
+                outf.write(OUTPUT_FORMAT_STRING % ("nucleus", "1", "0.000", 1, counter))
+                counter += 1
+                break
+            name = num_to_table[str(num)]["Symbol"]
+            if counter == 1:  # first time
+                outf.write(sp_n + " [" + name + "]" + "                    g0       E(eV)       #       ##   \n")
+            else:
+                outf.write(sp_n + " [" + name + "]\n")
+            block_counter = 1
+        elif len(columns) == 7:
+            levels = columns[0] + " " + columns[1]
+            energy = columns[2]
+            p = columns[3]
+            if not autoionization:
+                outf.write(OUTPUT_FORMAT_STRING % (levels, energy, p, block_counter, counter))
+                counter += 1
+                block_counter += 1
+            else:  # Store autoionization
+                autoionization_lines = autoionization_levels[sp_n]
+                autoionization_lines.append(
+                    OUTPUT_FORMAT_STRING_AI % (levels, energy, p))
+        elif len(columns) == 9:
+            levels = columns[0] + " " + columns[1]
+            energy = columns[2]
+            p = columns[3]
+            if not autoionization:
+                outf.write(OUTPUT_FORMAT_STRING2 % (levels, energy, p, block_counter,
+                                                    counter,
+                                                    columns[7],
+                                                    columns[8]))
+                counter += 1
+                block_counter += 1
+        elif len(columns) == 2:
+            autoionization = True
+            num = el - int(sp_n) + 1
+            name = num_to_table[str(num)]["Symbol"]
+            autoionization_levels[sp_n] = []
+        else:
+            outf.write(line),
+
+    for sp_n in sorted(autoionization_levels):
+        lines = autoionization_levels[sp_n]
+        num = el - int(sp_n) + 1
+        name = num_to_table[str(num)]["Symbol"]
+        outf.write(sp_n + " " + name + "-like AIs\n")
+        block_counter = -1
+        for ai_line in lines:
+            outf.write(OUTPUT_FORMAT_STRING_AI2 % (ai_line, block_counter, counter))
+            block_counter -= 1
+            counter += 1
+
+
 def read_element(inp):
     line = inp.readline()
     columns = line.split()
@@ -140,8 +206,11 @@ def create_qsege(in1p, fac_dir, out_file_path):
                 element = read_element(inp)
                 print_header(outf)
                 skip_lines(inp)
-                copy_lines(inp, element, fac_dir, name_to_table, num_to_table, outf)
+                copy_lines(inp, element, name_to_table, num_to_table, outf)
                 outf.write("----------------------------------------------------------------\n")
-                copy_atomic(inp, element, fac_dir, name_to_table, num_to_table, outf)
+                if fac_dir:
+                    copy_atomic_from_fac_lev(inp, element, fac_dir, name_to_table, num_to_table, outf)
+                else:
+                    copy_atomic_from_in1(inp, element, name_to_table, num_to_table, outf)
     else:
         raise GenericPlasmaException('Can\'t open file ' + in1p)
