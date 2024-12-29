@@ -46,24 +46,25 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                     bsfp = " %4s %4s %4s %4s %14s %15s %15s %15s" % (
                         spectr_num_low, level_low, spectr_num_high, level_high, bcfp_parts[4], bcfp_parts[5],
                         bcfp_parts[6], bcfp_parts[7])
-                    energy = compute_energy_diff(spectr_num_low, level_low, spectr_num_high, level_high,
-                                                 spectr_num_to_aion_energy,
-                                                 spectr_num_level_to_energy)
-                    rrec = " %6s %13s %12s %12s %12s %13.3f" % (
-                        parts2[3], parts2[4], parts2[5], parts2[6], parts2[7], energy)
-                    outf.write(bsfp + rrec + "\n")
+                    if (spectr_num_high, level_high) in spectr_num_level_to_energy:
+                        energy = compute_energy_diff(spectr_num_low, level_low, spectr_num_high, level_high,
+                                                     spectr_num_to_aion_energy,
+                                                     spectr_num_level_to_energy)
+                        rrec = " %6s %13s %12s %12s %12s %13.3f" % (
+                            parts2[3], parts2[4], parts2[5], parts2[6], parts2[7], energy)
+                        outf.write(bsfp + rrec + "\n")
 
 
-def run_qsege(dont_run_all_tools, element, o_dir, use_fac_lev=True):
+def run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev=True):
     dir_path = os.path.join(o_dir, "fisher")
     if not dont_run_all_tools:
         os.mkdir(dir_path)
     file_path = os.path.join(dir_path, "QSs" + element + ".inp")
     print("Creation of " + file_path)
     if use_fac_lev:
-        create_qsege(os.path.join(o_dir, "IN1.INP"), o_dir, file_path)
+        create_qsege(os.path.join(o_dir, "IN1.INP"), min_sp_num, max_sp_num, o_dir, file_path)
     else:
-        create_qsege(os.path.join(o_dir, "IN1.INP"), None, file_path)
+        create_qsege(os.path.join(o_dir, "IN1.INP"), min_sp_num, max_sp_num, None, file_path)
 
     with open(file_path, 'r') as inf:
         for line in inf:
@@ -100,11 +101,15 @@ def get_energy_from_in1_inp(file_path):
     return ain_energy, levels_energy
 
 
-def run_for_fisher(dont_run_all_tools, element, o_dir, bcfp="BCFP.INP.before.AIW", use_fac_lev=True):
+def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, bcfp="BCFP.INP.before.AIW",
+                   use_fac_lev=True):
     path_to_in1_inp = os.path.join(o_dir, "IN1.INP")
     (spectr_num_to_aion_energy, spectr_num_level_to_energy) = get_energy_from_in1_inp(path_to_in1_inp)
-    levels_num = run_qsege(dont_run_all_tools, element, o_dir, use_fac_lev)
-    createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy, spectr_num_level_to_energy, bcfp)
+    next_sp_num = str(int(max_sp_num)+1)
+    if (next_sp_num, "1") not in spectr_num_level_to_energy:
+        spectr_num_level_to_energy[(next_sp_num, "1")] = 1.0
+    levels_num = run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev)
+    createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy, spectr_num_level_to_energy,
+                  bcfp)
 
-
-run_for_fisher(True, "O", "C:\work4\db\O", "BFCP.INP",False)
+# run_for_fisher(True, "O", "C:\work4\db\O", "BFCP.INP",False)

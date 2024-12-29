@@ -1,6 +1,5 @@
 import contextlib
 import os
-import queue
 import sys
 from io import StringIO
 from multiprocessing.pool import ThreadPool
@@ -93,7 +92,8 @@ class Runner:
             self.run_and_set_good(
                 lambda: create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef),
                 "Create SPECTR")
-            self.run_and_set_good(lambda: run_for_fisher(False, element, out_dir), "Create RT-Code files")
+            self.run_and_set_good(lambda: run_for_fisher(False, spec_numbers[0], spec_numbers[-1], element, out_dir),
+                                  "Create RT-Code files")
             self.run_and_set_good(lambda: replace_from_mz(el_num, out_dir), "Replace from MZ")
             self.ui_message("Done")
             self.ui.enable()

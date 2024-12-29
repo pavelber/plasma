@@ -38,8 +38,8 @@ OTHER OPTIONS
 EOP
 }
 
-print "INC!!!\n";
-print "@INC\n";
+#print "INC!!!\n";
+#print "@INC\n";
 
 # ------------------------------------------
 

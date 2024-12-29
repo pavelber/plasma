@@ -134,10 +134,10 @@ def check_and_fix(my_dir, out_dir):
         error("Exit code = " + str(code))
 
     for spn in os.listdir(out_dir):
-
-        number_dir = os.path.join(out_dir, spn)
-        if isdir(number_dir):
-            check_and_fix_rr(number_dir)
+        if spn!='fisher':
+            number_dir = os.path.join(out_dir, spn)
+            if isdir(number_dir):
+                check_and_fix_rr(number_dir)
 
 
 def check_and_fix_in_main_dir(out_dir):
@@ -154,7 +154,7 @@ def run_old_fac(in_dir_spn, out_dir_spn, old_path):
     print(cmd)
     code, std_out, std_err = runcommand(cmd)
 
-    cmd = "copy" + " " + in_dir_spn + "\* " + out_dir_spn
+    cmd = "copy" + " " + in_dir_spn + "\\* " + out_dir_spn
     print(cmd)
     code, std_out, std_err = runcommand(cmd)
     print(std_out + " " + std_err)
@@ -183,11 +183,12 @@ def main():
     out_dir = os.path.abspath(sys.argv[2])
     min_eins_coef = float(sys.argv[3])
     dont_run_all_tools = len(sys.argv) > 4 and sys.argv[4] == "false"
+    mz = len(sys.argv) > 5 and sys.argv[4] == "mz"
 
-    run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools)
+    run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools, mz)
 
 
-def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
+def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools, mz=True):
     try:
         env()
         old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
@@ -197,7 +198,8 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
         if os.path.exists(warnings_file_path):
             os.remove(warnings_file_path)
         spec_numbers = run_for_all_numbers(in_dir, out_dir, old_path, dont_run_all_tools, exc_fac_path, ph_fac_path)
-        check_and_fix(my_dir, out_dir)
+        if not dont_run_all_tools:
+            check_and_fix(my_dir, out_dir)
         ionization_potential, translation_table = create_tables(out_dir)
         next_spec_number = str(int(spec_numbers[len(spec_numbers) - 1]) + 1)
         if int(next_spec_number) - int(spec_numbers[0]) != len(spec_numbers):
@@ -209,8 +211,9 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools):
         create_rrec(out_dir, spec_numbers, translation_table)
         element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
         create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-        run_for_fisher(dont_run_all_tools, element, out_dir)
-        replace_from_mz(el_num, out_dir)
+        run_for_fisher(dont_run_all_tools, spec_numbers[0], spec_numbers[-1], element, out_dir,)
+        if mz:
+            replace_from_mz(el_num, out_dir)
         check_and_fix_in_main_dir(out_dir)
     except GenericPlasmaException as e:
         error(e.message)

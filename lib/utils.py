@@ -87,7 +87,7 @@ def read_table():
     return dict1, dict2
 
 
-def skip_n_lines(f, num):
+def  skip_n_lines(f, num):
     for _ in range(num):
         next(f)
 

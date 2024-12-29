@@ -7,8 +7,8 @@ use IO::CaptureOutput qw/capture_exec/;
 
 $ssh = shift;
 
-print "INC!!!\n";
-print "@INC\n";
+#print "INC!!!\n";
+#print "@INC\n";
 
 
 if ($ssh eq '-d') {

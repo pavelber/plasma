@@ -26,7 +26,7 @@ def verify_fac(el, fac_dir):
         raise GenericPlasmaException("Expected file fac lev at " + path)
 
 
-def copy_lines(f, element, name_to_table, num_to_table, outf):
+def copy_lines(f, max_sp_num, element, name_to_table, num_to_table, outf):
     el = int(name_to_table[element]["AtomicNumber"])
     # verify_fac(el, fac_dir)
     for line in f:
@@ -39,6 +39,8 @@ def copy_lines(f, element, name_to_table, num_to_table, outf):
             outf.write(
                 HEADER_FORMAT_STRING % (
                     columns[0], columns[1], columns[2], columns[4]) + "  [" + name + "]\n")
+            if columns[0]==max_sp_num:
+                break
         else:
             break
 
@@ -197,7 +199,7 @@ def read_element(inp):
     return columns[0]
 
 
-def create_qsege(in1p, fac_dir, out_file_path):
+def create_qsege(in1p, min_sp_num, max_sp_num, fac_dir, out_file_path):
     (name_to_table, num_to_table) = read_table()
 
     if os.path.exists(in1p):
@@ -206,7 +208,7 @@ def create_qsege(in1p, fac_dir, out_file_path):
                 element = read_element(inp)
                 print_header(outf)
                 skip_lines(inp)
-                copy_lines(inp, element, name_to_table, num_to_table, outf)
+                copy_lines(inp,max_sp_num, element, name_to_table, num_to_table, outf)
                 outf.write("----------------------------------------------------------------\n")
                 if fac_dir:
                     copy_atomic_from_fac_lev(inp, element, fac_dir, name_to_table, num_to_table, outf)

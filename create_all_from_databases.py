@@ -32,6 +32,8 @@ min_sp_num = int(sys.argv[param_num])
 param_num += 1
 max_sp_num = int(sys.argv[param_num])
 param_num += 1
+formula = sys.argv[param_num].lower()=='formula'
+param_num += 1
 
 (name_to_table, num_to_table) = read_table()
 
@@ -77,7 +79,7 @@ create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec,
                                         energy_limits,
                                         nmax)
 in1 = os.path.join(elem_dir, "IN1.INP")
-create_rrec_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, False)
+create_rrec_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, formula)
 create_bcfp_from_in1(in1, elem_dir, sp_nums_with_nucleus, nucleus)
 
 create_rrec_inp(elem_dir, ph_fac_path, sp_nums_with_nucleus)
