@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import ttk
 
 from ui.generic_ui import GenericUI
 
@@ -15,17 +16,20 @@ class RunFacUI(GenericUI):
             einstein_value = float(config.get("FormValues", "einstein_value"))
             fac_value = config.get("FormValues", "fac_value")
             out_value = config.get("FormValues", "out_value")
+            mz_value = config.get("FormValues", "mz_value")
         except:
             einstein_value = "1e4"
             fac_value = ""
             out_value = ""
-        return fac_value, out_value, einstein_value
+            mz_value = "True"
+        return fac_value, out_value, einstein_value,mz_value
 
     def get_config_map(self):
         return {
             "einstein_value": self.einstein_var.get(),
             "out_value": self.out_var.get(),
-            "fac_value": self.fac_var.get()
+            "fac_value": self.fac_var.get(),
+            "mz_value": self.run_mz_var.get()
         }
 
     def choose_fac_directory(self):
@@ -43,10 +47,12 @@ class RunFacUI(GenericUI):
     def create_ui(self, run_it):
         super().create_ui(run_it)
 
-        fac_value, out_value, einstein_value = self.load_config()
+        fac_value, out_value, einstein_value, mz_value = self.load_config()
         self.fac_var = tk.StringVar(value=fac_value)
         self.out_var = tk.StringVar(value=out_value)
         self.einstein_var = tk.DoubleVar(value=einstein_value)
+        self.run_mz_var = tk.StringVar(value = mz_value)
+
 
         fac_label = tk.Label(self.root, text="Fac files directory:")
         fac_label.pack(anchor="w")
@@ -67,6 +73,21 @@ class RunFacUI(GenericUI):
         einstein_label.pack(anchor="w")
         einstein_entry = tk.Entry(self.root, textvariable=self.einstein_var)
         einstein_entry.pack(anchor="w")
+        tk.Label(self.root).pack()
+
+        mz_label = tk.Label(self.root, text="Make MZ replacement?")
+        mz_label.pack(anchor="w")
+        mz_default_selection = self.run_mz_var.get()
+        mz_combo = ttk.Combobox(self.root, textvariable=self.run_mz_var)
+        mz_combo['values'] = ("True", "False")
+        if mz_default_selection in mz_combo['values']:
+            index = mz_combo['values'].index(mz_default_selection)
+            mz_combo.current(index)
+        else:
+            # If the default_selection is not in the list, handle it accordingly,
+            # e.g., set to the first item or raise an error
+            mz_combo.current(0)
+        mz_combo.pack(anchor="w")
         tk.Label(self.root).pack()
         # Create the button
         submit_button = tk.Button(self.root, text="Run!", command=run_it)
@@ -89,3 +110,6 @@ class RunFacUI(GenericUI):
 
     def get_min_eins(self):
         return self.einstein_var.get()
+
+    def get_run_mz(self):
+        return self.run_mz_var.get()

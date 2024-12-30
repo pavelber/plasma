@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog, simpledialog
 
 from ui.generic_ui import GenericUI
@@ -71,7 +72,12 @@ class CreateFromDataBasesUI(GenericUI):
         except:
             energy_limits_value = "1:70.8,2:150,3:250,4:350,5:450,6:550,7:750,8:1000"
 
-        return elem_value, out_value, nmax_value, spmin_value, spmax_value, energy_limits_value
+        try:
+            formula_value = config.get("FormValues", "formula_value")
+        except:
+            formula_value = "formula"
+
+        return elem_value, out_value, nmax_value, spmin_value, spmax_value, energy_limits_value, formula_value
 
     def get_config_map(self):
         return {
@@ -81,6 +87,7 @@ class CreateFromDataBasesUI(GenericUI):
             "spmax_value": self.spmax_var.get(),
             "elem_value": self.elem_var.get(),
             "energy_limits_value": self.energy_limits_var.get(),
+            "formula_value": self.formula_var.get(),
         }
 
     def open_dialog(self):
@@ -97,13 +104,14 @@ class CreateFromDataBasesUI(GenericUI):
     def create_ui(self, run_it):
         super().create_ui(run_it)
 
-        elem_value, out_value, nmax_value, spmin_value, spmax_value, energy_limits_value = self.load_config()
+        elem_value, out_value, nmax_value, spmin_value, spmax_value, energy_limits_value, formula_value = self.load_config()
         self.elem_var = tk.StringVar(value=elem_value)
         self.out_var = tk.StringVar(value=out_value)
         self.nmax_var = tk.IntVar(value=nmax_value)
         self.spmin_var = tk.IntVar(value=spmin_value)
         self.spmax_var = tk.IntVar(value=spmax_value)
         self.energy_limits_var = tk.StringVar(value=energy_limits_value)
+        self.formula_var = tk.StringVar(value=formula_value)
 
         elem_label = tk.Label(self.root, text="Element")
         elem_label.pack(anchor="w")
@@ -144,7 +152,18 @@ class CreateFromDataBasesUI(GenericUI):
         energy_limits_button = tk.Button(self.root, text="Change Limits", command=self.open_dialog)
         energy_limits_button.pack(anchor="w")
         tk.Label(self.root).pack()
-
+        formula_label = tk.Label(self.root, text="RREC from formula or Strasbourg DB?")
+        formula_label.pack(anchor="w")
+        formula_default_selection = self.formula_var.get()
+        formula_combo = ttk.Combobox(self.root, textvariable=self.formula_var)
+        formula_combo['values'] = ("formula", "strasbourg")
+        if formula_default_selection in formula_combo['values']:
+            index = formula_combo['values'].index(formula_default_selection)
+            formula_combo.current(index)
+        else:
+            formula_combo.current(0)
+        formula_combo.pack(anchor="w")
+        tk.Label(self.root).pack()
         submit_button = tk.Button(self.root, text="Run!", command=run_it)
         submit_button.pack(anchor="w")
         tk.Label(self.root).pack()
@@ -171,3 +190,6 @@ class CreateFromDataBasesUI(GenericUI):
 
     def get_elem(self):
         return self.elem_var.get()
+
+    def get_formula(self):
+        return self.formula_var.get()

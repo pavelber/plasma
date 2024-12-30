@@ -32,7 +32,7 @@ min_sp_num = int(sys.argv[param_num])
 param_num += 1
 max_sp_num = int(sys.argv[param_num])
 param_num += 1
-formula = sys.argv[param_num].lower()=='formula'
+formula = sys.argv[param_num].lower() == 'formula'
 param_num += 1
 
 (name_to_table, num_to_table) = read_table()

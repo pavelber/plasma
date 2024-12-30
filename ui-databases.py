@@ -1,3 +1,4 @@
+import traceback
 import os
 import shutil
 from multiprocessing.pool import ThreadPool
@@ -7,7 +8,8 @@ from lib import current_data
 from lib.check_and_fix import create_rrec_inp, check_fix, copy_checks, check_and_fix_rr_version2, \
     check_and_fix_old_rr_version2
 from lib.create_in1_from_databases import parse_energy_limits, create_in1_excit_spectr__from_databases
-from lib.create_rrec_bcfp_from_in1 import create_rrec_bcfp_from_in1
+from lib.create_rrec_bcfp_from_in1 import create_rrec_from_in1, create_bcfp_from_in1
+
 from lib.env import env, get_pathes
 from lib.exceptions import GenericPlasmaException
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
@@ -43,6 +45,7 @@ class Runner:
                 self.ui_error(e.message)
                 return None
             except Exception as e:
+                traceback.print_exc()
                 self.ui_error(str(e))
 
     def run_async(self):
@@ -58,6 +61,7 @@ class Runner:
             energy_limits = parse_energy_limits("1:70.8,2:150,3:250,4:350,5:450,6:550,7:750,8:1000")
             min_sp_num = self.ui.get_spmin()
             max_sp_num = self.ui.get_spmax()
+            formula = self.ui.get_formula() == "formula"
 
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
@@ -88,14 +92,22 @@ class Runner:
             shutil.copytree(lines_downloaded, lines_dir)
             sp_nums_dec = list(range(min_sp_num, max_sp_num + 1))
             sp_nums_str = list(map(lambda x: str(x), range(min_sp_num, max_sp_num + 1)))
+            sp_nums_with_nucleus = sp_nums_dec[:]
+
+            if max_sp_num + 1 == nucleus:
+                sp_nums_with_nucleus.append(nucleus)
 
             sp_nums = self.run_and_set_good(
                 lambda: create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec, energy_limits, nmax),
                 "Create IN1, SPECTR, EXCIT")
 
             in1 = os.path.join(elem_dir, "IN1.INP")
-            self.run_and_set_good(lambda: create_rrec_bcfp_from_in1(in1, elem_dir, sp_nums, nucleus),
-                                  "Create rrec per spectroscopic number, BCFP")
+            self.run_and_set_good(lambda: create_rrec_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, formula),
+                                  "Create rrec from In1")
+            self.run_and_set_good(lambda:  create_bcfp_from_in1(in1, elem_dir, sp_nums_with_nucleus, nucleus),
+                                  "Create BCFP from In1")
+
+
 
             self.run_and_set_good(lambda: create_rrec_inp(elem_dir, ph_fac_path, sp_nums_str), "Create RREC.INP")
 

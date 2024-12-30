@@ -14,7 +14,7 @@ from lib.exceptions import GenericPlasmaException
 from lib.fisher import run_for_fisher
 from lib.process_mz import replace_from_mz
 from lib.renumer import create_tables
-from lib.utils import remove_files_and_dirs
+from lib.utils import remove_files_and_dirs, string_to_bool
 from run import check_dirs, run_for_all_numbers, check_and_fix
 from ui.create_input_from_fac_ui import RunFacUI
 
@@ -67,6 +67,7 @@ class Runner:
             if exists(out_dir):
                 remove_files_and_dirs(out_dir)
             min_eins_coef = self.ui.get_min_eins()
+            mz = string_to_bool(self.ui.get_run_mz())
             self.run_and_set_good(lambda: check_dirs(input_dir, out_dir), "Check dirs")
             warnings_file_path = os.path.join(out_dir, "WARNINGS.txt")
             if os.path.exists(warnings_file_path):
@@ -94,7 +95,8 @@ class Runner:
                 "Create SPECTR")
             self.run_and_set_good(lambda: run_for_fisher(False, spec_numbers[0], spec_numbers[-1], element, out_dir),
                                   "Create RT-Code files")
-            self.run_and_set_good(lambda: replace_from_mz(el_num, out_dir), "Replace from MZ")
+            if mz:
+                self.run_and_set_good(lambda: replace_from_mz(el_num, out_dir), "Replace from MZ")
             self.ui_message("Done")
             self.ui.enable()
         except Exception as e:

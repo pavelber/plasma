@@ -309,3 +309,14 @@ def energy_ryd_to_ev(e_ryd):
 
 def next_sn(sn_str):
     return str(int(sn_str) + 1)
+
+
+def string_to_bool(s):
+    if isinstance(s, bool):
+        return s
+    if s.lower() in ('yes', 'true', 't', '1', 'y'):
+        return True
+    elif s.lower() in ('no', 'false', 'f', '0', 'n'):
+        return False
+    else:
+        raise ValueError(f"Cannot convert string '{s}' to boolean")
