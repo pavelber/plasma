@@ -134,7 +134,7 @@ def check_and_fix(my_dir, out_dir):
         error("Exit code = " + str(code))
 
     for spn in os.listdir(out_dir):
-        if spn!='fisher':
+        if spn != 'fisher':# and spn != '22' and spn != '23' and spn != '24':
             number_dir = os.path.join(out_dir, spn)
             if isdir(number_dir):
                 check_and_fix_rr(number_dir)
@@ -149,7 +149,7 @@ def check_and_fix_in_main_dir(out_dir):
 
 
 def run_old_fac(in_dir_spn, out_dir_spn, old_path):
-    #cmd = "python " + old_path + " " + in_dir_spn + " " + out_dir_spn
+    # cmd = "python " + old_path + " " + in_dir_spn + " " + out_dir_spn
     cmd = "mkdir" + " " + out_dir_spn
     print(cmd)
     code, std_out, std_err = runcommand(cmd)
@@ -209,14 +209,16 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools, mz=True):
         create_bcfp(out_dir, spec_numbers, translation_table)
         create_excit(out_dir, spec_numbers, translation_table)
         create_rrec(out_dir, spec_numbers, translation_table)
-        element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table, ionization_potential)
+        element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table,
+                                                          ionization_potential)
         create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-        run_for_fisher(dont_run_all_tools, spec_numbers[0], spec_numbers[-1], element, out_dir,)
+        run_for_fisher(dont_run_all_tools, spec_numbers[0], spec_numbers[-1], element, out_dir, )
         if mz:
             replace_from_mz(el_num, out_dir)
         check_and_fix_in_main_dir(out_dir)
     except GenericPlasmaException as e:
         error(e.message)
+
 
 if __name__ == "__main__":
     main()

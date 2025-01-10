@@ -77,12 +77,13 @@ def create_union(out_dir, spec_numbers, header, out_file_name, in_file_name, pos
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_dir + os.path.sep + in_file_name
             else:
                 in_path = out_dir + os.path.sep + n + os.path.sep + in_file_name
-            with open(in_path, 'r') as inf:
-                for line in inf:
-                    if len(line) > 10:
-                        new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
-                                                      out_dir, out_file_name, renumerate, max_spec_number, field_width)
-                        outf.write(final_line_converter(new_line))
+            if os.path.exists(in_path):
+                with open(in_path, 'r') as inf:
+                    for line in inf:
+                        if len(line) > 10:
+                            new_line = create_output_line(line, n, position_3_chars_to_translation_table, positions,
+                                                          out_dir, out_file_name, renumerate, max_spec_number, field_width)
+                            outf.write(final_line_converter(new_line))
 
 
 def create_output_line(line, n, position_3_chars_to_translation_table, positions, out_dir, out_file_name,
