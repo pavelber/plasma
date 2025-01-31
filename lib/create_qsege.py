@@ -58,6 +58,7 @@ def copy_atomic_from_fac_lev(f, element, fac_dir, name_to_table, num_to_table, o
     autoionization = False
     autoionization_levels = {}
     fac_file = None
+    first_line = True
     for line in f:
         columns = line.split()
         if len(columns) == 1:
@@ -108,8 +109,10 @@ def copy_atomic_from_fac_lev(f, element, fac_dir, name_to_table, num_to_table, o
             num = el - int(e) + 1
             name = num_to_table[str(num)]["Symbol"]
             autoionization_levels[e] = []
+        elif len(columns) == 10 and first_line:
+            first_line = False  # skip line
         else:
-            outf.write(line),
+            outf.write(line)
 
     if fac_file is not None:
         fac_file.close()
@@ -132,6 +135,7 @@ def copy_atomic_from_in1(f, element, name_to_table, num_to_table, outf):
     block_counter = 1
     autoionization = False
     autoionization_levels = {}
+    first_line = True
 
     for line in f:
         columns = line.split()
@@ -178,8 +182,10 @@ def copy_atomic_from_in1(f, element, name_to_table, num_to_table, outf):
             num = el - int(sp_n) + 1
             name = num_to_table[str(num)]["Symbol"]
             autoionization_levels[sp_n] = []
+        elif len(columns) == 10 and first_line:
+            first_line = False # skip line
         else:
-            outf.write(line),
+            outf.write(line)
 
     for sp_n in sorted(autoionization_levels):
         lines = autoionization_levels[sp_n]
