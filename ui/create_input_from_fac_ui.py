@@ -1,4 +1,5 @@
 import tkinter as tk
+from pathlib import Path
 from tkinter import filedialog
 from tkinter import ttk
 
@@ -103,10 +104,10 @@ class RunFacUI(GenericUI):
         self.root.mainloop()
 
     def get_input_dir(self):
-        return self.fac_var.get()
+        return str(Path(self.fac_var.get()))
 
     def get_out_dir(self):
-        return self.out_var.get()
+        return str(Path(self.out_var.get()))
 
     def get_min_eins(self):
         return self.einstein_var.get()

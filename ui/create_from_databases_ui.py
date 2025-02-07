@@ -1,4 +1,5 @@
 import tkinter as tk
+from pathlib import Path
 from tkinter import ttk
 from tkinter import filedialog, simpledialog
 
@@ -177,7 +178,7 @@ class CreateFromDataBasesUI(GenericUI):
         self.root.mainloop()
 
     def get_out_dir(self):
-        return self.out_var.get()
+        return str(Path(self.out_var.get()))
 
     def get_nmax(self):
         return self.nmax_var.get()

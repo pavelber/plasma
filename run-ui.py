@@ -1,6 +1,7 @@
 import contextlib
 import os
 import sys
+import traceback
 from io import StringIO
 from multiprocessing.pool import ThreadPool
 from os.path import exists
@@ -101,6 +102,7 @@ class Runner:
             self.ui.enable()
         except Exception as e:
             self.ui_error(str(e))
+            traceback.print_exc()
 
         self.ui.enable()
 
