@@ -2,8 +2,7 @@ import math
 import re
 from math import sqrt
 
-pi_a0_2 = 8.79e-17
-ry = 13.6057
+from lib.consts import ry, pi_a0_2
 
 letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i': 6, 'k': 7, 'l':8,'m':9,'n':10}
 
