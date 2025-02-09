@@ -52,7 +52,7 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
             level_high = level[2]
             if bcfp_line is None:
                 bcfp_line = "0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00"
-                print("BCFP line is None for " + str(level))
+                #print("BCFP line is None for " + str(level))
             bcfp_parts = bcfp_line.split()
             bcfp_fit = " %4s %4s %4s %4s %14s %15s %15s %15s" % (
                 spectr_num_low, level_low, spectr_num_high, level_high, bcfp_parts[4], bcfp_parts[5],
@@ -62,7 +62,7 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                                              spectr_num_to_aion_energy,
                                              spectr_num_level_to_energy)
             else:
-                print("RR line is None for " + str(level))
+                # print("RR line is None for " + str(level))
                 energy = 0.0
                 rrec_line = "0 0 0 4 0.000E+00 0.000E+00 0.000E+00 0.000E+00"
             rrec_parts = rrec_line.split()

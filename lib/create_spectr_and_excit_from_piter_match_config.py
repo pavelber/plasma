@@ -1,7 +1,8 @@
 import os
 
 from lib.exceptions import GenericPlasmaException
-from lib.utils import read_table, add_one_to_config_in_missing, normalize_energy, dec_to_roman
+from lib.utils import read_table, add_one_to_config_in_missing, normalize_energy
+from lib.roman import dec_to_roman
 
 
 def nist_strip(s):

@@ -7,7 +7,8 @@ from os import listdir
 
 from lib.levels_string import create_levels_string
 from lib.nist import get_ionization_energy_ev, download_one_sp_num
-from lib.utils import error, nist_strip, dec_to_roman
+from lib.utils import error, nist_strip
+from lib.roman import dec_to_roman
 
 
 def compute_2j(j_str):

@@ -213,6 +213,7 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools, mz=True):
         element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table,
                                                           ionization_potential)
         create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
+        check_and_fix_rr(out_dir)
         run_for_fisher(dont_run_all_tools, spec_numbers[0], spec_numbers[-1], element, out_dir, )
         if mz:
             replace_from_mz(el_num, out_dir)

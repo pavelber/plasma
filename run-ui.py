@@ -6,6 +6,7 @@ from io import StringIO
 from multiprocessing.pool import ThreadPool
 from os.path import exists
 
+from lib.check_and_fix import check_and_fix_rr
 from lib.create_aiw import create_aiw
 from lib.create_files_union import create_bcfp, create_excit, create_rrec
 from lib.create_inp1 import create_inp
@@ -96,6 +97,8 @@ class Runner:
                 "Create SPECTR")
             self.run_and_set_good(lambda: run_for_fisher(False, spec_numbers[0], spec_numbers[-1], element, out_dir),
                                   "Create RT-Code files")
+            self.run_and_set_good(lambda: check_and_fix_rr(out_dir), "Check and fix RREC on top")
+
             if mz:
                 self.run_and_set_good(lambda: replace_from_mz(el_num, out_dir), "Replace from MZ")
             self.ui_message("Done")

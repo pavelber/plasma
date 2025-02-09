@@ -14,7 +14,7 @@ from lib.env import env, get_pathes
 from lib.exceptions import GenericPlasmaException
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
-from lib.utils import read_table, dec_to_roman, invert_replaces
+from lib.utils import read_table, invert_replaces
 from lib.verify_results import test_number_of_levels_inp1, files_not_empty
 from ui.create_from_databases_ui import CreateFromDataBasesUI
 

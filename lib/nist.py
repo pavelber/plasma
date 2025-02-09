@@ -20,8 +20,7 @@ from urllib.request import urlopen, Request
 #   -H 'sec-ch-ua-platform: "Windows"' \
 #   -H 'sec-gpc: 1' \
 #   --compressed
-from lib.roman import roman_to_int
-from lib.utils import dec_to_roman
+from lib.roman import roman_to_int, dec_to_roman
 
 sp_nums_to_use = ['I', 'II', 'III', 'IV', 'V', 'VI']
 
