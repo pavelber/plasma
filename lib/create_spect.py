@@ -58,20 +58,21 @@ def read_fac_tr(out_dir, spec_numbers, translation_table):
             with open(in_path, 'r') as inf:
                 for line in inf:
                     parts = line.split()
-                    if len(parts) == 8:
+                    if len(parts) == 9:
                         tr1 = str(int(parts[2]) + 1)
                         tr2 = str(int(parts[0]) + 1)
                         if tr1 in translation_table[n] and tr2 in translation_table[n]:
                             tr = (n, translation_table[n][tr1], translation_table[n][tr2])
-                            einstein = float(parts[6])
+                            einstein = float(parts[7])
                             e = float(parts[4])
-                            wave_length = 12398.318 / e
-                            if tr in transition_to_line:
-                                old = transition_to_line[tr]
-                                if old[0] < einstein:
+                            if e > 0.0:
+                                wave_length = 12398.318 / e
+                                if tr in transition_to_line:
+                                    old = transition_to_line[tr]
+                                    if old[0] < einstein:
+                                        transition_to_line[tr] = (einstein, wave_length)
+                                else:
                                     transition_to_line[tr] = (einstein, wave_length)
-                            else:
-                                transition_to_line[tr] = (einstein, wave_length)
                         else:
                             print("No transition " + n + " " + tr1 + " " + tr2 + " in translation table")
     return transition_to_line
