@@ -61,14 +61,10 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                 energy = compute_energy_diff(spectr_num_low, level_low, spectr_num_high, level_high,
                                              spectr_num_to_aion_energy,
                                              spectr_num_level_to_energy)
-            else:
-                # print("RR line is None for " + str(level))
-                energy = 0.0
-                rrec_line = "0 0 0 4 0.000E+00 0.000E+00 0.000E+00 0.000E+00"
-            rrec_parts = rrec_line.split()
-            rrec_fit = " %6s %13s %12s %12s %12s %13.3f" % (
-                    rrec_parts[3], rrec_parts[4], rrec_parts[5], rrec_parts[6], rrec_parts[7], energy)
-            outf.write(bcfp_fit + rrec_fit + "\n")
+                rrec_parts = rrec_line.split()
+                rrec_fit = " %6s %13s %12s %12s %12s %13.3f" % (
+                        rrec_parts[3], rrec_parts[4], rrec_parts[5], rrec_parts[6], rrec_parts[7], energy)
+                outf.write(bcfp_fit + rrec_fit + "\n")
 
 
 def run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev=True):
