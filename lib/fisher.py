@@ -28,7 +28,7 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
             parts = line.split()
             if len(parts) > 4:
                 level = (parts[0], parts[1], parts[3])
-                if parts[1]!="0":
+                if parts[1] != "0":
                     levels_to_bcfp_rrec[level] = (line, None)
 
     with open(rrec_file_path, "r") as rrec_f:
@@ -48,11 +48,11 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
             (bcfp_line, rrec_line) = levels_to_bcfp_rrec[level]
             spectr_num_low = level[0]
             level_low = level[1]
-            spectr_num_high = str(int(spectr_num_low)+1)
+            spectr_num_high = str(int(spectr_num_low) + 1)
             level_high = level[2]
             if bcfp_line is None:
                 bcfp_line = "0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00"
-                #print("BCFP line is None for " + str(level))
+                # print("BCFP line is None for " + str(level))
             bcfp_parts = bcfp_line.split()
             bcfp_fit = " %4s %4s %4s %4s %14s %15s %15s %15s" % (
                 spectr_num_low, level_low, spectr_num_high, level_high, bcfp_parts[4], bcfp_parts[5],
@@ -63,7 +63,7 @@ def createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_
                                              spectr_num_level_to_energy)
                 rrec_parts = rrec_line.split()
                 rrec_fit = " %6s %13s %12s %12s %12s %13.3f" % (
-                        rrec_parts[3], rrec_parts[4], rrec_parts[5], rrec_parts[6], rrec_parts[7], energy)
+                    rrec_parts[3], rrec_parts[4], rrec_parts[5], rrec_parts[6], rrec_parts[7], energy)
                 outf.write(bcfp_fit + rrec_fit + "\n")
 
 
@@ -108,6 +108,8 @@ def get_energy_from_in1_inp(file_path):
                 levels_energy[(spect_num, parts[6])] = float(parts[3])
             if energy_lines and len(parts) == 8:
                 levels_energy[(spect_num, parts[7])] = float(parts[4])
+            if energy_lines and len(parts) == 9:
+                levels_energy[(spect_num, parts[8])] = float(parts[4])
             if energy_lines and parts[0] == "Nucleus":
                 levels_energy[(spect_num, '1')] = 0.0
     return ain_energy, levels_energy
@@ -124,4 +126,6 @@ def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, b
     createIonFile(dont_run_all_tools, element, levels_num, o_dir, spectr_num_to_aion_energy, spectr_num_level_to_energy,
                   bcfp)
 
-# run_for_fisher(True, "O", "C:\work4\db\O", "BFCP.INP",False)
+
+if __name__ == "__main__":
+    run_for_fisher(True, 1, 9, "O", "C:\\Users\\javaa\\Downloads\\", "BCFP-formula.INP", False)

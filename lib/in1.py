@@ -11,6 +11,7 @@ def create_tables(in1_path):
         skip_n_lines(infile, 13)
         ionization_potential = {}
         configs = {}
+        stat_weight = {}
         transitions_energy_table = {}
         is_header = True
         for line in infile:
@@ -27,7 +28,9 @@ def create_tables(in1_path):
                 else:
                     level = line[61:66].strip()
                     energy = float(line[29:37].strip())
+                    g = float(line[17:23].strip())
                     config = line[0:10].split()
                     transitions_energy_table[(sp_num, level)] = energy
                     configs[(sp_num, level)] = config
-    return transitions_energy_table, ionization_potential, configs
+                    stat_weight[(sp_num, level)] = g
+    return transitions_energy_table, ionization_potential, configs, stat_weight

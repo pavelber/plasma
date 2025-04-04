@@ -6,6 +6,7 @@ from lib.utils import read_table, skip_n_lines
 
 HEADER_FORMAT_STRING = '%3s  %3s  %3s   %8s'
 OUTPUT_FORMAT_STRING = '%24s%5s%13s%6d%9d\n'
+OUTPUT_FORMAT_STRING_STR = '%-24s%5s%13s%6s%9s\n'
 OUTPUT_FORMAT_STRING_AI = '%24s%5s%13s'
 OUTPUT_FORMAT_STRING_AI2 = '%s%6d%9d\n'
 OUTPUT_FORMAT_STRING2 = '%24s%5s%13s%7d%9d%9s%15s\n'
@@ -61,6 +62,7 @@ def copy_atomic_from_fac_lev(f, element, fac_dir, name_to_table, num_to_table, o
     first_line = True
     for line in f:
         columns = line.split()
+
         if len(columns) == 1:
             autoionization = False
             e = columns[0]
@@ -83,22 +85,26 @@ def copy_atomic_from_fac_lev(f, element, fac_dir, name_to_table, num_to_table, o
                 outf.write(e + " [" + name + "]\n")
             block_counter = 1
         elif len(columns) == 7:
+            g = columns[2]
+            energy = columns[3]
             if not autoionization:
                 line = fac_file.readline()
                 outf.write(OUTPUT_FORMAT_STRING % (
-                    create_levels_string(num, line), columns[2], columns[3], block_counter, counter))
+                    create_levels_string(num, line), g, energy, block_counter, counter))
                 counter += 1
                 block_counter += 1
             else:  # Store autoionization
                 autoionization_lines = autoionization_levels[e]
                 line = fac_file.readline()
                 autoionization_lines.append(
-                    OUTPUT_FORMAT_STRING_AI % (create_levels_string(num, line), columns[2], columns[3]))
+                    OUTPUT_FORMAT_STRING_AI % (create_levels_string(num, line), g, energy))
         elif len(columns) == 9:
+            g = columns[2]
+            energy = columns[3]
             if not autoionization:
                 line = fac_file.readline()
                 outf.write(OUTPUT_FORMAT_STRING2 % (
-                    create_levels_string(num, line), columns[2], columns[3], block_counter,
+                    create_levels_string(num, line), g, energy, block_counter,
                     counter,
                     columns[7],
                     columns[8]))
@@ -139,7 +145,7 @@ def copy_atomic_from_in1(f, element, name_to_table, num_to_table, outf):
 
     for line in f:
         columns = line.split()
-        if len(columns) == 1:
+        if len(columns) == 1: #sp number start
             autoionization = False
             sp_n = columns[0]
             num = el - int(sp_n) + 1
@@ -150,33 +156,22 @@ def copy_atomic_from_in1(f, element, name_to_table, num_to_table, outf):
                 break
             name = num_to_table[str(num)]["Symbol"]
             if counter == 1:  # first time
-                outf.write(sp_n + " [" + name + "]" + "                    g0       E(eV)       #       ##   \n")
+                outf.write(OUTPUT_FORMAT_STRING_STR % (sp_n + " [" + name + "]","g0","E(eV)","#","##"))
             else:
                 outf.write(sp_n + " [" + name + "]\n")
             block_counter = 1
-        elif len(columns) == 7:
+        elif len(columns) == 8 or len(columns) == 9:
             levels = columns[0] + " " + columns[1]
-            energy = columns[2]
-            p = columns[3]
+            energy = columns[4]
+            g0 = columns[3]
             if not autoionization:
-                outf.write(OUTPUT_FORMAT_STRING % (levels, energy, p, block_counter, counter))
+                outf.write(OUTPUT_FORMAT_STRING % (levels, g0, energy, block_counter, counter))
                 counter += 1
                 block_counter += 1
             else:  # Store autoionization
                 autoionization_lines = autoionization_levels[sp_n]
                 autoionization_lines.append(
                     OUTPUT_FORMAT_STRING_AI % (levels, energy, p))
-        elif len(columns) == 9:
-            levels = columns[0] + " " + columns[1]
-            energy = columns[2]
-            p = columns[3]
-            if not autoionization:
-                outf.write(OUTPUT_FORMAT_STRING2 % (levels, energy, p, block_counter,
-                                                    counter,
-                                                    columns[7],
-                                                    columns[8]))
-                counter += 1
-                block_counter += 1
         elif len(columns) == 2:
             autoionization = True
             num = el - int(sp_n) + 1
