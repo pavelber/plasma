@@ -420,7 +420,7 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
         read(nFi,'(a9)') title
 	  CountInz = 1
   9     read(nFi,*) iSS1, iQS1, iSS2, iQS2, Axw, Bxw, Cxw, 
-     +              Dxw, MePh, Exw, Fxw, Gxw, Hxw, thre    ! ioniz threshold
+     +              Dxw, MePh, Exw, Fxw, Gxw, Hxw, thre    ! ioniz threshold PAVEL: read Inz line. A-D came from BCFP
 	  CountInz = CountInz + 1
 
         if(iQS1.gt.0) ki= nuGS(iSS1,nX)-1 +iQS1    ! "ki" is order# of "iQS1" in "long" numbering. Here non-AI EL    
@@ -1695,7 +1695,7 @@ c                                                                               
       if(j.ne.KiSS(k,nX)) PAUSE ' Came in SigInz with j =/= KiSS(k)'    ! j is input of this func
       if(k.eq.Nnu(nX))    PAUSE ' STOPped because came to ionize nucl.'
 
-      xw= eeV/BEk                                                      
+      xw= eeV/BEk                                  ! BEk is ionization energy
       yw= one - BEk/eeV                            ! MF Gu 
       OM = Aix(k,kf)*log(xw)+ Bix(k,kf)*yw*yw +    ! FAC guide (2.9); log(x) is natural log;
      +     Cix(k,kf)*yw/xw  + Dix(k,kf)*yw/xw/xw

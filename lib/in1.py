@@ -25,8 +25,10 @@ def create_tables(in1_path):
                 if "Nucleus" in line:
                     transitions_energy_table[(sp_num, "1")] = 0.0
                     configs[(sp_num, "1")] = ["1s0"]
+                elif "Autoionizating states" in line:
+                    pass
                 else:
-                    level = line[61:66].strip()
+                    level = line[59:66].strip()
                     energy = float(line[29:37].strip())
                     g = float(line[17:23].strip())
                     config = line[0:10].split()

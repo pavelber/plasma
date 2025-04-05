@@ -7,6 +7,7 @@ from scipy.optimize import minimize
 
 from lib.configurations import get_number_of_electrons
 from lib.consts import ry
+from lib.cross_section import create_energy_function
 from lib.in1 import create_tables, get_ionization_energy
 from lib.utils import skip_n_lines
 
@@ -15,10 +16,6 @@ reject_bad_fits = True
 header = """  iSS  iQS  fSS  fQS         D          -A           B           C
 -----------------------------------------------------------------------------------
 """
-
-cl_table = {'s': 1.7796E-16, 'p': 2.1597E-16, 'd': 1.2131E-16}
-cl_keys = ['s', 'p', 'd']
-lambda_l_table = {'s': 0.0471, 'p': 0.0910, 'd': 0.3319}
 
 START_E = 1.0
 END_E = 100.0
@@ -31,25 +28,6 @@ def approximation_fun(a, b, c, d, E0, stat_weight, x):
     E = x * E0
     return 3.8101e-16 * (a * log(x) + b * y * y + c * y / x + d * y / (x * x)) * E / stat_weight
 
-
-def get_cl(l):
-    return cl_table[l]
-
-
-def get_lambda_l(l):
-    return lambda_l_table[l]
-
-
-def create_energy_function(ionization_energy, coef, from_config, to_config):
-    num_of_electrons = get_number_of_electrons(from_config, to_config)
-    if num_of_electrons is None:
-        return None
-    l = from_config[-1][1]
-    if l not in cl_keys:
-        return lambda x: 4.5 * 10E-14 * num_of_electrons * log(x) / x
-    c_l = get_cl(l)
-    lambda_l = get_lambda_l(l)
-    return lambda x: c_l * pow(ry / ionization_energy, 2 - lambda_l) * num_of_electrons * coef * log(x) / x
 
 
 def is_bad(sum_square_diffs):
