@@ -77,9 +77,9 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
                 coef, from_config,
                 to_config)
             if c_l:
-                params = " %13.3f %13.3f %13.3f %13.3f %13.3f" % (c_l, delta_l, num_of_electrons, ionization_energy, coef)
+                params = " %13.3e %13.3e %13.3e %13.3e %13.3e" % (c_l, delta_l, num_of_electrons, ionization_energy, coef)
             else:
-                params = " %13.3f %13.3f %13.3f %13.3f %13.3f" % (0, 0, 0, 0, 0)
+                params = " %13.3e %13.3e %13.3e %13.3e %13.3e" % (0, 0, 0, 0, 0)
 
             bcfp_fit = " %4s %4s %4s %4s %14s %15s %15s %15s" % (
                 spectr_num_low, level_low, spectr_num_high, level_high, bcfp_a, bcfp_b,
