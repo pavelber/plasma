@@ -27,7 +27,12 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
     print("Creation of " + out_file_path)
     levels_to_bcfp_rrec = {}
     with open(bcfp_file_path, "r") as bcfp_f:
-        skip_n_lines(bcfp_f, 2)
+        header = bcfp_f.readline()
+        if "Coefficient" in header:
+            bcfp_from_databases =  True
+        else:
+            bcfp_from_databases = False
+        skip_n_lines(bcfp_f, 1)
         for line in bcfp_f:
             parts = line.split()
             if len(parts) > 4:
@@ -54,7 +59,9 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
             level_low = level[1]
             spectr_num_high = str(int(spectr_num_low) + 1)
             level_high = level[2]
-            if bcfp_line is None:
+            if bcfp_from_databases:
+                coef = float(bcfp_line.split()[4])
+            if bcfp_line is None or bcfp_from_databases:
                 bcfp_line = "%d %d %d %d 0.000E+00 0.000E+00 0.000E+00 0.000E+00" % (
                     int(spectr_num_low), int(level_low), int(spectr_num_high), int(level_high))
                 # print("BCFP line is None for " + str(level))
@@ -63,7 +70,6 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
             bcfp_b = bcfp_parts[5]
             bcfp_c = bcfp_parts[6]
             bcfp_d = bcfp_parts[7]
-            coef = float(bcfp_a)
             from_sp = bcfp_parts[0]
             from_level = bcfp_parts[1]
             to_sp = bcfp_parts[2]
@@ -72,14 +78,17 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
                                                       ionization_potential)
             from_config = configurations_table[(from_sp, from_level)]
             to_config = configurations_table[(to_sp, to_level)]
-            (c_l, delta_l, num_of_electrons, ionization_energy, coef) = get_constants_for_bernshtam_ralchenko(
-                transition_energy,
-                coef, from_config,
-                to_config)
-            if c_l:
-                params = " %13.3e %13.3e %13.3e %13.3e %13.3e" % (c_l, delta_l, num_of_electrons, ionization_energy, coef)
+            if bcfp_from_databases:
+                (c_l, delta_l, num_of_electrons, ionization_energy, coef) = get_constants_for_bernshtam_ralchenko(
+                    transition_energy,
+                    coef, from_config,
+                    to_config)
             else:
-                params = " %13.3e %13.3e %13.3e %13.3e %13.3e" % (0, 0, 0, 0, 0)
+                c_l = None
+            if c_l:
+                params = " %13.3e %13.3e %4d %13.3f %13.3e" % (c_l, delta_l, num_of_electrons, ionization_energy, coef)
+            else:
+                params = " %13.3e %13.3e %4d %13.3f %13.3e" % (0.0, 0.0, 0, 0.0, 0.0)
 
             bcfp_fit = " %4s %4s %4s %4s %14s %15s %15s %15s" % (
                 spectr_num_low, level_low, spectr_num_high, level_high, bcfp_a, bcfp_b,
