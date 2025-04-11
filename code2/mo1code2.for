@@ -78,7 +78,8 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +  nqInf,   ! for how many ELs you want detailed PM-info in file (49	?
      +  LaInf,   ! cell# of this info
      +  nFine,
-     +  Count, StrExc, CountExc, StrInz, CountInz, 
+     +  Count, StrExc, CountExc, StrInz, CountInz,
+     + num_el_ix(nQSm,nQSm),  ! number of electrons for Bernshtam Ralchenko formula for cross section
      +  StrAIw, CountAIw, iw
 
       real(8), public :: 
@@ -116,7 +117,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   Hix(nQSm,nQSm),
      +   c_l_ix(nQSm,nQSm), ! cl for Bernshtam Ralchenko formula for cross section
      +   delta_l_ix(nQSm,nQSm),  ! delta_l for Bernshtam Ralchenko formula for cross section
-     +   num_el_ix(nQSm,nQSm),  ! number of electrons for Bernshtam Ralchenko formula for cross section
      +   ioniz_en_ix(nQSm,nQSm), ! ionization energy for Bernshtam Ralchenko formula for cross section
      +   coef_ix(nQSm,nQSm), ! branching coefficient for Bernshtam Ralchenko formula for cross section
      +   Eth(nQSm,nQSm),  ! State-to-state Ionization Threshold (for ioniz cross-secs) 

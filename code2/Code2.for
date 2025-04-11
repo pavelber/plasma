@@ -150,7 +150,8 @@ c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first u
       integer iniQS, nSS, mth, LL, LU, ki,  
      +        iSS1, iQS1, iSS2, iQS2,  nFi                 
       real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, thre  
-
+      real(8) c_l, delta_l, ioniz_en, coef
+      integer num_el;
       read(12,*) FSS(1), FSS(2), FSS(3), FSS(4)  ! "FSS" is the # of first   SS of XX, C, He, D in the DaBa;  31 for C-like Kr
       read(12,*) HSS(1), HSS(2), HSS(3), HSS(4)  ! "HSS" is the # of H -like SS of XX, C, He, D in the DaBa;  36 for H-like Kr
       read(12,*) Nnu(1), Nnu(2), Nnu(3), Nnu(4)  ! "Nnu" is the order number of nuclei in the "QSs.inp";     296 for Kr DaBa of May 11, 2021  
@@ -420,7 +421,8 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
         read(nFi,'(a9)') title
 	  CountInz = 1
   9     read(nFi,*) iSS1, iQS1, iSS2, iQS2, Axw, Bxw, Cxw, 
-     +              Dxw, MePh, Exw, Fxw, Gxw, Hxw, thre    ! ioniz threshold PAVEL: read Inz line. A-D came from BCFP
+     +              Dxw, MePh, Exw, Fxw, Gxw, Hxw, thre,    ! ioniz threshold PAVEL: read Inz line. A-D came from BCFP
+     +              c_l, delta_l, num_el, ioniz_en, coef
 	  CountInz = CountInz + 1
 
         if(iQS1.gt.0) ki= nuGS(iSS1,nX)-1 +iQS1    ! "ki" is order# of "iQS1" in "long" numbering. Here non-AI EL    
@@ -449,6 +451,13 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
         Gix(ki,kf)= Gxw 
         Hix(ki,kf)= Hxw 
         Eth(ki,kf)= thre   ! State-to-state non-reduced Ionization Threshold; in the compu it will be reduced by DPI(iSS1,nX)] 
+
+        c_l_ix(ki,kf) = c_l ! cl for Bernshtam Ralchenko formula for cross section
+        delta_l_ix(ki,kf) = delta_l  ! delta_l for Bernshtam Ralchenko formula for cross section
+        num_el_ix(ki,kf) = num_el  ! number of electrons for Bernshtam Ralchenko formula for cross section
+        ioniz_en_ix(ki,kf) = ioniz_en ! ionization energy for Bernshtam Ralchenko formula for cross section
+        coef_ix(ki,kf) = coef ! branching coefficient for Bernshtam Ralchenko formula for cross section
+
         bra(ki,kf,nX)= one    ! "one" means yes ionization channel from "ki" to "kf". When using FAC-bases: "bra" is either 1 or 0
 
         if(CountInz .LT. StrInz) goto 9  
