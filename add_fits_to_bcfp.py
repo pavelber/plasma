@@ -6,7 +6,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from lib.cross_section import create_energy_function
-from lib.in1 import create_tables, get_ionization_energy
+from lib.in1 import IN1
 from lib.utils import skip_n_lines
 
 reject_bad_fits = True
@@ -20,17 +20,13 @@ END_E = 100.0
 STEP_E = 1.0
 METHOD = 'powell'
 
-
 def approximation_fun(a, b, c, d, E0, stat_weight, x):
     y = 1 - 1 / x
     E = x * E0
     return 3.8101e-16 * (a * log(x) + b * y * y + c * y / x + d * y / (x * x)) * E / stat_weight
 
-
-
 def is_bad(sum_square_diffs):
     return sum_square_diffs > 1E-16
-
 
 def create_fits(energy_function, ionization_potential, statweight, newa, newb, newc, newd):
     def def_fun_to_minimize(x):
@@ -72,7 +68,6 @@ def create_fits(energy_function, ionization_potential, statweight, newa, newb, n
 
     return newa, newb, newc, newd
 
-
 def create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir):
     filename = path.join(outdir, f"{from_sp}_{from_level}_{to_sp}_{to_level}.txt")
     with open(filename, 'w') as f:
@@ -83,14 +78,12 @@ def create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, tra
             f.write(f"{e:8.3} {energy_function(e):10.3}\n")
             e += STEP_E
 
-
 def process_file(bcfp_input_path, in1_path, bcfp_output_path):
     outdir = path.join(path.dirname(bcfp_output_path), 'tabulation')
     if not path.exists(outdir):
         os.mkdir(outdir)
     a = b = c = d = None
-    (transitions_energy_table, ionization_potential, configurations_table, stat_weight,
-     branching_ratio) = create_tables(in1_path)
+    in1_data = IN1(in1_path)  # Changed to use IN1 class
     with open(bcfp_input_path, 'r') as infile, open(bcfp_output_path, 'w') as outfile:
         outfile.write(header)
         skip_n_lines(infile, 2)
@@ -101,11 +94,10 @@ def process_file(bcfp_input_path, in1_path, bcfp_output_path):
             from_level = parts[1]
             to_sp = parts[2]
             to_level = parts[3]
-            transition_energy = get_ionization_energy(from_sp, from_level, to_sp, to_level, transitions_energy_table,
-                                                      ionization_potential)
-            from_config = configurations_table[(from_sp, from_level)]
-            to_config = configurations_table[(to_sp, to_level)]
-            from_stat_weight = stat_weight[(from_sp, from_level)]
+            transition_energy = in1_data.get_ionization_energy(from_sp, from_level, to_sp, to_level)
+            from_config = in1_data.get_config(from_sp, from_level)
+            to_config = in1_data.get_config(to_sp, to_level)
+            from_stat_weight = in1_data.get_stat_weight(from_sp, from_level)
             energy_function = create_energy_function(transition_energy, coef,
                                                      from_config,
                                                      to_config)
@@ -114,10 +106,9 @@ def process_file(bcfp_input_path, in1_path, bcfp_output_path):
             else:
                 create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir)
 
-                (a, b, c, d) = create_fits(energy_function, ionization_potential[from_sp], from_stat_weight, a, b, c, d)
+                (a, b, c, d) = create_fits(energy_function, in1_data.get_ionization_potential(from_sp), from_stat_weight, a, b, c, d)
                 modified_line = line[:24] + f"{a:10.3e} {b:10.3e} {c:10.3e} {d:10.3e}\n"
                 outfile.write(modified_line)
-
 
 # Main execution
 if __name__ == "__main__":
