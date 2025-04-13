@@ -16,27 +16,27 @@ def get_lambda_l(l):
     return lambda_l_table[l]
 
 
-def get_constants_for_bernshtam_ralchenko(ionization_energy, coef, from_config, to_config):
+def get_constants_for_bernshtam_ralchenko(ionization_energy, from_config, to_config):
     num_of_electrons = get_number_of_electrons(from_config, to_config)
     if num_of_electrons is None:
-        return None, None, None, ionization_energy, coef
+        return None, None, None, ionization_energy
     l = from_config[-1][1]
     if l not in cl_keys:
-        return None, None, num_of_electrons, ionization_energy, coef
+        return None, None, num_of_electrons, ionization_energy
     c_l = get_cl(l)
     delta_l = get_lambda_l(l)
-    return c_l, delta_l, num_of_electrons, ionization_energy, coef
+    return c_l, delta_l, num_of_electrons, ionization_energy
 
 
-def create_energy_function(ionization_energy, coef, from_config, to_config):
-    (c_l, delta_l, num_of_electrons, ionization_energy, coef) = get_constants_for_bernshtam_ralchenko(ionization_energy,
-                                                                                                      coef, from_config,
-                                                                                                      to_config)
+def create_energy_function(ionization_energy, branching_ration, from_config, to_config):
+    (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(ionization_energy,
+                                                                                                from_config,
+                                                                                                to_config)
 
     if num_of_electrons is None:
         return None
     if delta_l is None:
         return lambda x: 4.5 * 10E-14 * num_of_electrons * log(x) / x
-    bernshtam_ralchenko = lambda x: c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * coef * log(
+    bernshtam_ralchenko = lambda x: c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(
         x) / x
     return bernshtam_ralchenko

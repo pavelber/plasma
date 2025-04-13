@@ -16,7 +16,7 @@ def compute_energy_diff(spectr_num_low, level_low, spectr_num_high, level_high, 
         spectr_num_to_aion_energy[spectr_num_low]
 
 
-def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
+def createIonFile(element, levels_num, o_dir, spectr_num_to_aion_energy,
                   spectr_num_level_to_energy,
                   transitions_energy_table, configurations_table, ionization_potential,
                   bcfp):
@@ -29,7 +29,7 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
     with open(bcfp_file_path, "r") as bcfp_f:
         header = bcfp_f.readline()
         if "Coefficient" in header:
-            bcfp_from_databases =  True
+            bcfp_from_databases = True
         else:
             bcfp_from_databases = False
         skip_n_lines(bcfp_f, 1)
@@ -60,7 +60,7 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
             spectr_num_high = str(int(spectr_num_low) + 1)
             level_high = level[2]
             if bcfp_from_databases:
-                coef = float(bcfp_line.split()[4])
+                branching_ration = float(bcfp_line.split()[4])
             if bcfp_line is None or bcfp_from_databases:
                 bcfp_line = "%d %d %d %d 0.000E+00 0.000E+00 0.000E+00 0.000E+00" % (
                     int(spectr_num_low), int(level_low), int(spectr_num_high), int(level_high))
@@ -79,14 +79,15 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
             from_config = configurations_table[(from_sp, from_level)]
             to_config = configurations_table[(to_sp, to_level)]
             if bcfp_from_databases:
-                (c_l, delta_l, num_of_electrons, ionization_energy, coef) = get_constants_for_bernshtam_ralchenko(
+                (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(
                     transition_energy,
-                    coef, from_config,
+                    from_config,
                     to_config)
             else:
                 c_l = None
             if c_l:
-                params = " %13.3e %13.3e %4d %13.3f %13.3e" % (c_l, delta_l, num_of_electrons, ionization_energy, coef)
+                params = " %13.3e %13.3e %4d %13.3f %13.3e" % (
+                c_l, delta_l, num_of_electrons, ionization_energy, branching_ration)
             else:
                 params = " %13.3e %13.3e %4d %13.3f %13.3e" % (0.0, 0.0, 0, 0.0, 0.0)
 
@@ -100,7 +101,7 @@ def createIonFile( element, levels_num, o_dir, spectr_num_to_aion_energy,
                 rrec_parts = rrec_line.split()
                 rrec_fit = " %6s %13s %12s %12s %12s %13.3f" % (
                     rrec_parts[3], rrec_parts[4], rrec_parts[5], rrec_parts[6], rrec_parts[7], energy)
-                outf.write(bcfp_fit + rrec_fit + params+"\n")
+                outf.write(bcfp_fit + rrec_fit + params + "\n")
 
 
 def run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev=True):
@@ -155,14 +156,15 @@ def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, b
                    use_fac_lev=True):
     path_to_in1_inp = os.path.join(o_dir, "IN1.INP")
     (spectr_num_to_aion_energy, spectr_num_level_to_energy) = get_energy_from_in1_inp(path_to_in1_inp)
-    transitions_energy_table, ionization_potential, configurations_table, stat_weight = create_tables(path_to_in1_inp)
+    (transitions_energy_table, ionization_potential, configurations_table, stat_weight,
+     branching_ratio) = create_tables(path_to_in1_inp)
     next_sp_num = str(int(max_sp_num) + 1)
     if (next_sp_num, "1") not in spectr_num_level_to_energy:
         spectr_num_level_to_energy[(next_sp_num, "1")] = 1.0
     levels_num = run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev)
     createIonFile(element, levels_num, o_dir,
                   spectr_num_to_aion_energy, spectr_num_level_to_energy,
-                  transitions_energy_table, configurations_table,ionization_potential,
+                  transitions_energy_table, configurations_table, ionization_potential,
                   bcfp)
 
 

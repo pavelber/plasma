@@ -12,6 +12,7 @@ def create_tables(in1_path):
         ionization_potential = {}
         configs = {}
         stat_weight = {}
+        branching_ratio = {}
         transitions_energy_table = {}
         is_header = True
         for line in infile:
@@ -19,6 +20,8 @@ def create_tables(in1_path):
             if len(parts) == 1:
                 is_header = False
                 sp_num = parts[0]
+                if sp_num not in branching_ratio:
+                    branching_ratio[sp_num] = {}
             elif is_header:
                 ionization_potential[parts[0]] = float(parts[4])
             else:
@@ -35,4 +38,13 @@ def create_tables(in1_path):
                     transitions_energy_table[(sp_num, level)] = energy
                     configs[(sp_num, level)] = config
                     stat_weight[(sp_num, level)] = g
-    return transitions_energy_table, ionization_potential, configs, stat_weight
+                    if config not in branching_ratio[sp_num]:
+                        branching_ratio[sp_num][config] = []
+                    branching_ratio[sp_num][config].append(level)
+    return transitions_energy_table, ionization_potential, configs, stat_weight, branching_ratio
+
+
+def get_branching_ratio(sp_num, config, branching_ratio, stat_weight):
+    levels = branching_ratio[sp_num][config]
+    sum_of_stat_weights = sum(map(lambda x: stat_weight[(sp_num, x)], levels))
+    return stat_weight[(sp_num, config)] / sum_of_stat_weights

@@ -5,8 +5,6 @@ from os import path
 import numpy as np
 from scipy.optimize import minimize
 
-from lib.configurations import get_number_of_electrons
-from lib.consts import ry
 from lib.cross_section import create_energy_function
 from lib.in1 import create_tables, get_ionization_energy
 from lib.utils import skip_n_lines
@@ -91,7 +89,8 @@ def process_file(bcfp_input_path, in1_path, bcfp_output_path):
     if not path.exists(outdir):
         os.mkdir(outdir)
     a = b = c = d = None
-    transitions_energy_table, ionization_potential, configurations_table, stat_weight = create_tables(in1_path)
+    (transitions_energy_table, ionization_potential, configurations_table, stat_weight,
+     branching_ratio) = create_tables(in1_path)
     with open(bcfp_input_path, 'r') as infile, open(bcfp_output_path, 'w') as outfile:
         outfile.write(header)
         skip_n_lines(infile, 2)

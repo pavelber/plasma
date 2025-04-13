@@ -79,7 +79,7 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +  LaInf,   ! cell# of this info
      +  nFine,
      +  Count, StrExc, CountExc, StrInz, CountInz,
-     + num_el_ix(nQSm,nQSm),  ! number of electrons for Bernshtam Ralchenko formula for cross section
+     +  num_el_ix(nQSm,nQSm),  ! number of electrons for Bernshtam Ralchenko formula for cross section
      +  StrAIw, CountAIw, iw
 
       real(8), public :: 
