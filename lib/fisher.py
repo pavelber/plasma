@@ -51,6 +51,8 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             level_high = level[2]
             if bcfp_from_databases:
                 branching_ration = float(bcfp_line.split()[4])
+            else:
+                branching_ration = in1_data.get_branching_ratio(spectr_num_high, level_high)
             if bcfp_line is None or bcfp_from_databases:
                 bcfp_line = "%d %d %d %d 0.000E+00 0.000E+00 0.000E+00 0.000E+00" % (
                     int(spectr_num_low), int(level_low), int(spectr_num_high), int(level_high))
@@ -67,13 +69,10 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             transition_energy = in1_data.get_ionization_energy(from_sp, from_level, to_sp, to_level)  # Changed
             from_config = in1_data.get_config(from_sp, from_level)  # Changed
             to_config = in1_data.get_config(to_sp, to_level)  # Changed
-            if bcfp_from_databases:
-                (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(
-                    transition_energy,
-                    from_config,
-                    to_config)
-            else:
-                c_l = None
+            (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(
+                transition_energy,
+                from_config,
+                to_config)
             if c_l:
                 params = " %13.3e %13.3e %4d %13.3f %13.3e" % (
                     c_l, delta_l, num_of_electrons, ionization_energy, branching_ration)
@@ -116,7 +115,6 @@ def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, b
                    use_fac_lev=True):
     path_to_in1_inp = os.path.join(o_dir, "IN1.INP")
     in1_data = IN1(path_to_in1_inp)
-    next_sp_num = str(int(max_sp_num) + 1)
     levels_num = run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev)
     createIonFile(element, levels_num, o_dir, in1_data, bcfp)
 
