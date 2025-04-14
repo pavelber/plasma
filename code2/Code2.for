@@ -1708,10 +1708,10 @@ c                                                                               
       yw= one - BEk/eeV                            ! MF Gu 
       OM = Aix(k,kf)*log(xw)+ Bix(k,kf)*yw*yw +    ! FAC guide (2.9); log(x) is natural log;
      +     Cix(k,kf)*yw/xw  + Dix(k,kf)*yw/xw/xw
-      OM = c_l_ix(k,kf) *
-     +     ((RyeV / ioniz_en_ix(k,kf)) **
-     +     (2 -  delta_l_ix(k,kf))) * num_el_ix(k,kf) *
-     +     coef_ix(k,kf) * log(xw) / xw
+C      OM = c_l_ix(k,kf) *
+C     +     ((RyeV / ioniz_en_ix(k,kf)) **
+C     +     (2 -  delta_l_ix(k,kf))) * num_el_ix(k,kf) *
+C     +     coef_ix(k,kf) * log(xw) / xw
       SigInz= 3.8101e-16* OM /eeV /g0(k,nX)        ! see FAC guide (2.10): "in A.U. e-imp SigInz= OM/k0^2/g(k)". 
 
       if(SigInz .LT. zero)       SigInz= zero        ! Avoid Sig < 0 that can happen in case of bad interpolation between FAC points 
