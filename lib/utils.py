@@ -277,7 +277,7 @@ def remove_num_electrones(c):
 
 
 def add_digit(c):
-    if not c[-1].isdigit():
+    if len(c) > 0 and not c[-1].isdigit():
         return c + "1"
     else:
         return c

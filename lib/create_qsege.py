@@ -163,6 +163,7 @@ def copy_atomic_from_in1(f, element, name_to_table, num_to_table, outf):
         elif len(columns) == 8 or len(columns) == 9:
             levels = columns[0] + " " + columns[1]
             energy = columns[4]
+            p = columns[3]
             g0 = columns[3]
             if not autoionization:
                 outf.write(OUTPUT_FORMAT_STRING % (levels, g0, energy, block_counter, counter))

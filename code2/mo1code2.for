@@ -117,7 +117,6 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +   Hix(nQSm,nQSm),
      +   c_l_ix(nQSm,nQSm), ! cl for Bernshtam Ralchenko formula for cross section
      +   delta_l_ix(nQSm,nQSm),  ! delta_l for Bernshtam Ralchenko formula for cross section
-     +   ioniz_en_ix(nQSm,nQSm), ! ionization energy for Bernshtam Ralchenko formula for cross section
      +   coef_ix(nQSm,nQSm), ! branching coefficient for Bernshtam Ralchenko formula for cross section
      +   Eth(nQSm,nQSm),  ! State-to-state Ionization Threshold (for ioniz cross-secs) 
      +   SpInEf(LaMx,nvL),  ! OMEGA-mean RF intensity in 3 shells [W/cm2/sr/eV]

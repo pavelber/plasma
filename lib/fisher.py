@@ -49,7 +49,7 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             level_low = level[1]
             spectr_num_high = str(int(spectr_num_low) + 1)
             level_high = level[2]
-            if bcfp_from_databases:
+            if bcfp_from_databases and bcfp_line is not None:
                 branching_ration = float(bcfp_line.split()[4])
             else:
                 branching_ration = in1_data.get_branching_ratio(spectr_num_high, level_high)
@@ -66,16 +66,18 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             from_level = bcfp_parts[1]
             to_sp = bcfp_parts[2]
             to_level = bcfp_parts[3]
-            transition_energy = in1_data.get_ionization_energy(from_sp, from_level, to_sp, to_level)  # Changed
-            from_config = in1_data.get_config(from_sp, from_level)  # Changed
-            to_config = in1_data.get_config(to_sp, to_level)  # Changed
-            (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(
-                transition_energy,
+            if int(to_level) < 0 or int(from_level) < 0:
+                continue
+            from_config = in1_data.get_config(from_sp, from_level)
+            to_config = in1_data.get_config(to_sp, to_level)
+            if to_config == from_config:
+                continue
+            (c_l, delta_l, num_of_electrons) = get_constants_for_bernshtam_ralchenko(
                 from_config,
                 to_config)
             if c_l:
-                params = " %13.3e %13.3e %4d %13.3f %13.3e" % (
-                    c_l, delta_l, num_of_electrons, ionization_energy, branching_ration)
+                params = " %13.3e %13.3e %4d %13.3e" % (
+                    c_l, delta_l, num_of_electrons, branching_ration)
             else:
                 params = " %13.3e %13.3e %4d %13.3f %13.3e" % (0.0, 0.0, 0, 0.0, 0.0)
 

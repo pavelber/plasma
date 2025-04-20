@@ -5,7 +5,7 @@ from os import path
 import numpy as np
 from scipy.optimize import minimize
 
-from lib.cross_section import create_energy_function
+from lib.cross_section import create_cross_section_function
 from lib.in1 import IN1
 from lib.utils import skip_n_lines
 
@@ -98,9 +98,9 @@ def process_file(bcfp_input_path, in1_path, bcfp_output_path):
             from_config = in1_data.get_config(from_sp, from_level)
             to_config = in1_data.get_config(to_sp, to_level)
             from_stat_weight = in1_data.get_stat_weight(from_sp, from_level)
-            energy_function = create_energy_function(transition_energy, coef,
-                                                     from_config,
-                                                     to_config)
+            energy_function = create_cross_section_function(transition_energy, coef,
+                                                            from_config,
+                                                            to_config)
             if energy_function is None:
                 print(from_config, to_config, line, sep='')
             else:

@@ -16,20 +16,20 @@ def get_lambda_l(l):
     return lambda_l_table[l]
 
 
-def get_constants_for_bernshtam_ralchenko(ionization_energy, from_config, to_config):
-    num_of_electrons = get_number_of_electrons(from_config, to_config)
+def get_constants_for_bernshtam_ralchenko(from_config, to_config):
+    (num_of_electrons, lost_electron_config_index) = get_number_of_electrons(from_config, to_config)
     if num_of_electrons is None:
-        return None, None, None, ionization_energy
-    l = from_config[-1][1]
+        return None, None, None
+    l = from_config[lost_electron_config_index][1] # Use the configuration part, which lose electrons
     if l not in cl_keys:
-        return None, None, num_of_electrons, ionization_energy
+        return None, None, num_of_electrons
     c_l = get_cl(l)
     delta_l = get_lambda_l(l)
-    return c_l, delta_l, num_of_electrons, ionization_energy
+    return c_l, delta_l, num_of_electrons
 
 
-def create_energy_function(ionization_energy, branching_ration, from_config, to_config):
-    (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(ionization_energy,
+def create_cross_section_function(ionization_energy, branching_ration, from_config, to_config):
+    (c_l, delta_l, num_of_electrons) = get_constants_for_bernshtam_ralchenko(
                                                                                                 from_config,
                                                                                                 to_config)
 

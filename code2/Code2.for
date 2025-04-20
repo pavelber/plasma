@@ -150,7 +150,7 @@ c                         it gives "POPf(k,Xx,La)" that is POP(tf) to be first u
       integer iniQS, nSS, mth, LL, LU, ki,  
      +        iSS1, iQS1, iSS2, iQS2,  nFi                 
       real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, thre  
-      real(8) c_l, delta_l, ioniz_en, coef
+      real(8) c_l, delta_l, coef
       integer num_el;
       read(12,*) FSS(1), FSS(2), FSS(3), FSS(4)  ! "FSS" is the # of first   SS of XX, C, He, D in the DaBa;  31 for C-like Kr
       read(12,*) HSS(1), HSS(2), HSS(3), HSS(4)  ! "HSS" is the # of H -like SS of XX, C, He, D in the DaBa;  36 for H-like Kr
@@ -422,7 +422,7 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
 	  CountInz = 1
   9     read(nFi,*) iSS1, iQS1, iSS2, iQS2, Axw, Bxw, Cxw, 
      +              Dxw, MePh, Exw, Fxw, Gxw, Hxw, thre,    ! ioniz threshold PAVEL: read Inz line. A-D came from BCFP
-     +              c_l, delta_l, num_el, ioniz_en, coef
+     +              c_l, delta_l, num_el, coef
 	  CountInz = CountInz + 1
 
         if(iQS1.gt.0) ki= nuGS(iSS1,nX)-1 +iQS1    ! "ki" is order# of "iQS1" in "long" numbering. Here non-AI EL    
@@ -455,7 +455,6 @@ c  Read ionization cross-sec coefs from "Inz.inp" and assign "1" to "bra(i,f,XE)
         c_l_ix(ki,kf) = c_l ! cl for Bernshtam Ralchenko formula for cross section
         delta_l_ix(ki,kf) = delta_l  ! delta_l for Bernshtam Ralchenko formula for cross section
         num_el_ix(ki,kf) = num_el  ! number of electrons for Bernshtam Ralchenko formula for cross section
-        ioniz_en_ix(ki,kf) = ioniz_en ! ionization energy for Bernshtam Ralchenko formula for cross section
         coef_ix(ki,kf) = coef ! branching coefficient for Bernshtam Ralchenko formula for cross section
 
         bra(ki,kf,nX)= one    ! "one" means yes ionization channel from "ki" to "kf". When using FAC-bases: "bra" is either 1 or 0
@@ -1706,13 +1705,25 @@ c                                                                               
 
       xw= eeV/BEk                                  ! BEk is ionization energy
       yw= one - BEk/eeV                            ! MF Gu 
-      OM = Aix(k,kf)*log(xw)+ Bix(k,kf)*yw*yw +    ! FAC guide (2.9); log(x) is natural log;
+
+      if (num_el_ix(k,kf) .eq. 0) then
+        OM = Aix(k,kf)*log(xw)+ Bix(k,kf)*yw*yw +    ! FAC guide (2.9); log(x) is natural log;
      +     Cix(k,kf)*yw/xw  + Dix(k,kf)*yw/xw/xw
-C      OM = c_l_ix(k,kf) *
-C     +     ((RyeV / ioniz_en_ix(k,kf)) **
-C     +     (2 -  delta_l_ix(k,kf))) * num_el_ix(k,kf) *
-C     +     coef_ix(k,kf) * log(xw) / xw
-      SigInz= 3.8101e-16* OM /eeV /g0(k,nX)        ! see FAC guide (2.10): "in A.U. e-imp SigInz= OM/k0^2/g(k)". 
+      else if (delta_l_ix(k,kf) .lt. 0.0) then
+        write(*,'(a50, i5, i5, e15.7, i4, e15.7)')
+     + 'LZ = k, kf, BEk, num_el_ix, xw =', k,kf, BEk,
+     + num_el_ix(k,kf), xw
+        OM = 4.5 * 10E-14 * num_el_ix(k,kf) * log(xw) / xw
+      else
+        write(*,'(a50, i5, i5, e15.7, i4, e15.7)')
+     + 'BR = k, kf, BEk, num_el_ix, xw =', k,kf, BEk,
+     + num_el_ix(k,kf), xw
+       OM = c_l_ix(k,kf) *
+     +     ((RyeV / BEk) **
+     +     (2 -  delta_l_ix(k,kf))) * num_el_ix(k,kf) *
+     +     coef_ix(k,kf) * log(xw) / xw
+      end if
+      SigInz= 3.8101e-16* OM /eeV /g0(k,nX)        ! see FAC guide (2.10): "in A.U. e-imp SigInz= OM/k0^2/g(k)".
 
       if(SigInz .LT. zero)       SigInz= zero        ! Avoid Sig < 0 that can happen in case of bad interpolation between FAC points 
       if(SigInz .GT. SigMax(La)) SigInz= SigMax(La)  ! We assume scaling of from-FAC ioniz cross-secs over eeV/BEk 
