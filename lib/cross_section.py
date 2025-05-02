@@ -16,27 +16,37 @@ def get_lambda_l(l):
     return lambda_l_table[l]
 
 
-def get_constants_for_bernshtam_ralchenko(ionization_energy, from_config, to_config):
-    num_of_electrons = get_number_of_electrons(from_config, to_config)
+def get_constants_for_bernshtam_ralchenko(from_config, to_config):
+    (num_of_electrons, lost_electron_config_index) = get_number_of_electrons(from_config, to_config)
     if num_of_electrons is None:
-        return None, None, None, ionization_energy
-    l = from_config[-1][1]
+        return None, None, None
+    l = from_config[lost_electron_config_index][1]  # Use the configuration part, which lose electrons
     if l not in cl_keys:
-        return None, None, num_of_electrons, ionization_energy
+        return None, None, num_of_electrons
     c_l = get_cl(l)
     delta_l = get_lambda_l(l)
-    return c_l, delta_l, num_of_electrons, ionization_energy
+    return c_l, delta_l, num_of_electrons
 
 
-def create_energy_function(ionization_energy, branching_ration, from_config, to_config):
-    (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(ionization_energy,
-                                                                                                from_config,
-                                                                                                to_config)
+def get_lotz_om2(e, num_of_electrons, ionization_energy):
+    if e < 1:  # Ensure E >= Ei
+        return 0.0
+    a = 4.5e-14  # cm² eV²
+    return (a * num_of_electrons * log(e) / (e * ionization_energy * ionization_energy))
+
+
+def get_bp_om(e, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy):
+    return c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(e) / e
+
+
+def create_cross_section_function(ionization_energy, branching_ration, from_config, to_config):
+    (c_l, delta_l, num_of_electrons) = get_constants_for_bernshtam_ralchenko(
+        from_config,
+        to_config)
 
     if num_of_electrons is None:
         return None
     if delta_l is None:
-        return lambda x: 4.5 * 10E-14 * num_of_electrons * log(x) / x
-    bernshtam_ralchenko = lambda x: c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(
-        x) / x
+        return lambda x: get_lotz_om2(x, num_of_electrons, ionization_energy)
+    bernshtam_ralchenko = lambda x: get_bp_om(x, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy)
     return bernshtam_ralchenko
