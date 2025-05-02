@@ -4,7 +4,7 @@ from math import log
 
 from lib.bcfp import BFCP_From_databases
 from lib.consts import ry
-from lib.cross_section import get_constants_for_bernshtam_ralchenko
+from lib.cross_section import get_constants_for_bernshtam_ralchenko, get_bp_om, get_lotz_om2
 from lib.in1 import IN1
 from lib.utils import read_table
 from test_data_for_kr_data_o import test_data
@@ -15,19 +15,8 @@ def get_fisher_om(xw, a, b, c, d):
     return a * log(xw) + b * yw * yw + c * yw / xw + d * yw / xw / xw
 
 
-def get_lotz_om(e, num_of_electrons):
-    return 4.5 * 10E-14 * num_of_electrons * log(e) / e
 
 
-def get_lotz_om2(e, num_of_electrons, ionization_energy):
-    if e < 1:  # Ensure E >= Ei
-        return 0.0
-    a = 4.5e-14  # cm² eV²
-    return (a * num_of_electrons * log(e) / (e * ionization_energy * ionization_energy))
-
-
-def get_bp_om(e, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy):
-    return c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(e) / e
 
 
 ################## MAIN ######################

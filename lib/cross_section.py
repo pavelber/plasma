@@ -27,6 +27,16 @@ def get_constants_for_bernshtam_ralchenko(from_config, to_config):
     delta_l = get_lambda_l(l)
     return c_l, delta_l, num_of_electrons
 
+def get_lotz_om2(e, num_of_electrons, ionization_energy):
+    if e < 1:  # Ensure E >= Ei
+        return 0.0
+    a = 4.5e-14  # cm² eV²
+    return (a * num_of_electrons * log(e) / (e * ionization_energy * ionization_energy))
+
+
+
+def get_bp_om(e, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy):
+    return c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(e) / e
 
 def create_cross_section_function(ionization_energy, branching_ration, from_config, to_config):
     (c_l, delta_l, num_of_electrons) = get_constants_for_bernshtam_ralchenko(
@@ -36,7 +46,6 @@ def create_cross_section_function(ionization_energy, branching_ration, from_conf
     if num_of_electrons is None:
         return None
     if delta_l is None:
-        return lambda x: 4.5 * 10E-14 * num_of_electrons * log(x) / x
-    bernshtam_ralchenko = lambda x: c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(
-        x) / x
+        return lambda x: get_lotz_om2(x, num_of_electrons, ionization_energy)
+    bernshtam_ralchenko = lambda x: get_bp_om(x, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy)
     return bernshtam_ralchenko
