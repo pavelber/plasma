@@ -2,6 +2,7 @@ import sys
 import os
 import traceback
 
+from lib.bcfp import BFCP_From_databases
 from lib.cross_section import get_constants_for_bernshtam_ralchenko
 from lib.in1 import IN1
 from lib.utils import skip_lines, skip_n_lines
@@ -34,18 +35,7 @@ def main():
     base, ext = os.path.splitext(inz)
     output_file = f"{base}_new{ext}"
 
-    # Read second file and create dictionary
-    transitions = {}
-    with open(bfcp, 'r') as f:
-        skip_n_lines(f,2)
-        for line in f:
-            if line.strip() and not line.startswith('-'):
-                parts = line.split()
-                if len(parts) >= 5:
-                    z, lvl, z1, lvl1 = map(str, parts[:4])
-                    coefficient = float(parts[4])
-                    key = (z, lvl, z1, lvl1)
-                    transitions[key] = coefficient
+    bfcp_data = BFCP_From_databases(bfcp)
 
     # Process first file and write to output
     with open(inz, 'r') as f_in, open(output_file, 'w') as f_out:
@@ -60,8 +50,8 @@ def main():
 
                     # Check if transition exists in dictionary
                     key = (iss, iqs, fss, fqs)
-                    if key in transitions:
-                        coefficient = transitions[key]
+                    if bfcp_data.has_transition(key):
+                        coefficient = bfcp_data.get_branching_coefficient(key)
                         # Call your method to get 5 numbers
                         extra_values = process_transition(
                             in1,

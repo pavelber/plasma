@@ -1710,14 +1710,8 @@ c                                                                               
         OM = Aix(k,kf)*log(xw)+ Bix(k,kf)*yw*yw +    ! FAC guide (2.9); log(x) is natural log;
      +     Cix(k,kf)*yw/xw  + Dix(k,kf)*yw/xw/xw
       else if (delta_l_ix(k,kf) .lt. 0.0) then
-        write(*,'(a50, i5, i5, e15.7, i4, e15.7)')
-     + 'LZ = k, kf, BEk, num_el_ix, xw =', k,kf, BEk,
-     + num_el_ix(k,kf), xw
         OM = 4.5 * 10E-14 * num_el_ix(k,kf) * log(xw) / xw
       else
-        write(*,'(a50, i5, i5, e15.7, i4, e15.7)')
-     + 'BR = k, kf, BEk, num_el_ix, xw =', k,kf, BEk,
-     + num_el_ix(k,kf), xw
        OM = c_l_ix(k,kf) *
      +     ((RyeV / BEk) **
      +     (2 -  delta_l_ix(k,kf))) * num_el_ix(k,kf) *

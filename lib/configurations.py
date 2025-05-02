@@ -22,29 +22,43 @@ def get_number_of_electrons(from_config, to_config):
     to_n1 = to_config[0][0:2]
     to_electrons1 = int(to_config[0][2])
 
-    # If either config has only 1 subshell, pad the second with a default "0" subshell
-    if len(from_config) == 1:
-        from_config.append(to_config[0][:-1] + "0")  # e.g., if '1s2' -> '1s0'
-    if len(to_config) == 1:
-        to_config.append(from_config[0][:-1] + "0")  # e.g., if '1s2' -> '1s0'
+    # Case: single subshell losing electrons
+    if len(from_config) == 1 and len(to_config) >= 1:
+        if from_n1 == to_n1 and from_electrons1 > to_electrons1:
+            return from_electrons1, 0
+        # Check if our subshell appears as second subshell in to_config
+        if len(to_config) > 1:
+            to_n2 = to_config[1][0:2]
+            to_electrons2 = int(to_config[1][2])
+            if from_n1 == to_n2 and from_electrons1 > to_electrons2:
+                return from_electrons1, 0
+        return None, None
 
-    # Extract info from second subshell
-    from_n2 = from_config[1][0:2]
-    from_electrons2 = int(from_config[1][2])
-
-    to_n2 = to_config[1][0:2]
-    to_electrons2 = int(to_config[1][2])
-
-    # Check which subshell lost electrons
+    # Case: checking first subshell
     if from_n1 == to_n1 and from_electrons1 > to_electrons1:
         return from_electrons1, 0
-    elif from_n2 == to_n2 and from_electrons2 > to_electrons2:
-        return from_electrons2, 1
-    elif from_n1 == to_n2:
-        return from_electrons2, 1
-    elif from_config[1] == to_config[1] and from_config[0] != to_config[0]:
-        return from_electrons1, 0
-    elif from_config[0] == to_config[0] and to_electrons2 == 0:
-        return from_electrons2, 1
 
+    # Case: checking second subshell if it exists
+    if len(from_config) > 1:
+        from_n2 = from_config[1][0:2]
+        from_electrons2 = int(from_config[1][2])
+
+        # Check if second subshell in from_config exists in to_config
+        found = False
+
+        if len(to_config) > 1:
+            to_n2 = to_config[1][0:2]
+            to_electrons2 = int(to_config[1][2])
+
+            if from_n2 == to_n2 and from_electrons2 > to_electrons2:
+                return from_electrons2, 1
+
+            found = from_n2 == to_n2
+
+        # Special case: second subshell in from_config doesn't exist in to_config
+        if not found:
+            # If the second subshell is completely gone, it lost all its electrons
+            return from_electrons2, 1
+
+    # No electron loss detected
     return None, None
