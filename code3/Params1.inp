@@ -1,0 +1,24 @@
+  23,  21,  25,  22  "FSS" is the first Spectroscopic Symbol (SpS) of Fe, Cr, Ni, Mn in the database, e.g. 23 for Be-like Fe
+  26,  24,  28,  25  "HSS" is SpS of H-like Fe, Cr, Ni, Mn in the database; If new chemical element has HSS > 28, increase "HSSm" in "mo1code3.for" 
+ 161, 161, 161, 161  "Nnu" is the serial number of nuclei in "QSs....inp". 													  
+ 387, 387, 387, 387  "NST" is the number of energy levels (ELs) in database of each chemical element.
+----------------------
+1  Serial number of ion energy level (EL) to be given initial population of chemical element #1 (Fe); note: one EL for all zones; here this EL is the ground state of Be-like ions
+1                                                                                             2 (Cr)                            ; here ...  
+1                                                                                             3 (Ni)                            ; ........
+1                                                                                             4 (Mn)                            ; .....
+55.85   Fe ion mass in atomic units. Chemical elements (XE) have serial numbers            
+52.00   Cr ion mass                  according to their % in stainless steel 304L (UN  
+58.69   Ni ion mass                  (Ref 12): 71.6% Fe, 18.3%,Cr,  8.20% Ni,  1.47% Mn. Neglect 0.5% Mo, 0.023% C,  
+54.94   Mn ion mass
+------- 																									    
+0.001  "fluMin". Spectral lines with absorption oscillator strength < "fluMin" are excluded from computations	
+1.d7   "AulMin". Spectral lines with Einstein A coefficient < "AulMin" are excluded from computations			 
+                 because these lines are weak vs continuum and/or uncertainty (noise) in spectrograms. 
+ 1.       "hvMin"   is soft edge of full hv interval. DON'T INCREASE "hvMin" because computation of photoinduced probabilities requires FULL hv interval 
+30.d3     "hvMax"   is hard edge of full hv interval. DON'T DECREASE "hvMax" because computation of photoinduced probabilities requires FULL hv interval                                    
+2.d-4     "hvReso"  is minimal (the finest) dv/v in [hvMin-hvMax] interval. This dv/v is reached at hv = hvFine; then dv/v increases linearly towards "hvMin" and "hvMax" where dv/v reaches 4*"hvReso"
+6973.175      "hvFine" [eV] is hv at which spectral resolution is the best, here at Ly-A of Fe
+4000., 10000. "hvIns1", "hvIns2" [eV] are the edges of convolution of computed spectrograms with the instrumental function
+1000., 0., 0. three coefficients of quadratic fit to the instrumental broadening hv/FWHMinstr = a+ b*hv[keV] + c*hv[keV]^2.
+5300.,  3.d4  [eV]  are edges of print "Frames.dat". 

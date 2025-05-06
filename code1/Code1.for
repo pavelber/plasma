@@ -1605,7 +1605,7 @@ c                                 Therefore for correct computation of "SigRR" I
 	use mo1
 	implicit none
 	integer Me
-      real(8) eeV, As, Bs, Cs, Ds, Es, fReg, X, X2, Sig, Gaunt  
+      real(8) eeV, As, Bs, Cs, Ds, Es, fReg, X, X2, Sig, Gaunt, ALPHA, F, XN, E1 ! Vstavil Fs VB
       As= Ax(k,kf,nX)
       Bs= Bx(k,kf,nX)
       Cs= Cx(k,kf,nX)
@@ -1646,7 +1646,15 @@ c     Fs= Fx(k,kf,nX)      ! 5th coef not used im methods 0, 5, 11
         Sig= As/X +Bs/X2 +Cs/X/X2 +Ds/X2/X2 +Es*Dlog(X)/X 
 
       Case(11)                                           ! in CODA SGM=(C+B*X1+A*X12)/(X1+D)**4/X1**E 
-	  Sig= (Cs +Bs*X +As*X2)/(X+Ds)**4 /X**Es 
+	    Sig= (Cs +Bs*X +As*X2)/(X+Ds)**4 /X**Es
+      Case(16)            ! a-la splines with Gauss functions 0..1 from NOMAD VB
+	    ALPHA = 0.9899495D0 * DSQRT(Fs/(Fs - 1.D0)) ! numerical coefficient is 0.7 * dsqrt(2)
+	    XN = DSQRT((X-1.D0)/(X+Fs))*ALPHA
+	    E1 = 1.D0/Es
+	    Sig = (As*DEXP(-XN*XN*E1) +
+     &  Bs*DEXP(-(XN-0.333D0)**2*E1) +
+     &  Cs*DEXP(-(XN-0.666D0)**2*E1) +
+     &  Ds*DEXP(-(XN-1.000D0)**2*E1)) / X
       END SELECT
 
       if(Sig .lt. zero) Sig= zero  ! bad fits to FAC points can result in Sig < 0 even far from threshold 

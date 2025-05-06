@@ -1780,7 +1780,7 @@ c                                                  ! but it can cause huge SigPh
       use mo1code2
       implicit none
       integer Me
-      real(8) eeV, As, Bs, Cs, Ds, Es, X, X2, Sig 
+      real(8) eeV, As, Bs, Cs, Ds, Es, Fs, X, X2, Sig, ALPHA, F, XN, E1 ! Vstavil Fs VB
       As= Ax(k,kf)
       Bs= Bx(k,kf)
       Cs= Cx(k,kf)
@@ -1813,6 +1813,14 @@ c                                                  ! but it can cause huge SigPh
           else
              Sig= (Cs +Bs*X +As*X2)/(X+Ds)**4 /X**Es 
           endif
+        Case(16)            ! a-la splines with Gauss functions 0..1 from NOMAD VB
+	          ALPHA = 0.9899495D0 * DSQRT(Fs/(Fs - 1.D0)) ! numerical coefficient is 0.7 * dsqrt(2)
+	          XN = DSQRT((X-1.D0)/(X+Fs))*ALPHA
+	          E1 = 1.D0/Es
+	          Sig = (As*DEXP(-XN*XN*E1) +
+     &         Bs*DEXP(-(XN-0.333D0)**2*E1) +
+     &         Cs*DEXP(-(XN-0.666D0)**2*E1) +
+     &         Ds*DEXP(-(XN-1.000D0)**2*E1)) / X
       END SELECT
 
       if(Sig .lt. zero) Sig= zero    ! Bad fits to FAC points may have Sig < 0 even far from threshold 

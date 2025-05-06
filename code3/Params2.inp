@@ -1,0 +1,39 @@
+0.50d-9 [s] "FrL" is duration of each Frame. Each frame lasts from [its central time -FrL/2] to [its central time +FrL/2] 
+0.00d-9 [s]  start time of the computation 
+0.05d-9 [s] "tstep" is the time step of computation. If you try "tstep" > FrL/10 then the code changes it to FrL/10.  
+4.40d-9 [s] "StopTime" is the time to complete the computation. "StopTime" must be > [central time of last WANTED frame +FrL/2 +tstep]       
+4.00d-9 [s] "tiInf" is the time to print info in files "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat"  
+             Note: central time of 1st frame must be >= StartTime + 2*FrL.
+..... ................
+           1.d-9,    2.d-9,     3.d-9,    4.d-9,    5.d-9,    6.d-9,   7.d-9,   8.d-9           [s] central time of 8 frames [s]  
+-0.1d-9,   1.d-9,    2.d-9,     3.d-9,    4.d-9,    5.d-9,    6.d-9,   7.d-9,   8.d-9    9.d-9  [s] ten t-points in the broken-line scenario.  
+........The 1st t-point of scenario (here -0.1d-9) must be earlier than Start Time   ...............                                                                                
+   3,       3,        4,         5,        6,        5,        4,       3,       3,        3    number of BSs in the core. This number must be > 2  
+ 0.0005,  0.0006,   0.0007,    0.0008,   0.0009,   0.0008,   0.0007,  0.0006,  0.0005,  0.0004  radius [cm] of BSs;  10 t-points
+ 0.0100,  0.0150,   0.0200,    0.0300,   0.0400    0.0400,   0.0300,  0.0200,  0.0100,  0.0100  radius [cm] of core; 
+ 0.0200,  0.0300,   0.0400,    0.0600,   0.0800    0.0800,   0.0600,  0.0400,  0.0200,  0.0200  radius [cm] of halo; 
+............................          Note: R2 must be >> R1, see (II.1) in  Manual 3 
+ 1.0d21,  1.6d21,   2.0d21,    4.0d21,   8.0d21,   6.0d21,   4.0d21,  2.0d21,  1.0d21,  0.4d21  ni [i/cc] of Fe in BS.  
+ 0.5d21,  0.8d21,   1.0d21,    2.0d21,   4.0d21,   3.0d21,   2.0d21,  1.0d21,  0.5d21,  0.2d21  ni [i/cc] of Fe in core
+ 0.2d21,  0.4d21,   0.5d21,    1.0d21,   2.0d21,   1.5d21,   1.0d21,  0.5d21,  0.2d21,  0.1d21  ni [i/cc] of Fe in halo
+................................
+ 1200.,	  1500.,    1800.,     2000.,    2200.,    2100.,    1900.,   1600.,   1200.,    900.   Te [eV] in BSs 
+ 1000.,	  1200.,    1400.,     1500.,    1600.,    1600.,    1450.,   1300.,   1100.,    900.   Te [eV] in core
+  600.,	   800.,     900.,     1000.,    1000.,    1000.,     950.,    900.,    800.,    700.   Te [eV] in halo
+......................   "u3D" [cm/s] is the mean absolute velocity of ions in thermal+collective (hydro) motion in a zone
+ 3.0d7,	  3.0d7,    3.0d7,     3.0d7,    3.0d7,    3.0d7,    3.0d7,   3.0d7,   3.0d7,   3.0d7   "u3D" in BSs. For BSs add their motion in the core
+ 2.0d7,	  2.0d7,    2.0d7,     2.0d7,    2.0d7,    2.0d7,    2.0d7,   2.0d7,   2.0d7,   2.0d7   "u3D" in core. 
+ 2.0d7,	  2.0d7,    2.0d7,     2.0d7,    2.0d7,    2.0d7,    2.0d7,   2.0d7,   2.0d7,   2.0d7   "u3D" in Halo
+................................  
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,    0.  e-beam part of the electron energy distribution in BS
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,    0.  in core 
+  0.      0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,    0.  in halo
+................................
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,   20.  central energy [keV] of the electrom beam in BS
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,   20   in core 
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,   20   in Halo
+................................
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,    5.  width [keV] of the electron beam in BS
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,    5.  in core 
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,    5.  in Halo
+ 
