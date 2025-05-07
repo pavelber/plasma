@@ -1,4 +1,5 @@
 from math import log
+from math import sqrt, exp
 
 from lib.configurations import get_number_of_electrons
 from lib.consts import ry
@@ -50,3 +51,46 @@ def create_cross_section_function(ionization_energy, branching_ration, from_conf
         return lambda x: get_lotz_om2(x, num_of_electrons, ionization_energy)
     bernshtam_ralchenko = lambda x: get_bp_om(x, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy)
     return bernshtam_ralchenko
+
+
+def nomad_5(params, E0, stat_weight, x):
+    a, b, c, d, e = params
+    return a / x + b / x ** 2 + c / x ** 3 + d / x ** 4 + (e * log(x)) / x ** 5
+
+
+def nomad_11(params, E0, stat_weight, x):
+    a, b, c, d, e = params
+    return (a * x ** 2 + b * x + c) / (((d + x) ** 4) * x ** e)
+
+
+def nomad_16(params, E0, stat_weight, x) -> float:
+    a, b, c, d, e, f = params
+    # Check for valid f to avoid division by zero or negative sqrt
+    if f <= 1.0:
+        raise ValueError("Parameter f must be greater than 1")
+    if e == 0:
+        raise ValueError("Parameter e cannot be zero")
+    if (x - 1.0) < 0 or (x + f) <= 0:
+        raise ValueError("Invalid x: leads to negative or zero denominator in sqrt")
+    # Calculate alpha: 0.9899495 * sqrt(f / (f - 1.0))
+    alpha = 0.9899495 * sqrt(f / (f - 1.0))
+
+    # Calculate XN: sqrt((x - 1.0) / (x + f)) * alpha
+    if (x - 1.0) < 0 or (x + f) <= 0:
+        raise ValueError("Invalid x: leads to negative or zero denominator in sqrt")
+    xn = sqrt((x - 1.0) / (x + f)) * alpha
+
+    # Calculate E1: 1.0 / e
+    if e == 0:
+        raise ValueError("Parameter e cannot be zero")
+    e1 = 1.0 / e
+
+    # Calculate sigma: sum of Gaussian terms divided by x
+    sigma = (
+                    a * exp(-xn * xn * e1) +
+                    b * exp(-(xn - 0.333) ** 2 * e1) +
+                    c * exp(-(xn - 0.666) ** 2 * e1) +
+                    d * exp(-(xn - 1.000) ** 2 * e1)
+            ) / x
+
+    return sigma
