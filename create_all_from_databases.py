@@ -8,17 +8,18 @@ from lib.check_and_fix import copy_checks, check_and_fix_old_rr_version2, check_
 from lib.create_in1_from_databases import create_in1_excit_spectr__from_databases, parse_energy_limits
 from lib.create_rrec_bcfp_from_in1 import create_rrec_from_in1, create_bcfp_from_in1
 from lib.env import get_pathes, env
-from lib.fisher import run_qsege, run_for_fisher
+from lib.fisher import run_for_fisher
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import error, read_table, invert_replaces
 from lib.verify_results import test_number_of_levels_inp1, files_not_empty
+from lib.create_cross_section_fits import parse_spectroscopic_files
 
 ################## MAIN ######################
 
 if len(sys.argv) < 7:
     error('\nUsage: ' + sys.argv[
-        0] + ' out-dir element-name nmax energy-limits min_sp_num max_sp_num')
+        0] + ' out-dir element-name nmax energy-limits min_sp_num max_sp_num [formula] [cross-section-database]\n')
 
 param_num = 1
 out_dir = os.path.abspath(sys.argv[param_num])
@@ -35,7 +36,15 @@ max_sp_num = int(sys.argv[param_num])
 param_num += 1
 formula = sys.argv[param_num].lower() == 'formula'
 param_num += 1
+optional_cross_section_database = {}
 
+
+
+if len(sys.argv) > param_num:
+    optional_cross_section_database_dir = sys.argv[param_num]
+    if (os.path.exists(optional_cross_section_database_dir)):
+        optional_cross_section_database = parse_spectroscopic_files(optional_cross_section_database_dir)
+    
 (name_to_table, num_to_table) = read_table()
 
 env_errors = env()
@@ -78,7 +87,7 @@ if max_sp_num + 1 == nucleus:
 
 create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec,
                                         energy_limits,
-                                        nmax)
+                                        nmax,optional_cross_section_database)
 in1 = os.path.join(elem_dir, "IN1.INP")
 create_rrec_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, formula)
 create_bcfp_from_in1(in1, elem_dir, sp_nums_with_nucleus, nucleus)
