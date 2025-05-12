@@ -110,3 +110,7 @@ def get_ionization_energy_ev(element, sp_num):
         index = header.index("Ionization Energy (eV)")
         eV = fields[index]
         return float(eV.replace('"""', '').replace('"=""', ''))
+
+if __name__ == "__main__":
+    download_nist_for_in1('O', 'nist')
+    print(get_ionization_energy_ev('Fe', 1))

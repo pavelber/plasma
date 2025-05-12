@@ -171,3 +171,9 @@ def create_in1_inp_from_piter(dir, elem, nucleus, i_spectro, energy_limits, nmax
                 in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
 
             return i_spectro
+
+if __name__ == "__main__":
+
+    create_in1_inp_from_piter("..\\db\\O", "O", 9, [1,2,3,4,5,6,7,8],
+                              {"1":13.62,"2":35.12,"3":54.94,"4":77.41,"5":113.90,"6":138.12,"7":739.33,"8":871.41}
+                              , 8)

@@ -206,18 +206,18 @@ def run_main(in_dir, out_dir, min_eins_coef, dont_run_all_tools, mz=True):
         if int(next_spec_number) - int(spec_numbers[0]) != len(spec_numbers):
             error("Missing or redundant spec numbers directories: " + str(spec_numbers))
         translation_table[next_spec_number] = {"1": "1"}
-        create_aiw(out_dir, spec_numbers, translation_table)
-        create_bcfp(out_dir, spec_numbers, translation_table)
-        create_excit(out_dir, spec_numbers, translation_table)
-        create_rrec(out_dir, spec_numbers, translation_table)
+        #create_aiw(out_dir, spec_numbers, translation_table)
+        #create_bcfp(out_dir, spec_numbers, translation_table)
+        #create_excit(out_dir, spec_numbers, translation_table)
+        #create_rrec(out_dir, spec_numbers, translation_table)
         element, el_num, number_of_electrons = create_inp(out_dir, spec_numbers, translation_table,
                                                           ionization_potential)
-        create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
-        check_and_fix_rr(out_dir)
-        run_for_fisher(dont_run_all_tools, spec_numbers[0], spec_numbers[-1], element, out_dir, )
+        #create_spectr(out_dir, spec_numbers, translation_table, ionization_potential, min_eins_coef)
+        #check_and_fix_rr(out_dir)
+        #run_for_fisher(dont_run_all_tools, spec_numbers[0], spec_numbers[-1], element, out_dir, )
         if mz:
             replace_from_mz(el_num, out_dir)
-        check_and_fix_in_main_dir(out_dir)
+        #check_and_fix_in_main_dir(out_dir)
     except GenericPlasmaException as e:
         error(e.message)
 

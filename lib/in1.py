@@ -1,4 +1,6 @@
+from lib.exceptions import GenericPlasmaException
 from lib.utils import skip_n_lines
+
 
 class IN1:
     def __init__(self, in1_path):
@@ -6,7 +8,8 @@ class IN1:
         self._configs = {}
         self._stat_weight = {}
         self._branching_ratio = {}
-        self.energy_table = {}
+        self._energy_table = {}
+        self._levels_per_sp_num = {}
         self._load_data(in1_path)
 
     def _load_data(self, in1_path):
@@ -27,7 +30,7 @@ class IN1:
                     self._ionization_potential[parts[0]] = float(parts[4])
                 else:
                     if "Nucleus" in line:
-                        self.energy_table[(current_sp_num, "1")] = 0.0
+                        self._energy_table[(current_sp_num, "1")] = 0.0
                         self._configs[(current_sp_num, "1")] = ["1s0"]
                     elif "Autoionizating states" in line:
                         continue
@@ -37,9 +40,12 @@ class IN1:
                         g = float(line[17:23].strip())
                         config = line[0:10].split()
 
-                        self.energy_table[(current_sp_num, level)] = energy
+                        self._energy_table[(current_sp_num, level)] = energy
                         self._configs[(current_sp_num, level)] = config
                         self._stat_weight[(current_sp_num, level)] = g
+                        if current_sp_num not in self._levels_per_sp_num:
+                            self._levels_per_sp_num[current_sp_num] = []
+                        self._levels_per_sp_num[current_sp_num].append(level)
 
                         if tuple(config) not in self._branching_ratio[current_sp_num]:
                             self._branching_ratio[current_sp_num][tuple(config)] = []
@@ -49,8 +55,8 @@ class IN1:
         """Calculate ionization energy for a transition."""
         try:
             return (self._ionization_potential[from_sp] -
-                    self.energy_table[(from_sp, from_level)] +
-                    self.energy_table[(to_sp, to_level)])
+                    self._energy_table[(from_sp, from_level)] +
+                    self._energy_table[(to_sp, to_level)])
         except KeyError as e:
             raise ValueError(f"Invalid species or level: {e}")
 
@@ -89,10 +95,64 @@ class IN1:
     def get_energy(self, sp_num, level):
         """Get energy for a species and level."""
         try:
-            return self.energy_table[(sp_num, level)]
+            return self._energy_table[(sp_num, level)]
         except KeyError as e:
             raise ValueError(f"Invalid species or level: {e}")
 
     def contains_energy(self, sp_num, level):
         """Check if energy exists for a species and level."""
-        return (sp_num, level) in self.energy_table
+        return (sp_num, level) in self._energy_table
+
+    def get_sp_numbers(self):
+        """Get all spectroscopic numbers."""
+        return sorted(self._ionization_potential.keys())
+
+    def get_levels(self, sp_num):
+        """Get all levels for a given spectroscopic number."""
+        if sp_num not in self._levels_per_sp_num:
+            return None
+        return self._levels_per_sp_num[sp_num]
+
+    def find_level_by_energy_statweight_config(self, sp_num, energy, stat_weight, config, percent_energy_match=0.05):
+        """Find level by energy, statistical weight, and configuration."""
+        found = []
+        for level in self._levels_per_sp_num[sp_num]:
+            spnum_level = (sp_num, level)
+            if (energy > 0.0 and
+                    abs(self._energy_table[spnum_level] - energy) / energy < percent_energy_match and
+                    self._stat_weight[spnum_level] == stat_weight and
+                    self._configs[spnum_level] == config):
+                found.append(level)
+        if len(found) == 0:
+            return None
+        closest_level = min(
+            found,
+            key=lambda l: abs(self._energy_table[(sp_num, l)] - energy)
+        )
+
+        return closest_level
+
+    @staticmethod
+    def test_number_of_levels_inp1(in1_inp):
+        with open(in1_inp, "r") as f:
+            num_per_sp = {}
+            for l in f:
+                fields = l.split()
+                if len(fields) == 1:
+                    if 'sp_num' in locals() and num_per_sp[sp_num] != level_num:
+                        raise GenericPlasmaException("Level number in " + sp_num)
+                    if 'sp_num' in locals() and level_num == 0:
+                        raise GenericPlasmaException("Level number 0 in " + sp_num)
+                    sp_num = fields[0]
+                    level_num = 0
+                if len(fields) == 10 and fields[9] == '0.000':
+                    num_in_header = int(fields[1])
+                    if num_in_header == 0:
+                        raise GenericPlasmaException("Level number 0 in " + sp_num)
+                    num_per_sp[fields[0]] = num_in_header
+                if len(fields) == 7:
+                    fields.insert(0, "")
+                if len(fields) == 8:
+                    level_num += 1
+                    if int(fields[7]) != level_num:
+                        raise GenericPlasmaException("Level number in " + l)
