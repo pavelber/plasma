@@ -46,7 +46,7 @@ def env():
     if env_error is not None:
         raise GenericPlasmaException(env_error)
 
-    env_error = check_version("Python", python_path+" --version")
+    env_error = check_version("Python", python_path + " --version")
     if env_error is not None:
         raise GenericPlasmaException(env_error)
 
@@ -66,7 +66,7 @@ def env():
     ph_fac_path = os_path + os.path.sep + ph_fac_name
     fit_path = my_dir + os.path.sep + "fit.pl"
     fac_in1_path = my_dir + os.path.sep + "fac_IN1.pl"
-    old_path = my_dir + os.path.sep + "old_fac.py"
+    old_path = my_dir + os.path.sep + "scripts" + os.path.sep + "old_fac.py"
     env_error = check_file(old_path)
     if env_error is not None:
         raise GenericPlasmaException(env_error)
@@ -103,5 +103,5 @@ def get_pathes():
     exc_fac_path = os_path + os.path.sep + exc_fac_name
     ph_fac_path = os_path + os.path.sep + ph_fac_name
     fit_path = my_dir + os.path.sep + "fit.pl"
-    old_path = my_dir + os.path.sep + "old_fac.py"
+    old_path = my_dir + os.path.sep + "scripts" + os.path.sep + "old_fac.py"
     return old_path, fit_path, exc_fac_path, ph_fac_path, my_dir

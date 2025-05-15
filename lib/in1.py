@@ -3,14 +3,15 @@ from lib.utils import skip_n_lines
 
 
 class IN1:
-    def __init__(self, in1_path):
+    def __init__(self, in1_path=None):
         self._ionization_potential = {}
         self._configs = {}
         self._stat_weight = {}
         self._branching_ratio = {}
         self._energy_table = {}
         self._levels_per_sp_num = {}
-        self._load_data(in1_path)
+        if in1_path:
+            self._load_data(in1_path)
 
     def _load_data(self, in1_path):
         """Load and parse the input file."""
@@ -50,6 +51,70 @@ class IN1:
                         if tuple(config) not in self._branching_ratio[current_sp_num]:
                             self._branching_ratio[current_sp_num][tuple(config)] = []
                         self._branching_ratio[current_sp_num][tuple(config)].append(level)
+
+    @classmethod
+    def create_empty(cls):
+        """Create an empty IN1 instance."""
+        return cls()
+
+    def add_or_replace_sp_data(self, sp_num, other_in1):
+        """Add or replace all data for a given spectroscopic number from another IN1 instance.
+        Returns a renumeration table mapping old levels to new levels."""
+        if sp_num not in other_in1._ionization_potential:
+            raise ValueError(f"Spectroscopic number {sp_num} not found in the provided IN1 instance")
+
+        # Store old levels for renumeration
+        old_levels = self._levels_per_sp_num.get(sp_num, []).copy()
+        renumeration_table = {}
+
+        # If there are old levels, attempt to match them to new levels
+        if old_levels:
+            for old_level in old_levels:
+                if old_level == "1":  # Nucleus level
+                    renumeration_table[old_level] = "1"  # Nucleus always maps to nucleus
+                    continue
+                energy = self._energy_table.get((sp_num, old_level), 0.0)
+                stat_weight = self._stat_weight.get((sp_num, old_level), 0.0)
+                config = self._configs.get((sp_num, old_level), [])
+                # Find matching level in other_in1
+                new_level = other_in1.find_level_by_energy_statweight_config(
+                    sp_num, energy, stat_weight, config, percent_energy_match=0.05
+                )
+                renumeration_table[old_level] = new_level
+
+        # Replace or add ionization potential
+        self._ionization_potential[sp_num] = other_in1._ionization_potential[sp_num]
+
+        # Clear existing data for this sp_num if it exists
+        if sp_num in self._levels_per_sp_num:
+            for level in self._levels_per_sp_num[sp_num]:
+                key = (sp_num, level)
+                if key in self._energy_table:
+                    del self._energy_table[key]
+                if key in self._configs:
+                    del self._configs[key]
+                if key in self._stat_weight:
+                    del self._stat_weight[key]
+            del self._levels_per_sp_num[sp_num]
+            if sp_num in self._branching_ratio:
+                del self._branching_ratio[sp_num]
+
+        # Copy levels data
+        if sp_num in other_in1._levels_per_sp_num:
+            self._levels_per_sp_num[sp_num] = other_in1._levels_per_sp_num[sp_num].copy()
+            for level in self._levels_per_sp_num[sp_num]:
+                key = (sp_num, level)
+                self._energy_table[key] = other_in1._energy_table[key]
+                self._configs[key] = other_in1._configs[key].copy()
+                self._stat_weight[key] = other_in1._stat_weight[key]
+
+        # Copy branching ratio data
+        if sp_num in other_in1._branching_ratio:
+            self._branching_ratio[sp_num] = {}
+            for config, levels in other_in1._branching_ratio[sp_num].items():
+                self._branching_ratio[sp_num][config] = levels.copy()
+
+        return renumeration_table
 
     def get_ionization_energy(self, from_sp, from_level, to_sp, to_level):
         """Calculate ionization energy for a transition."""

@@ -13,7 +13,7 @@ from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import error, read_table, invert_replaces
 from lib.verify_results import files_not_empty
-from lib.in1 import test_number_of_levels_inp1, IN1
+from lib.in1 import IN1
 
 ################## MAIN ######################
 
