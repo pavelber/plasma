@@ -4,13 +4,13 @@ from os import path
 
 from lib.create_cross_section_fits import parse_ionization_spectroscopic_files
 from lib.cross_section import create_cross_section_function
+from lib.fit_parameters import create_fits_from_range, create_fits
 from lib.in1 import IN1
 from lib.utils import skip_n_lines
-from lib.fit_parameters import create_fits_from_range, create_fits  # Import the new function
 
 reject_bad_fits = True
 
-header = """  iSS  iQS  fSS  fQS         D          -A           B           C
+header = """   iSS   iQS   fSS   fQS           D              -A               B               C
 -----------------------------------------------------------------------------------
 """
 
@@ -18,8 +18,7 @@ START_E = 1.0
 END_E = 100.0
 STEP_E = 1.0
 METHOD = 'powell'
-BAD_FIT_THRESHOLD = 1e-16  # New parameter
-
+BAD_FIT_THRESHOLD = 1e-16
 
 
 class BCFP:
@@ -76,7 +75,8 @@ class BCFP:
         """Get a branching ratio for a transition (only for Format 1 files)."""
         data = self.get_transition_data(from_sp, from_level, to_sp, to_level)
         if 'branching_ratio' not in data:
-            raise ValueError(f"No branching ratio available for transition ({from_sp}, {from_level}, {to_sp}, {to_level})")
+            raise ValueError(
+                f"No branching ratio available for transition ({from_sp}, {from_level}, {to_sp}, {to_level})")
         return data['branching_ratio']
 
     def get_coefficients(self, from_sp, from_level, to_sp, to_level):
@@ -99,64 +99,172 @@ class BCFP:
         """Check if a transition exists."""
         return (from_sp, from_level, to_sp, to_level) in self._transitions
 
+    def dump_to_string(self):
+        """
+        Dumps the BCFP class data to a string in the BCFP file format.
+        The output format (Format 1 or Format 2) is inferred from the stored data.
+        """
+        output_lines = []
 
-def approximation_fun(params, E0, stat_weight, x):
-    """
-    Original approximation function with 4 parameters.
+        if not self._transitions:
+            return header
 
-    Args:
-        params (list or array): Parameters [a, b, c, d].
-        E0 (float): Ionization potential.
-        stat_weight (float): Statistical weight.
-        x (float): Energy ratio.
+        first_transition_data = next(iter(self._transitions.values()))
+        is_output_format_1 = 'branching_ratio' in first_transition_data
 
-    Returns:
-        float: Approximated value.
-    """
-    a, b, c, d = params
-    y = 1 - 1 / x
-    E = x * E0
-    return 3.8101e-16 * (a * log(x) + b * y * y + c * y / x + d * y / (x * x)) * E / stat_weight
+        keys_prefix_format = "{:>5}{:>6}{:>6}{:>6}"
 
+        if is_output_format_1:
+            header_titles_line = header.replace("          D              -A               B               C",
+                                                " Coefficient              A               B               C")
+            output_lines.append(header_titles_line)
 
-def create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir):
-    filename = path.join(outdir, f"{from_sp}_{from_level}_{to_sp}_{to_level}.txt")
-    with open(filename, 'w') as f:
-        f.write(f"# {from_sp} {from_level} {to_sp} {to_level} {transition_energy}\n")
-        f.write(f"# e/I_zqq'        sigma\n")
-        e = START_E
-        while e <= END_E:
-            f.write(f"{e:8.3} {energy_function(e):10.3}\n")
-            e += STEP_E
+            sorted_items = sorted(self._transitions.items(),
+                                  key=lambda item: BCFP._sort_key_for_transitions(item[0]))
 
+            for key_tuple, data_dict in sorted_items:
+                prefix_str = keys_prefix_format.format(key_tuple[0], key_tuple[1],
+                                                       key_tuple[2], key_tuple[3])
 
-def process_file(bcfp_input_path, in1_path, bcfp_output_path, cross_sections, create_tabulation_files = False):
-    outdir = path.join(path.dirname(bcfp_output_path), 'tabulation')
-    if not path.exists(outdir):
-        os.mkdir(outdir)
-    params = None  # Initialize parameters
-    in1_data = IN1(in1_path)
-    with open(bcfp_input_path, 'r') as infile, open(bcfp_output_path, 'w') as outfile:
-        outfile.write(header)
-        skip_n_lines(infile, 2)
-        for line in infile:
-            parts = line.split()
-            coef = float(parts[4])
-            from_sp = parts[0]
-            from_level = parts[1]
-            to_sp = parts[2]
-            to_level = parts[3]
+                br = data_dict['branching_ratio']
+                coeffs_A_B_C = data_dict['coefficients']
+                data_values_str = (f"{br:16.4e} {coeffs_A_B_C[0]:16.4e} "
+                                   f"{coeffs_A_B_C[1]:16.4e} {coeffs_A_B_C[2]:16.4e}")
+                output_lines.append(f"{prefix_str}{data_values_str}\n")
+        else:
+            output_lines.append(header)
+            sorted_items = sorted(self._transitions.items(),
+                                  key=lambda item: BCFP._sort_key_for_transitions(item[0]))
+
+            for key_tuple, data_dict in sorted_items:
+                prefix_str = keys_prefix_format.format(key_tuple[0], key_tuple[1],
+                                                       key_tuple[2], key_tuple[3])
+                coeffs_D_negA_B_C = data_dict['coefficients']
+                comment = data_dict.get('comment', '')
+                data_values_str = (f"{coeffs_D_negA_B_C[0]:16.4e} {coeffs_D_negA_B_C[1]:16.4e} "
+                                   f"{coeffs_D_negA_B_C[2]:16.4e} {coeffs_D_negA_B_C[3]:16.4e}")
+                output_lines.append(f"{prefix_str}{data_values_str}{comment}\n")
+
+        return "".join(output_lines)
+
+    @staticmethod
+    def _get_level_sort_tuple(level_str):
+        """
+        Creates a sort key component for a level string.
+        """
+        try:
+            val = int(level_str)
+            if val > 0:
+                return (0, val)
+            elif val == 0:
+                return (1, 0)
+            else:
+                return (2, -val)
+        except ValueError:
+            return (3, level_str)
+
+    @staticmethod
+    def _sort_key_for_transitions(transition_key_tuple):
+        """
+        Helper function to create a sort key for transition tuples.
+        """
+        from_sp_str, from_level_str, to_sp_str, to_level_str = transition_key_tuple
+        key_from_sp = from_sp_str
+        key_to_sp = to_sp_str
+        key_from_level = BCFP._get_level_sort_tuple(from_level_str)
+        key_to_level = BCFP._get_level_sort_tuple(to_level_str)
+        return (key_from_sp, key_from_level, key_to_sp, key_to_level)
+
+    @staticmethod
+    def approximation_fun(params, E0, stat_weight, x):
+        """
+        Approximation function with 4 parameters.
+
+        Args:
+            params (list or array): Parameters [a, b, c, d].
+            E0 (float): Ionization potential.
+            stat_weight (float): Statistical weight.
+            x (float): Energy ratio.
+
+        Returns:
+            float: Approximated value.
+        """
+        a, b, c, d = params
+        y = 1 - 1 / x
+        E = x * E0
+        return 3.8101e-16 * (a * log(x) + b * y * y + c * y / x + d * y / (x * x)) * E / stat_weight
+
+    def dump_to_file(self, filename):
+        """Write the BCFP data to a file using dump_to_string."""
+        with open(filename, 'w') as outfile:
+            outfile.write(self.dump_to_string())
+
+    @staticmethod
+    def create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir):
+        """
+        Create a tabulation file for a given transition.
+        """
+        filename = path.join(outdir, f"{from_sp}_{from_level}_{to_sp}_{to_level}.txt")
+        with open(filename, 'w') as f:
+            f.write(f"# {from_sp} {from_level} {to_sp} {to_level} {transition_energy}\n")
+            f.write(f"# e/I_zqq'        sigma\n")
+            e = START_E
+            while e <= END_E:
+                f.write(f"{e:8.3f} {energy_function(e):10.3e}\n")
+                e += STEP_E
+
+    def create_fac_fitting_params(self, in1_path, cross_section_directory=None, create_tabulation_files=False, remove_bad_fits=True):
+        """
+        Convert a Format 1 BCFP (branching ratio + 3 coefficients) to Format 2 (4 coefficients).
+        Updates the _transitions dictionary in memory.
+
+        Args:
+            in1_path (str): Path to the IN1 file.
+            cross_section_directory (str, optional): Directory containing cross-section files.
+            create_tabulation_files (bool): If True, generate tabulation files.
+            remove_bad_fits (bool): If True, remove transitions with failed fits; otherwise, keep with zeros and comment.
+        """
+        # Load IN1 data
+        in1_data = IN1(in1_path)
+
+        # Load cross-sections if provided
+        cross_sections = {}
+        if cross_section_directory:
+            cross_sections = parse_ionization_spectroscopic_files(cross_section_directory)
+
+        # Create tabulation directory if needed
+        outdir = None
+        if create_tabulation_files:
+            outdir = path.join(path.dirname(in1_path), 'tabulation')
+            if not path.exists(outdir):
+                os.mkdir(outdir)
+
+        # Store transitions to remove if remove_bad_fits is True
+        transitions_to_remove = []
+        params = None  # Initial parameters for fitting
+
+        for transition_key in self._transitions:
+            from_sp, from_level, to_sp, to_level = transition_key
+            data = self._transitions[transition_key]
+
+            # Skip if already in Format 2
+            if 'branching_ratio' not in data:
+                continue
+
+            # Get transition data
+            coef = data['branching_ratio']
             transition_energy = in1_data.get_ionization_energy(from_sp, from_level, to_sp, to_level)
             from_config = in1_data.get_config(from_sp, from_level)
             to_config = in1_data.get_config(to_sp, to_level)
             from_stat_weight = in1_data.get_stat_weight(from_sp, from_level)
-            result = None
 
-            if ((from_sp, from_level), (to_sp, to_level))  in cross_sections.keys():
-                print("FOUND!!!!")
-                (result, square_diff) = create_fits(
+            result = None
+            # Try fitting from cross-section data if available
+            if ((from_sp, from_level), (to_sp, to_level)) in cross_sections:
+                print(f"Fitting from cross-section for {from_sp} {from_level} -> {to_sp} {to_level}")
+                result, square_diff = create_fits(
                     table=cross_sections[((from_sp, from_level), (to_sp, to_level))],
-                    approximation_fun=approximation_fun,
+                    approximation_fun=self.approximation_fun,
                     ionization_potential=in1_data.get_ionization_potential(from_sp),
                     stat_weight=from_stat_weight,
                     initial_params=params,
@@ -165,52 +273,94 @@ def process_file(bcfp_input_path, in1_path, bcfp_output_path, cross_sections, cr
                 )
                 if result is None:
                     print(f"Warning: Can't fit table {from_sp} {from_level} -> {to_sp} {to_level}")
-            if result is None: # Fitting table not successful or no table
+
+            # If no cross-section fit, try fitting from energy function
+            if result is None:
                 energy_function = create_cross_section_function(transition_energy, coef, from_config, to_config)
                 if energy_function is None:
-                    print(f"Warning: Skipping fit for {from_sp} {from_level} -> {to_sp} {to_level} - no energy function")
-                    outfile.write(line)  # Write original line as placeholder
+                    print(f"Warning: No energy function for {from_sp} {from_level} -> {to_sp} {to_level}")
+                    if remove_bad_fits:
+                        transitions_to_remove.append(transition_key)
+                    else:
+                        self._transitions[transition_key] = {
+                            'coefficients': [0.0, 0.0, 0.0, 0.0],
+                            'comment': "# Can't create fitting params"
+                        }
                     continue
-                else:
-                    if create_tabulation_files:
-                        create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir)
 
-                    (result, square_diff) = create_fits_from_range(
-                        cross_section_function=energy_function,
-                        approximation_fun=approximation_fun,
-                        ionization_potential=in1_data.get_ionization_potential(from_sp),
-                        stat_weight=from_stat_weight,
-                        initial_params=params,
-                        start_e=START_E,
-                        end_e=END_E,
-                        step_e=STEP_E,
-                        method=METHOD,
-                        reject_bad_fits=reject_bad_fits,
-                        bad_fit_threshold=BAD_FIT_THRESHOLD
-                    )
+                if create_tabulation_files:
+                    self.create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir)
 
-                    if result is None:
-                        print(f"Warning: Skipping fit for {from_sp} {from_level} -> {to_sp} {to_level}")
-                        outfile.write(line)  # Write original line as placeholder
-                        continue
+                result, square_diff = create_fits_from_range(
+                    cross_section_function=energy_function,
+                    approximation_fun=self.approximation_fun,
+                    ionization_potential=in1_data.get_ionization_potential(from_sp),
+                    stat_weight=from_stat_weight,
+                    initial_params=params,
+                    start_e=START_E,
+                    end_e=END_E,
+                    step_e=STEP_E,
+                    method=METHOD,
+                    reject_bad_fits=reject_bad_fits,
+                    bad_fit_threshold=BAD_FIT_THRESHOLD
+                )
 
-            params = result  # Update parameters for next iteration
-            a, b, c, d = result  # Unpack for output (assuming 4 parameters)
-            modified_line = line[:24] + f"{a:10.3e} {b:10.3e} {c:10.3e} {d:10.3e}\n"
-            outfile.write(modified_line)
+                if result is None:
+                    print(f"Warning: Can't fit for {from_sp} {from_level} -> {to_sp} {to_level}")
+                    if remove_bad_fits:
+                        transitions_to_remove.append(transition_key)
+                    else:
+                        self._transitions[transition_key] = {
+                            'coefficients': [0.0, 0.0, 0.0, 0.0],
+                            'comment': "# Can't create fitting params"
+                        }
+                    continue
+
+            # Update parameters for next iteration
+            params = result
+
+            # Update transition data with new coefficients
+            self._transitions[transition_key] = {
+                'coefficients': result  # [D, -A, B, C]
+            }
+
+        # Remove transitions with failed fits if requested
+        if remove_bad_fits:
+            for transition_key in transitions_to_remove:
+                del self._transitions[transition_key]
+                # Update spectroscopic numbers
+                from_sp, _, to_sp, _ = transition_key
+                # Remove from_sp and to_sp from _spectroscopic_numbers if they no longer appear
+                for sp in [from_sp, to_sp]:
+                    if sp in self._spectroscopic_numbers:
+                        if not any(t[0] == sp or t[2] == sp for t in self._transitions):
+                            self._spectroscopic_numbers.remove(sp)
 
 
-# Main execution
+# Example usage
 if __name__ == "__main__":
     import sys
 
     if len(sys.argv) != 4:
-        print("Usage: python script.py <bcfp_input_file> <in1_file> <bcfp_output_file> <cross_section_directory>")
+        print("Usage: python script.py <bcfp_input_file> <in1_file> <bcfp_output_file>")
         sys.exit(1)
 
     bcfp_input_path = sys.argv[1]
     in1_path = sys.argv[2]
     bcfp_output_path = sys.argv[3]
     cross_section_directory = "C:\\work2\\plasma\\db\\O\\ionization-crosssection\\"
-    cross_sections = parse_ionization_spectroscopic_files(cross_section_directory)
-    process_file(bcfp_input_path, in1_path, bcfp_output_path, cross_sections)
+
+    # Load BCFP
+    bcfp = BCFP(bcfp_input_path)
+
+    # Convert to Format 2
+    bcfp.create_fac_fitting_params(
+        in1_path=in1_path,
+        cross_section_directory=cross_section_directory,
+        create_tabulation_files=False,
+        remove_bad_fits=False
+    )
+
+    # Dump to output file
+    with open(bcfp_output_path, 'w') as outfile:
+        outfile.write(bcfp.dump_to_string())

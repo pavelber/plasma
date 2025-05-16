@@ -1,4 +1,5 @@
 import pytest
+import difflib
 
 from lib.bcfp import BCFP  # Adjust import based on your module structure
 
@@ -70,3 +71,54 @@ def test_bcfp_functionality(bcfp_instance1, bcfp_instance2):
    # Test non-existent transition
     with pytest.raises(ValueError, match="Transition \\(1, 1, 2, 999\\) not found"):
         bcfp_instance2.get_transition_data("1", "1", "2", "999")
+
+def test_bcfp_dump_to_string():
+    """Test the dump_to_string method of BCFP class."""
+    bcfp_file_to_test = "BCFP-piter.INP"
+
+    try:
+        # 1. Read the original content of the file
+        with open(bcfp_file_to_test, 'r') as f_orig:
+            original_file_content = f_orig.read()
+    except FileNotFoundError:
+        print(f"Error: The file '{bcfp_file_to_test}' was not found.")
+        exit(1)
+
+    # 2. Create a BCFP instance from the file path
+    #    This internally calls _load_data to parse the file
+    bcfp_data_instance = BCFP(bcfp_path=bcfp_file_to_test)
+
+    # 3. Dump the BCFP instance's data back to a string
+    dumped_bcfp_content = bcfp_data_instance.dump_to_string()
+
+    # 4. Compare the original file content with the dumped string
+    original_lines = original_file_content.splitlines(keepends=True)
+    dumped_lines = dumped_bcfp_content.splitlines(keepends=True)
+
+    f = open("BCFP-piter.INP.1","w")
+    f.writelines(dumped_lines)
+    f.close()
+
+    if original_lines == dumped_lines:
+        print(f"Success: The content of '{bcfp_file_to_test}' and its dumped version are identical.")
+    else:
+        print(f"Differences found between '{bcfp_file_to_test}' (original) and its dumped version:")
+        print("--- DIFF START ---")
+
+        diff_generator = difflib.unified_diff(
+            original_lines,
+            dumped_lines,
+            fromfile=f'{bcfp_file_to_test} (Original)',
+            tofile=f'{bcfp_file_to_test} (Dumped by BCFP class)',
+            lineterm=''  # Important as splitlines(keepends=True) already includes newlines
+        )
+
+        for diff_line in diff_generator:
+            print(diff_line, end='')  # diff_line already contains newline if present
+
+        print("\n--- DIFF END ---")
+        print("\nNote: Differences may arise from:")
+        print("  - Re-ordering of transition entries (dump_to_string sorts them).")
+        print("  - Re-formatting of numeric values (e.g., to consistent scientific notation).")
+        print("  - Normalization of spacing or header lines.")
+        print("  - Lines in the original file that are skipped during parsing (e.g., comments, malformed lines).")
