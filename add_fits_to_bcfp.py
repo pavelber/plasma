@@ -4,10 +4,11 @@ from os import path
 
 import numpy as np
 
+from lib.create_cross_section_fits import parse_ionization_spectroscopic_files
 from lib.cross_section import create_cross_section_function
 from lib.in1 import IN1
 from lib.utils import skip_n_lines
-from lib.fit_parameters import create_fits_from_range  # Import the new function
+from lib.fit_parameters import create_fits_from_range, create_fits  # Import the new function
 
 reject_bad_fits = True
 
@@ -52,7 +53,7 @@ def create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, tra
             e += STEP_E
 
 
-def process_file(bcfp_input_path, in1_path, bcfp_output_path):
+def process_file(bcfp_input_path, in1_path, bcfp_output_path, cross_cuts, create_tabulation_files = False):
     outdir = path.join(path.dirname(bcfp_output_path), 'tabulation')
     if not path.exists(outdir):
         os.mkdir(outdir)
@@ -72,36 +73,54 @@ def process_file(bcfp_input_path, in1_path, bcfp_output_path):
             from_config = in1_data.get_config(from_sp, from_level)
             to_config = in1_data.get_config(to_sp, to_level)
             from_stat_weight = in1_data.get_stat_weight(from_sp, from_level)
-            energy_function = create_cross_section_function(transition_energy, coef, from_config, to_config)
-            if energy_function is None:
-                print(from_config, to_config, line, sep='')
-            else:
-                create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir)
+            result = None
 
-                # Use the new create_fits function
-                (result, square_diff) = create_fits_from_range(
-                    cross_cut_function=energy_function,
+            if ((from_sp, from_level), (to_sp, to_level))  in cross_cuts.keys():
+                print("FOUND!!!!")
+                (result, square_diff) = create_fits(
+                    table=cross_cuts[((from_sp, from_level), (to_sp, to_level))],
                     approximation_fun=approximation_fun,
                     ionization_potential=in1_data.get_ionization_potential(from_sp),
                     stat_weight=from_stat_weight,
                     initial_params=params,
-                    start_e=START_E,
-                    end_e=END_E,
-                    step_e=STEP_E,
-                    method=METHOD,
                     reject_bad_fits=reject_bad_fits,
                     bad_fit_threshold=BAD_FIT_THRESHOLD
                 )
-
                 if result is None:
-                    print(f"Warning: Skipping fit for {from_sp} {from_level} -> {to_sp} {to_level}")
+                    print(f"Warning: Can't fit table {from_sp} {from_level} -> {to_sp} {to_level}")
+            if result is None: # Fitting table not successful or no table
+                energy_function = create_cross_section_function(transition_energy, coef, from_config, to_config)
+                if energy_function is None:
+                    print(f"Warning: Skipping fit for {from_sp} {from_level} -> {to_sp} {to_level} - no energy function")
                     outfile.write(line)  # Write original line as placeholder
                     continue
+                else:
+                    if create_tabulation_files:
+                        create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir)
 
-                params = result  # Update parameters for next iteration
-                a, b, c, d = result  # Unpack for output (assuming 4 parameters)
-                modified_line = line[:24] + f"{a:10.3e} {b:10.3e} {c:10.3e} {d:10.3e}\n"
-                outfile.write(modified_line)
+                    (result, square_diff) = create_fits_from_range(
+                        cross_cut_function=energy_function,
+                        approximation_fun=approximation_fun,
+                        ionization_potential=in1_data.get_ionization_potential(from_sp),
+                        stat_weight=from_stat_weight,
+                        initial_params=params,
+                        start_e=START_E,
+                        end_e=END_E,
+                        step_e=STEP_E,
+                        method=METHOD,
+                        reject_bad_fits=reject_bad_fits,
+                        bad_fit_threshold=BAD_FIT_THRESHOLD
+                    )
+
+                    if result is None:
+                        print(f"Warning: Skipping fit for {from_sp} {from_level} -> {to_sp} {to_level}")
+                        outfile.write(line)  # Write original line as placeholder
+                        continue
+
+            params = result  # Update parameters for next iteration
+            a, b, c, d = result  # Unpack for output (assuming 4 parameters)
+            modified_line = line[:24] + f"{a:10.3e} {b:10.3e} {c:10.3e} {d:10.3e}\n"
+            outfile.write(modified_line)
 
 
 # Main execution
@@ -109,10 +128,12 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) != 4:
-        print("Usage: python script.py <bcfp_input_file> <in1_file> <bcfp_output_file>")
+        print("Usage: python script.py <bcfp_input_file> <in1_file> <bcfp_output_file> <cross_cut_directory>")
         sys.exit(1)
 
     bcfp_input_path = sys.argv[1]
     in1_path = sys.argv[2]
     bcfp_output_path = sys.argv[3]
-    process_file(bcfp_input_path, in1_path, bcfp_output_path)
+    cross_cut_directory = "C:\\work2\\plasma\\db\\O\\ionization-crosssection\\"
+    cross_cuts = parse_ionization_spectroscopic_files(cross_cut_directory)
+    process_file(bcfp_input_path, in1_path, bcfp_output_path, cross_cuts)

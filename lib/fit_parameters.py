@@ -192,6 +192,6 @@ def select_best_fit(
             best_params = params
             best_sum_square_diffs = sum_square_diffs
 
-        print(f"Function {func_id}: sum_square_diffs={sum_square_diffs}")
+    print(f"Function {best_id}: sum_square_diffs={best_sum_square_diffs}")
 
     return best_id, best_params

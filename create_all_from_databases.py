@@ -13,7 +13,6 @@ from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import error, read_table, invert_replaces
 from lib.verify_results import test_number_of_levels_inp1, files_not_empty
-from lib.create_cross_section_fits import parse_spectroscopic_files
 
 ################## MAIN ######################
 
@@ -36,15 +35,7 @@ max_sp_num = int(sys.argv[param_num])
 param_num += 1
 formula = sys.argv[param_num].lower() == 'formula'
 param_num += 1
-optional_cross_section_database = {}
 
-
-
-if len(sys.argv) > param_num:
-    optional_cross_section_database_dir = sys.argv[param_num]
-    if (os.path.exists(optional_cross_section_database_dir)):
-        optional_cross_section_database = parse_spectroscopic_files(optional_cross_section_database_dir)
-    
 (name_to_table, num_to_table) = read_table()
 
 env_errors = env()
@@ -87,7 +78,7 @@ if max_sp_num + 1 == nucleus:
 
 create_in1_excit_spectr__from_databases(elem_dir, elem, nucleus, sp_nums_dec,
                                         energy_limits,
-                                        nmax,optional_cross_section_database)
+                                        nmax)
 in1 = os.path.join(elem_dir, "IN1.INP")
 create_rrec_from_in1(in1, elem, elem_dir, sp_nums_with_nucleus, nucleus, formula)
 create_bcfp_from_in1(in1, elem_dir, sp_nums_with_nucleus, nucleus)
@@ -104,7 +95,7 @@ rrec_path = os.path.join(elem_dir, "RREC.INP")
 excit_path = os.path.join(elem_dir, "EXCIT.INP")
 spectr_path = os.path.join(elem_dir, "SPECTR.INP")
 
-bcfp_path = os.path.join(elem_dir, "BFCP.INP")
+bcfp_path = os.path.join(elem_dir, "BCFP.INP")
 
 with open(rrec_path, "w") as rrec:
     for sp in sp_nums_with_nucleus:
@@ -134,7 +125,7 @@ create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", 
 create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP", True)
 test_number_of_levels_inp1(in1)
 files_not_empty(elem_dir)
-levels_num = run_for_fisher(False, min_sp_num, max_sp_num, elem, elem_dir, "BFCP.INP", False)
+levels_num = run_for_fisher(False, min_sp_num, max_sp_num, elem, elem_dir, "BCFP.INP", False)
 
 # removed = remove_large(rrec_path, 0, [4, 5], 1.0e-4)
 # print("Removed " + str(removed) + "from " + rrec_path)

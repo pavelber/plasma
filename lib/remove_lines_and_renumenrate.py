@@ -191,7 +191,7 @@ def remove_unused_lines_and_renumerate(elem_dir, nucleus):
     rrec_path = os.path.join(elem_dir, "RREC.INP")
     excit_path = os.path.join(elem_dir, "EXCIT.INP")
     spectr_path = os.path.join(elem_dir, "SPECTR.INP")
-    bcfp_path = os.path.join(elem_dir, "BFCP.INP")
+    bcfp_path = os.path.join(elem_dir, "BCFP.INP")
     used_lines = {}
     # used_lines = read_used_lines(rrec_path, 0, [Level(sp_num_fun(0, 3), Field(4, 10)),
     #                                            Level(lambda s: str(int(s[0:3]) + 1), Field(11, 17))], used_lines)

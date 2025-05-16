@@ -12,7 +12,7 @@ def parse_energy_limits(limits_str):
     return limits
 
 
-def create_in1_excit_spectr__from_databases(out_dir, elem, nucleus, i_spectro, energy_limits, nmax,optional_cross_section_database = {}):
+def create_in1_excit_spectr__from_databases(out_dir, elem, nucleus, i_spectro, energy_limits, nmax):
     sp_nums = create_in1_inp_from_piter(out_dir, elem, nucleus, i_spectro, energy_limits, nmax)
-    create_spectr_and_excit_from_piter_match_config(out_dir, elem, i_spectro,optional_cross_section_database)
+    create_spectr_and_excit_from_piter_match_config(out_dir, elem, i_spectro)
     return sp_nums

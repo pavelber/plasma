@@ -79,7 +79,7 @@ def iterate_next_levels(alternative_iteration_formula, atomic_number, config_1, 
             o_f.write("--\n")
 
 
-def iterate_bfcp_levels(bfcp_f, config_1, config_2, level, next_levels, next_sn, s_n, comment):
+def iterate_bcfp_levels(bcfp_f, config_1, config_2, level, next_levels, next_sn, s_n, bcfp_cross_section_database, comment):
     sum_of_stat_weights = sum(map(lambda x: x.stat_weight, next_levels))
     if len(next_levels) == 0:
         print("*** From " + str(s_n) + " " + config_1 + " " + config_2 + " to " + str(next_sn) + " <NO LEVELS FOUND>")
@@ -88,7 +88,7 @@ def iterate_bfcp_levels(bfcp_f, config_1, config_2, level, next_levels, next_sn,
             stat_weight = lvl.stat_weight
             relative_weight = stat_weight / sum_of_stat_weights
             lvl_to = lvl.level_num
-            bfcp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0  %s\n" %
+            bcfp_f.write(" %4d %4d %4d %4d      %.7f    0    0    0  %s\n" %
                          (s_n, level.level_num, next_sn, lvl_to, relative_weight, comment))
 
 
@@ -110,15 +110,16 @@ def write_rrec_from_formula(atomic_number, config_1, config_2, level, level_num,
                         e_n0l0, level, level_num, next_levels, next_sn, o_f, s_n, sp_dir)
 
 
-def write_bfcp(atomic_number, bfcp_f, config_1, config_2, level, levels_by_sp_num, next_sn,
-               s_n, sp_dir):
+def write_bcfp(atomic_number, bcfp_f, config_1, config_2, level, levels_by_sp_num, next_sn,
+               s_n, sp_dir, bcfp_cross_section_database):
     (alternative_iteration_formula, next_levels) = \
         create_configs_without_one_external_electron_in_next_sp(config_1, config_2, next_sn,
                                                                 atomic_number,
                                                                 levels_by_sp_num)
-    iterate_bfcp_levels(bfcp_f, config_1, config_2, level, next_levels, next_sn, s_n,  "")
+    iterate_bcfp_levels(bcfp_f, config_1, config_2, level, next_levels, next_sn, s_n, bcfp_cross_section_database, "")
     (alternative_iteration_formula, next_levels) = \
         create_configs_without_one_internal_electron_in_next_sp(config_1, config_2, next_sn,
                                                                 atomic_number,
                                                                 levels_by_sp_num)
-    iterate_bfcp_levels(bfcp_f, config_1, config_2, level, next_levels, next_sn, s_n,  " # internal electron")
+    iterate_bcfp_levels(bcfp_f, config_1, config_2, level, next_levels, next_sn, s_n, bcfp_cross_section_database,
+                        " # internal electron")

@@ -118,7 +118,7 @@ def write_spectr_section_from_piter(outf, spec_num, config_table, spec_num_file)
     return lines
 
 
-def write_excit_section(outf, spec_num, lines, optional_cross_section_database = {}):
+def write_excit_section(outf, spec_num, lines):
     for line in lines:
         low_level = line[0]
         up_level = line[1]
@@ -128,7 +128,7 @@ def write_excit_section(outf, spec_num, lines, optional_cross_section_database =
                 spec_num, low_level[0], up_level[0], osc))
 
 
-def create_spectr_and_excit_from_piter_match_config(out_dir, elem, i_spectro,optional_cross_section_database = {}):
+def create_spectr_and_excit_from_piter_match_config(out_dir, elem, i_spectro):
     lines_dir = os.path.join(out_dir, "lines")
     with open(os.path.join(out_dir, "SPECTR.INP"), 'w') as spectr_inp:
         with open(os.path.join(out_dir, "EXCIT.INP"), 'w') as exit_inp:
@@ -146,4 +146,4 @@ def create_spectr_and_excit_from_piter_match_config(out_dir, elem, i_spectro,opt
                 # if len(section_lines) == 0:
                 #    raise GenericPlasmaException("No lines for " + elem + " " + sp_num_str)
                 sorted_lines = sorted(section_lines, key=lambda l: "%04d,%04d" % (int(l[0][0]), int(l[1][0])))
-                write_excit_section(exit_inp, sp_num_str, sorted_lines, optional_cross_section_database)
+                write_excit_section(exit_inp, sp_num_str, sorted_lines)
