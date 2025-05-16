@@ -17,7 +17,7 @@ def remove_last_internal_electron(config_1, config_2):
 
 
 #################################################################
-# USE FORMULA TO COMPUTE CUT
+# USE FORMULA TO COMPUTE CROSS SECTION
 #################################################################
 
 

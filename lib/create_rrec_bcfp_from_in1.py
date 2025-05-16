@@ -1,8 +1,8 @@
 import os
 from os.path import join, exists
 
-from lib.create_cut_from_formula import write_rrec_from_formula, write_bcfp
-from lib.create_cut_from_strasburg import write_rrec_from_strasburg
+from lib.create_section_from_formula import write_rrec_from_formula, write_bcfp
+from lib.create_section_from_strasburg import write_rrec_from_strasburg
 from lib.data import In1Level
 from lib.exceptions import GenericPlasmaException
 from lib.strsbrg_db import read_strsbrg_db

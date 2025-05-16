@@ -1,7 +1,7 @@
 import os
 
 from lib.env import get_pathes, env
-from lib.strsbrg_db import download_levels_to_file, download_cuts_to_file
+from lib.strsbrg_db import download_levels_to_file, download_cross_sections_to_file
 from lib.utils import error, read_table
 
 ################## MAIN ######################
@@ -41,4 +41,4 @@ cuts_downloaded = os.path.join(my_dir, "db", elem, "strasbg-cuts")
 #     download_cuts_to_file(elem, cuts_downloaded, min_sp_num, max_sp_num)
 
 #download_levels_to_file(elem, levels_downloaded, 1, 8)
-download_cuts_to_file(elem, cuts_downloaded, 8, 9)
+download_cross_sections_to_file(elem, cuts_downloaded, 8, 9)

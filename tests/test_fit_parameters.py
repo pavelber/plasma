@@ -98,7 +98,7 @@ def test_create_fits_from_range(setup_params):
 
     # Call create_fits_from_range
     (result, square_diff) = create_fits_from_range(
-        cross_cut_function=energy_function,
+        cross_section_function=energy_function,
         approximation_fun=approximation_fun,
         ionization_potential=setup_params['ionization_potential'],
         stat_weight=setup_params['stat_weight'],

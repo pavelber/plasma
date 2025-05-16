@@ -105,7 +105,7 @@ def create_fits(
         print("X", end="")
         return None, np.inf
 def create_fits_from_range(
-        cross_cut_function,
+        cross_section_function,
         approximation_fun,
         ionization_potential,
         stat_weight,
@@ -123,7 +123,7 @@ def create_fits_from_range(
     """
     x_values = np.arange(start_e, end_e + step_e, step_e)
     try:
-        y_values = np.array([cross_cut_function(x) for x in x_values], dtype=float)
+        y_values = np.array([cross_section_function(x) for x in x_values], dtype=float)
     except Exception as e:
         print(f"Failed to evaluate energy_function: {e}")
         return None, np.inf

@@ -87,7 +87,7 @@ def modify_line(line, best_id, best_params):
     return "".join(new_parts)
 
 
-def process_file(excit_input_path, in1_path, excit_output_path,cross_cuts ):
+def replace_existing_cuts_in_excit(excit_input_path, in1_path, excit_output_path, cross_sections):
     outdir = path.join(path.dirname(excit_output_path), 'tabulation')
     if not path.exists(outdir):
         os.mkdir(outdir)
@@ -102,11 +102,11 @@ def process_file(excit_input_path, in1_path, excit_output_path,cross_cuts ):
             from_level = parts[1]
             to_level = parts[2]
 
-            if (sp_num, from_level, to_level) in cross_cuts.keys():
+            if (sp_num, from_level, to_level) in cross_sections.keys():
                 #print("FOUND!!!!")
                 # Use the new create_fits function
                 (best_id, best_params) = select_best_fit(
-                    table=cross_cuts[(sp_num, from_level, to_level)],
+                    table=cross_sections[(sp_num, from_level, to_level)],
                     function_objects= fitting_functions[TransitionType.EXCITATION],
                     ionization_potential=in1_data.get_ionization_potential(sp_num),
                     stat_weight= 0, #not used
@@ -126,14 +126,14 @@ if __name__ == "__main__":
     import sys
 
     # if len(sys.argv) != 4:
-    #     print("Usage: python script.py <excit_input_file> <in1_file> <excit_output_file> <cross_cut_directory>")
+    #     print("Usage: python script.py <excit_input_file> <in1_file> <excit_output_file> <cross_section_directory>")
     #     sys.exit(1)
 
     #excit_input_path = sys.argv[1]
     #in1_path = sys.argv[2]
     #excit_output_path = sys.argv[3]
-    #cross_cut_directory = sys.argv[4]
-    cross_cut_directory = "C:\\work2\\db\\O\\excitation-crosssection\\"
-    cross_cuts = parse_excitation_spectroscopic_files(cross_cut_directory)
-    #process_file(excit_input_path, in1_path, excit_output_path, cross_cuts)
-    process_file("C:\\work4\\tmp\\O-fac\\EXCIT.INP", "C:\\work4\\tmp\\O-fac\\IN1.INP", "C:\\work4\\tmp\\O-fac\\EXCIT.OUT",cross_cuts )
+    #cross_section_directory = sys.argv[4]
+    cross_section_directory = "C:\\work2\\db\\O\\excitation-crosssection\\"
+    cross_sections = parse_excitation_spectroscopic_files(cross_section_directory)
+    #process_file(excit_input_path, in1_path, excit_output_path, cross_sections)
+    replace_existing_cuts_in_excit("C:\\work4\\tmp\\O-fac\\EXCIT.INP", "C:\\work4\\tmp\\O-fac\\IN1.INP", "C:\\work4\\tmp\\O-fac\\EXCIT.OUT", cross_sections)

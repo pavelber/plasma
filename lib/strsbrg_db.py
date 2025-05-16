@@ -10,11 +10,11 @@ from lib.utils import read_table, add_one_to_config_in_missing, energy_ryd_to_ev
 (name_to_table, num_to_table) = read_table()
 URL_LINES_SKIP = 8
 FILE_LINES_SKIP = 3
-FILE_CUTS_SKIP = 3
+FILE_CROSS_SECTIONS_SKIP = 3
 
 base_dir = dirname(abspath(__file__))
 strsbrg_levels = {}
-strsbrg_cuts = {}
+strsbrg_cross_sections = {}
 
 
 @dataclass
@@ -23,7 +23,7 @@ class Transition:
     level_to: int
     islp: str
     energy: float
-    cuts: dict
+    cross_sections: dict
 
 
 @dataclass
@@ -41,9 +41,9 @@ def extract_config(config):
     pass
 
 
-def parse_cuts(f_name):
+def parse_cross_sections(f_name):
     with open(f_name, "r") as f:
-        for i in range(FILE_CUTS_SKIP):
+        for i in range(FILE_CROSS_SECTIONS_SKIP):
             f.readline()
         transitions = {}
 
@@ -55,13 +55,13 @@ def parse_cuts(f_name):
                 level_to = int(parts[4])
                 islp = parts[3]
                 energy = energy_ryd_to_ev(float(parts[5]))
-                cuts = {}
-                transition = Transition(level_from, level_to, islp, energy, cuts)
+                cross_sections = {}
+                transition = Transition(level_from, level_to, islp, energy, cross_sections)
                 transitions[level_from] = transition
             elif num_parts == 2:
-                cuts[float(parts[0])] = float(parts[1])
+                cross_sections[float(parts[0])] = float(parts[1])
 
-    return {key: value for key, value in transitions.items() if value.cuts is None or len(value.cuts) > 0}
+    return {key: value for key, value in transitions.items() if value.cross_sections is None or len(value.cross_sections) > 0}
 
 
 def parse_levels(f_name):
@@ -118,12 +118,12 @@ def normalize_config(conf):
     return m
 
 
-def download_cuts_to_file(elem, dir, min_sp, max_sp):
+def download_cross_sections_to_file(elem, dir, min_sp, max_sp):
     for n in range(min_sp, max_sp + 1):
-        download_one_level_cut_to_file(elem, n, join(dir, str(n) + ".txt"))
+        download_one_level_cross_section_to_file(elem, n, join(dir, str(n) + ".txt"))
 
 
-def download_one_level_cut_to_file(elem, sp_num_dec, file):
+def download_one_level_cross_section_to_file(elem, sp_num_dec, file):
     nz = int(name_to_table[elem]["AtomicNumber"])
     ne = nz + 1 - sp_num_dec
 
@@ -142,9 +142,9 @@ def download_one_level_cut_to_file(elem, sp_num_dec, file):
 def read_strsbrg_db(elem, sp_nums, nucleus):
     for s_n in sp_nums:
         levels_file = join(base_dir, "..", "db", elem, "strasbg-levels", "%s.txt" % s_n)
-        cuts_file = join(base_dir, "..", "db", elem, "strasbg-cuts", "%s.txt" % s_n)
+        cross_sections_file = join(base_dir, "..", "db", elem, "strasbg-cuts", "%s.txt" % s_n)
         strsbrg_levels[s_n] = parse_levels(levels_file)
-        strsbrg_cuts[s_n] = parse_cuts(cuts_file)
+        strsbrg_cross_sections[s_n] = parse_cross_sections(cross_sections_file)
 
 
 #

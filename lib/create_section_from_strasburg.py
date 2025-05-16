@@ -5,7 +5,7 @@ from scipy import interpolate
 
 from lib.data import In1Level
 from lib.levels_string import letters_to_order
-from lib.strsbrg_db import strsbrg_levels, strsbrg_cuts
+from lib.strsbrg_db import strsbrg_levels, strsbrg_cross_sections
 from lib.utils import energy_ryd_to_ev
 
 base_dir = dirname(abspath(__file__))
@@ -63,10 +63,10 @@ def get_to_in_1_levels(elem, s_n, level, in1_levels_by_sp_num, nucleus):
     from_strqasburg_level = get_strasburg_level_by_in1_level(elem, s_n, level, in1_levels_by_sp_num)
     if from_strqasburg_level is None:
         return None
-    ionization_potentional = strsbrg_cuts[s_n][1].energy
-    if from_strqasburg_level.num_i not in strsbrg_cuts[s_n]:
+    ionization_potentional = strsbrg_cross_sections[s_n][1].energy
+    if from_strqasburg_level.num_i not in strsbrg_cross_sections[s_n]:
         return []
-    transition = strsbrg_cuts[s_n][from_strqasburg_level.num_i]
+    transition = strsbrg_cross_sections[s_n][from_strqasburg_level.num_i]
     s_n_1 = s_n + 1
     if s_n_1 == nucleus:
         return [In1Level(1, "", "", 0.0, 0.0, 1.0, "")]
@@ -105,8 +105,8 @@ def create_n_values_map(original_dict, n):
 
 def take_from_db_and_write(in1_level, e_n0l0, elem, s_n, relative_weight, levels_by_sp_num, o_f, f_data):
     srasburg_level = get_strasburg_level_by_in1_level(elem, s_n, in1_level, levels_by_sp_num)
-    from_db = strsbrg_cuts[s_n][srasburg_level.num_i]
-    interpolated = create_n_values_map(from_db.cuts, 99)
+    from_db = strsbrg_cross_sections[s_n][srasburg_level.num_i]
+    interpolated = create_n_values_map(from_db.cross_sections, 99)
     cut_constant = 1e-18
     for e_ryd, cut in interpolated.items():
         sigma = cut_constant * float(cut) * relative_weight
