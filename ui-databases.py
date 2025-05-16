@@ -146,7 +146,7 @@ class Runner:
         excit_path = os.path.join(elem_dir, "EXCIT.INP")
         spectr_path = os.path.join(elem_dir, "SPECTR.INP")
 
-        bcfp_path = os.path.join(elem_dir, "BFCP.INP")
+        bcfp_path = os.path.join(elem_dir, "BCFP.INP")
 
         with open(rrec_path, "w") as rrec:
             for sp in sp_nums:

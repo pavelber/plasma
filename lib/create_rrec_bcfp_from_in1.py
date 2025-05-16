@@ -1,7 +1,7 @@
 import os
 from os.path import join, exists
 
-from lib.create_cut_from_formula import write_rrec_from_formula, write_bfcp
+from lib.create_cut_from_formula import write_rrec_from_formula, write_bcfp
 from lib.create_cut_from_strasburg import write_rrec_from_strasburg
 from lib.data import In1Level
 from lib.exceptions import GenericPlasmaException
@@ -113,9 +113,9 @@ def create_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus):
         n0l0 = read_n0l0(in1_inp, sp_nums)
         levels_by_sp_num = read_sp_nums(n0l0, in1_inp)
     levels_by_sp_num[str(nucleus)] = []
-    with open(join(out_dir, "BFCP.INP"), "w") as bfcp_f:
-        bfcp_f.write("    Z  lvl#  Z+1 lvl#      Coefficient	0 0 0\n")
-        bfcp_f.write("--------------------------------------\n")
+    with open(join(out_dir, "BCFP.INP"), "w") as bcfp_f:
+        bcfp_f.write("    Z  lvl#  Z+1 lvl#      Coefficient	0 0 0\n")
+        bcfp_f.write("--------------------------------------\n")
         for s_n in sp_nums:
             sp_dir = join(out_dir, str(s_n))
             if not exists(sp_dir):
@@ -128,5 +128,5 @@ def create_bcfp_from_in1(in1_inp_path, out_dir, sp_nums, nucleus):
                     level_num = level.level_num
                     config_1 = level.config_1
                     config_2 = level.config_2
-                    write_bfcp(atomic_number, bfcp_f, config_1, config_2,
+                    write_bcfp(atomic_number, bcfp_f, config_1, config_2,
                                level, levels_by_sp_num, next_sn, s_n, sp_dir)

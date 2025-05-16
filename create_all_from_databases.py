@@ -8,7 +8,7 @@ from lib.check_and_fix import copy_checks, check_and_fix_old_rr_version2, check_
 from lib.create_in1_from_databases import create_in1_excit_spectr__from_databases, parse_energy_limits
 from lib.create_rrec_bcfp_from_in1 import create_rrec_from_in1, create_bcfp_from_in1
 from lib.env import get_pathes, env
-from lib.fisher import run_qsege, run_for_fisher
+from lib.fisher import run_for_fisher
 from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import error, read_table, invert_replaces
@@ -19,7 +19,7 @@ from lib.in1 import IN1
 
 if len(sys.argv) < 7:
     error('\nUsage: ' + sys.argv[
-        0] + ' out-dir element-name nmax energy-limits min_sp_num max_sp_num')
+        0] + ' out-dir element-name nmax energy-limits min_sp_num max_sp_num [formula] [cross-section-database]\n')
 
 param_num = 1
 out_dir = os.path.abspath(sys.argv[param_num])
@@ -96,7 +96,7 @@ rrec_path = os.path.join(elem_dir, "RREC.INP")
 excit_path = os.path.join(elem_dir, "EXCIT.INP")
 spectr_path = os.path.join(elem_dir, "SPECTR.INP")
 
-bcfp_path = os.path.join(elem_dir, "BFCP.INP")
+bcfp_path = os.path.join(elem_dir, "BCFP.INP")
 
 with open(rrec_path, "w") as rrec:
     for sp in sp_nums_with_nucleus:
@@ -126,7 +126,7 @@ create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits.INP", 
 create_new_fits_for_rrec2(elem_dir, 'powell', from_new_to_old, "RREC-fits-2.INP", "RREC-fits.INP", True)
 IN1.test_number_of_levels_inp1(in1)
 files_not_empty(elem_dir)
-levels_num = run_for_fisher(False, min_sp_num, max_sp_num, elem, elem_dir, "BFCP.INP", False)
+levels_num = run_for_fisher(False, min_sp_num, max_sp_num, elem, elem_dir, "BCFP.INP", False)
 
 # removed = remove_large(rrec_path, 0, [4, 5], 1.0e-4)
 # print("Removed " + str(removed) + "from " + rrec_path)
