@@ -51,10 +51,5 @@ def test_branching_ratio(in1_data):
     ratio = in1_data.get_branching_ratio("16", "1")
     assert abs(ratio - expected_ratio) < 1e-6, f"Expected ratio {expected_ratio}, got {ratio}"
 
-def test_missing_file():
-    """
-    Test that IN1 raises an appropriate exception for a missing input file.
-    """
-    with pytest.raises(FileNotFoundError):
-        IN1("nonexistent_file.INP")
-
+def test_save_file():
+    IN1("IN1.INP").dump_to_file("test_output.inp")

@@ -1,11 +1,9 @@
 import os
-from os import path
 
 from lib.create_cross_section_fits import parse_excitation_spectroscopic_files, TransitionType, fitting_functions
-from lib.cross_section import create_cross_section_function
+from lib.fit_parameters import select_best_fit
 from lib.in1 import IN1
 from lib.utils import skip_n_lines
-from lib.fit_parameters import select_best_fit
 
 reject_bad_fits = True
 BAD_FIT_THRESHOLD = 1e-16
@@ -13,6 +11,7 @@ BAD_FIT_THRESHOLD = 1e-16
 header = """  SS   #1   #2   Mthd        A          B            C            D            E            F          Osc.Strngth
 ------------------------------------------------------------------------------------------------------------------
 """
+
 
 class EXCIT:
     def __init__(self, excit_path=None):
@@ -28,17 +27,17 @@ class EXCIT:
             for line in infile:
                 # Parse fixed-width line
                 parts = [
-                    line[0:4].strip(),   # SS
-                    line[4:9].strip(),   # #1 (from_level)
+                    line[0:4].strip(),  # SS
+                    line[4:9].strip(),  # #1 (from_level)
                     line[9:14].strip(),  # #2 (to_level)
-                    line[14:19].strip(), # Mthd
-                    line[19:33].strip(), # A
-                    line[33:46].strip(), # B
-                    line[46:59].strip(), # C
-                    line[59:72].strip(), # D
-                    line[72:85].strip(), # E
-                    line[85:98].strip(), # F
-                    line[98:].strip()    # Osc.Strngth
+                    line[14:19].strip(),  # Mthd
+                    line[19:33].strip(),  # A
+                    line[33:46].strip(),  # B
+                    line[46:59].strip(),  # C
+                    line[59:72].strip(),  # D
+                    line[72:85].strip(),  # E
+                    line[85:98].strip(),  # F
+                    line[98:].strip()  # Osc.Strngth
                 ]
                 if len(parts) < 11 or not parts[0]:
                     continue  # Skip invalid lines
@@ -196,15 +195,14 @@ class EXCIT:
 
         return "".join(new_parts)
 
-    def replace_fits_from_cross_sections(self, in1_path, cross_section_directory):
+    def replace_fits_from_cross_sections(self, in1_data, cross_section_directory):
         """
         Replace fitting parameters for transitions with available cross-section data.
 
         Args:
-            in1_path (str): Path to the IN1 file.
+            in1_data (IN1): Instanc eof IN1
             cross_section_directory (str): Directory containing cross-section files.
         """
-        in1_data = IN1(in1_path)
         cross_sections = parse_excitation_spectroscopic_files(cross_section_directory)
 
         for transition_key in list(self._transitions.keys()):
@@ -221,8 +219,52 @@ class EXCIT:
                 # Update transition data
                 self._transitions[transition_key]['method_id'] = str(best_id)
                 # Ensure coefficients list is 6 elements, padding with 0.0 if needed
-                new_coeffs = [float(p) if i < len(best_params) else 0.0 for i, p in enumerate(best_params + (0.0,) * 6)][:6]
+                new_coeffs = [float(p) if i < len(best_params) else 0.0 for i, p in
+                              enumerate(best_params + (0.0,) * 6)][:6]
                 self._transitions[transition_key]['coefficients'] = new_coeffs
+
+    def replace_transitions(self, start_sp_num, other, renumeration_table):
+        """
+        Replace transitions starting from a given spectroscopic number using another EXCIT instance.
+        For start_sp_num, apply level number translations; for higher numbers, take all transitions from other.
+
+        Args:
+            start_sp_num (str): Spectroscopic number from which to start replacing transitions.
+            other (EXCIT): Another EXCIT instance to take transitions from.
+            renumeration_table (dict): Dictionary mapping old level numbers to new for start_sp_num.
+        """
+        # Create a new transitions dictionary
+        new_transitions = {}
+        new_spectroscopic_numbers = set()
+
+        # Step 1: Copy transitions for spectroscopic numbers < start_sp_num
+        for (sp_num, from_level, to_level), data in self._transitions.items():
+            if sp_num < start_sp_num:
+                new_transitions[(sp_num, from_level, to_level)] = data.copy()
+                new_spectroscopic_numbers.add(sp_num)
+
+        # Step 2: Handle transitions for start_sp_num with renumeration_table
+        for (sp_num, from_level, to_level), data in self._transitions.items():
+            if sp_num == start_sp_num:
+                # Check if both levels are in renumeration_table
+                if from_level in renumeration_table and to_level in renumeration_table and renumeration_table[
+                    from_level] is not None and renumeration_table[to_level] is not None:
+                    # Translate level numbers
+                    new_from_level = renumeration_table[from_level]
+                    new_to_level = renumeration_table[to_level]
+                    # Add translated transition
+                    new_transitions[(sp_num, new_from_level, new_to_level)] = data.copy()
+                    new_spectroscopic_numbers.add(sp_num)
+
+        # Step 3: Copy transitions for spectroscopic numbers > start_sp_num from other
+        for (sp_num, from_level, to_level), data in other._transitions.items():
+            if sp_num > start_sp_num:
+                new_transitions[(sp_num, from_level, to_level)] = data.copy()
+                new_spectroscopic_numbers.add(sp_num)
+
+        # Update instance data
+        self._transitions = new_transitions
+        self._spectroscopic_numbers = new_spectroscopic_numbers
 
 
 # Example usage
@@ -241,7 +283,15 @@ if __name__ == "__main__":
     # Load EXCIT
     excit = EXCIT(excit_input_path)
 
-    # Replace fits
+    # Example of replace_transitions
+    other_excit = EXCIT("C:\\work2\\plasma\\db\\O\\EXCIT.INP")  # Load another EXCIT file
+    fac_in1 = IN1(os.path.join("C:\\work2\\plasma\\db\\O\\fac", "IN1.INP"))
+    nist_in1 = IN1(os.path.join("C:\\work2\\plasma\\db\\O\\", "IN1.INP"))
+    renumeration_table = nist_in1.add_or_replace_sp_data("5", fac_in1)
+
+    excit.replace_transitions(start_sp_num="4", other=other_excit, renumeration_table=renumeration_table)
+
+    # Replace fits (optional, as per original main)
     excit.replace_fits_from_cross_sections(
         in1_path=in1_path,
         cross_section_directory=cross_section_directory

@@ -213,19 +213,17 @@ class BCFP:
                 f.write(f"{e:8.3f} {energy_function(e):10.3e}\n")
                 e += STEP_E
 
-    def create_fac_fitting_params(self, in1_path, cross_section_directory=None, create_tabulation_files=False, remove_bad_fits=True):
+    def create_fac_fitting_params(self, in1_data, cross_section_directory=None, create_tabulation_files=False, remove_bad_fits=True):
         """
         Convert a Format 1 BCFP (branching ratio + 3 coefficients) to Format 2 (4 coefficients).
         Updates the _transitions dictionary in memory.
 
         Args:
-            in1_path (str): Path to the IN1 file.
+            in1_data (IN1): Instance of IN1
             cross_section_directory (str, optional): Directory containing cross-section files.
             create_tabulation_files (bool): If True, generate tabulation files.
             remove_bad_fits (bool): If True, remove transitions with failed fits; otherwise, keep with zeros and comment.
         """
-        # Load IN1 data
-        in1_data = IN1(in1_path)
 
         # Load cross-sections if provided
         cross_sections = {}
@@ -336,7 +334,45 @@ class BCFP:
                         if not any(t[0] == sp or t[2] == sp for t in self._transitions):
                             self._spectroscopic_numbers.remove(sp)
 
+    def replace_transitions(self, start_sp_num, other, renumeration_table):
+        """
+        Replace transitions starting from a given spectroscopic number using another BCFP instance.
+        For start_sp_num, apply level number translations to to_level in transitions from (sp_num < start_sp_num) to start_sp_num;
+        for higher numbers, take all transitions from other.
 
+        Args:
+            start_sp_num (str): Spectroscopic number from which to start replacing transitions.
+            other (BCFP): Another BCFP instance to take transitions from.
+            renumeration_table (dict): Dictionary mapping old level numbers to new for start_sp_num, with non-None values.
+        """
+        # Create new transitions dictionary and spectroscopic numbers set
+        new_transitions = {}
+        new_spectroscopic_numbers = set()
+
+        # Step 1: Copy transitions where both from_sp and to_sp are < start_sp_num
+        for (from_sp, from_level, to_sp, to_level), data in self._transitions.items():
+            if to_sp < start_sp_num:
+                new_transitions[(from_sp, from_level, to_sp, to_level)] = data.copy()
+                new_spectroscopic_numbers.add(from_sp)
+                new_spectroscopic_numbers.add(to_sp)
+            elif to_sp == start_sp_num:
+                if to_level in renumeration_table and renumeration_table[to_level] is not None:
+                    new_to_level = renumeration_table[to_level]
+                    new_transitions[(from_sp, from_level, to_sp, new_to_level)] = data.copy()
+                    new_spectroscopic_numbers.add(from_sp)
+                    new_spectroscopic_numbers.add(to_sp)
+
+
+        # Step 3: Copy transitions from other where from_sp or to_sp > start_sp_num
+        for (from_sp, from_level, to_sp, to_level), data in other._transitions.items():
+            if to_sp > start_sp_num:
+                new_transitions[(from_sp, from_level, to_sp, to_level)] = data.copy()
+                new_spectroscopic_numbers.add(from_sp)
+                new_spectroscopic_numbers.add(to_sp)
+
+        # Update instance data
+        self._transitions = new_transitions
+        self._spectroscopic_numbers = new_spectroscopic_numbers
 # Example usage
 if __name__ == "__main__":
     import sys
@@ -355,7 +391,7 @@ if __name__ == "__main__":
 
     # Convert to Format 2
     bcfp.create_fac_fitting_params(
-        in1_path=in1_path,
+        in1_data=IN1(in1_path),
         cross_section_directory=cross_section_directory,
         create_tabulation_files=False,
         remove_bad_fits=False
