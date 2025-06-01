@@ -41,7 +41,7 @@ def merge(fac_dir, nist_dir):
     fac_spectr.replace_transitions(start_sp_num=replace_starting_from, other=nist_spectr, renumeration_table=renumeration_table)
     fac_rrec.replace_transitions(start_sp_num=replace_starting_from, other=nist_rrec, renumeration_table=renumeration_table)
 
-
+    nist_in1.dump_to_file("C:\\work2\\plasma\\db\\O\\merged\\IN1.INP")
 
 if __name__ == "__main__":
     fac_dir = sys.argv[1]

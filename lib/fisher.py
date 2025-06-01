@@ -66,10 +66,10 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             from_level = bcfp_parts[1]
             to_sp = bcfp_parts[2]
             to_level = bcfp_parts[3]
-            transition_energy = in1_data.get_ionization_energy(from_sp, from_level, to_sp, to_level)  # Changed
+            ionization_energy = in1_data.get_ionization_energy(from_sp, from_level, to_sp, to_level)  # Changed
             from_config = in1_data.get_config(from_sp, from_level)  # Changed
             to_config = in1_data.get_config(to_sp, to_level)  # Changed
-            (c_l, delta_l, num_of_electrons, ionization_energy) = get_constants_for_bernshtam_ralchenko(
+            (c_l, delta_l, num_of_electrons) = get_constants_for_bernshtam_ralchenko(
                 from_config,
                 to_config)
             if c_l:

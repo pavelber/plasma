@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from os.path import join, dirname, abspath
 from typing import List
 from urllib.request import Request, urlopen
+import  os
 
 from lib.utils import read_table, add_one_to_config_in_missing, energy_ryd_to_ev
 

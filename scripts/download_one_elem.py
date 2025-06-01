@@ -26,7 +26,7 @@ if env_errors is not None:
 
 old_path, fit_path, exc_fac_path, ph_fac_path, my_dir = get_pathes()
 
-my_dir = dirname(abspath(__file__))
+my_dir = dirname(abspath(__file__))+"\\.."
 
 elem_dir = os.path.join(my_dir, "db", elem)
 levels_downloaded = os.path.join(my_dir, "db", elem, "levels")
