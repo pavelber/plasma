@@ -135,7 +135,7 @@ def parse_ionization_spectroscopic_files(directory):
             source_level = source_level
             target_level = target_level
             result[((source_spec_num, source_level), (target_spec_num, target_level))] = (
-                read_cross_section_dat(directory + filename))
+                read_cross_section_dat(os.path.join(directory, filename)))
         else:
             print(f"  Skipping {filename}: Does not match expected pattern")
 

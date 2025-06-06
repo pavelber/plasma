@@ -57,7 +57,7 @@ class IN1:
                         level = "1"
                         self._energy_table[(current_sp_num, level)] = 0.0
                         self._configs[(current_sp_num, level)] = ["1s0"]
-                        self._stat_weight[(current_sp_num, level)] = 0.0  # Assume stat_weight 0 for nucleus
+                        self._stat_weight[(current_sp_num, level)] = 1.0  # Assume stat_weight 0 for nucleus
                         self._levels_per_sp_num[current_sp_num].append(level)
                         # Add nucleus to branching ratio
                         config = tuple(["1s0"])
@@ -74,9 +74,9 @@ class IN1:
                         is_autoion = True
                         continue
                     else:
-                        level = line[59:66].strip()
+                        level = line[59:68].strip()
                         energy = float(line[27:37].strip())
-                        g = float(line[17:23].strip())
+                        g = float(line[16:23].strip())
                         config = line[0:10].split()
 
                         self._energy_table[(current_sp_num, level)] = energy

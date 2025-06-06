@@ -1,5 +1,5 @@
 import os
-import sys
+import argparse
 
 from lib.bcfp import BCFP
 from lib.excit import EXCIT
@@ -7,7 +7,7 @@ from lib.in1 import IN1
 from lib.spectr import SPECTR
 
 
-def merge(fac_dir, nist_dir):
+def merge(fac_dir, nist_dir, replace_starting_from):
     fac_in1 = IN1(os.path.join(fac_dir, "IN1.INP"))
     nist_in1 = IN1(os.path.join(nist_dir, "IN1.INP"))
     fac_excit = EXCIT(os.path.join(fac_dir, "EXCIT.INP"))
@@ -19,11 +19,9 @@ def merge(fac_dir, nist_dir):
     fac_rrec = SPECTR(os.path.join(fac_dir, "RREC.INP"))
     nist_rrec = SPECTR(os.path.join(nist_dir, "RREC.INP"))
 
-    renumeration_table = nist_in1.add_or_replace_sp_data("5", fac_in1)
+    renumeration_table = nist_in1.add_or_replace_sp_data(str(replace_starting_from), fac_in1)
     excitation_cross_section_directory = "C:\\work2\\plasma\\db\\O\\excitation-crosssection\\"
     ionization_cross_section_directory = "C:\\work2\\plasma\\db\\O\\ionization-crosssection\\"
-
-    replace_starting_from = "5"
 
 
 
@@ -44,6 +42,9 @@ def merge(fac_dir, nist_dir):
     nist_in1.dump_to_file("C:\\work2\\plasma\\db\\O\\merged\\IN1.INP")
 
 if __name__ == "__main__":
-    fac_dir = sys.argv[1]
-    nist_dir = sys.argv[2]
-    merge(fac_dir, nist_dir)
+    parser = argparse.ArgumentParser(description='Merge FAC and NIST data')
+    parser.add_argument('fac_dir', type=str, help='FAC directory')
+    parser.add_argument('nist_dir', type=str, help='NIST directory')
+    parser.add_argument('--replace-starting-from', type=int, default=5, help='Spectroscopical number to start using FAC (default: 5)')
+    args = parser.parse_args()
+    merge(args.fac_dir, args.nist_dir, args.replace_starting_from)

@@ -41,7 +41,7 @@ class CreateFromDataBasesUI(GenericUI):
 
     @property
     def config_file_path(self):
-        return "create_from_databases_config.ini"
+        return "O.ini"
 
     @property
     def title(self):

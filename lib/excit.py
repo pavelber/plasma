@@ -26,19 +26,7 @@ class EXCIT:
             skip_n_lines(infile, 2)  # Skip header and separator lines
             for line in infile:
                 # Parse fixed-width line
-                parts = [
-                    line[0:4].strip(),  # SS
-                    line[4:9].strip(),  # #1 (from_level)
-                    line[9:14].strip(),  # #2 (to_level)
-                    line[14:19].strip(),  # Mthd
-                    line[19:33].strip(),  # A
-                    line[33:46].strip(),  # B
-                    line[46:59].strip(),  # C
-                    line[59:72].strip(),  # D
-                    line[72:85].strip(),  # E
-                    line[85:98].strip(),  # F
-                    line[98:].strip()  # Osc.Strngth
-                ]
+                parts = line.split()
                 if len(parts) < 11 or not parts[0]:
                     continue  # Skip invalid lines
 
@@ -116,6 +104,8 @@ class EXCIT:
                 coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5],
                 data['osc_strength']
             )
+            if 'comment' in data:
+                line += " " + data['comment']
             output_lines.append(line + "\n")
 
         return "".join(output_lines)
@@ -203,7 +193,9 @@ class EXCIT:
             in1_data (IN1): Instanc eof IN1
             cross_section_directory (str): Directory containing cross-section files.
         """
-        cross_sections = parse_excitation_spectroscopic_files(cross_section_directory)
+        cross_sections = {}
+        if not os.path.exists(cross_section_directory):
+            cross_sections = parse_excitation_spectroscopic_files(cross_section_directory)
 
         for transition_key in list(self._transitions.keys()):
             sp_num, from_level, to_level = transition_key
@@ -222,6 +214,7 @@ class EXCIT:
                 new_coeffs = [float(p) if i < len(best_params) else 0.0 for i, p in
                               enumerate(best_params + (0.0,) * 6)][:6]
                 self._transitions[transition_key]['coefficients'] = new_coeffs
+                self._transitions[transition_key]['comment'] = "#from db"
 
     def replace_transitions(self, start_sp_num, other, renumeration_table):
         """

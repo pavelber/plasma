@@ -227,7 +227,7 @@ class BCFP:
 
         # Load cross-sections if provided
         cross_sections = {}
-        if cross_section_directory:
+        if cross_section_directory and path.exists(cross_section_directory):
             cross_sections = parse_ionization_spectroscopic_files(cross_section_directory)
 
         # Create tabulation directory if needed
@@ -257,6 +257,7 @@ class BCFP:
             from_stat_weight = in1_data.get_stat_weight(from_sp, from_level)
 
             result = None
+            comment = ""
             # Try fitting from cross-section data if available
             if ((from_sp, from_level), (to_sp, to_level)) in cross_sections:
                 print(f"Fitting from cross-section for {from_sp} {from_level} -> {to_sp} {to_level}")
@@ -271,6 +272,8 @@ class BCFP:
                 )
                 if result is None:
                     print(f"Warning: Can't fit table {from_sp} {from_level} -> {to_sp} {to_level}")
+                else:
+                    comment = " #from db"
 
             # If no cross-section fit, try fitting from energy function
             if result is None:
@@ -319,7 +322,8 @@ class BCFP:
 
             # Update transition data with new coefficients
             self._transitions[transition_key] = {
-                'coefficients': result  # [D, -A, B, C]
+                'coefficients': result,  # [D, -A, B, C]
+                'comment': comment
             }
 
         # Remove transitions with failed fits if requested
