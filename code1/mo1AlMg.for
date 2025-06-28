@@ -1,27 +1,27 @@
-      module mo1               !  Feb 14, 2024
+      module mo1     
       implicit none
       integer, public, parameter :: 
-     +     nXE= 2              ! number of chemical elements (XE). Now nX=1 is AL, nX=2 is MG.
+     +     nXE= 2              ! number of chemical elements (XE). Now nX=1 is AL, nX=2 is MG. 
       integer, public :: 
      +     FSS(nXE), HSS(nXE), ! First & H-like Spectroscopic Symbol (SpS) in database(DB); "FSS" may be any, but it must have > 1 energy level (EL).
      +     Nnu(nXE),           ! Number of non-autoionizing energy levels (ELs) in DB. "Nnu" = the serial number of nucleus in DB
-     +     NST(nXE)            ! TOTAL number of ELs in DB of XE, This number includes autoionizing (AI) and non-AI ELs
+     +     NST(nXE)            ! TOTAL number of ELs in DB of XE, This number includes autoionizing (AI) and non-AI ELs 
 
-      DATA FSS / 30,  9/,   ! 1st SpSs of AL & MG in DB, here Be-like ELs
-     +     HSS / 36, 12/,   !     H -like SpSs
-     +     Nnu /298, 109/,  ! serial number of nuclei in DBs of XE. This number = the number of non-AI ELs in DB
-     +     NST /1612, 272/  ! total number of ELs in databases of Al and Mg
+      DATA FSS / 10,  9/,   ! 1st SpSs of AL & MG in DB, here Be-like ELs
+     +     HSS / 13, 12/,   ! H -like SpSs
+     +     Nnu /109, 109/,  ! serial number of nuclei in DBs of XE. This number = the number of non-AI ELs in DB 
+     +     NST /272, 272/   ! total number of ELs in databases of Al and Mg  
       integer, public, parameter :: 
-     +     NSTm = 1612,             ! max of all (here two) "NST"
-     +     HSSm =  36,                  ! highest (of all XE) SpS of H-like ion
-     +    Nwork = 50+ 12*NSTm+ NSTm**2  ! For NAG d02eaf work area 'WEAF'
+     +     NSTm = 272,            ! max of all (here two) "NST"	   
+     +     HSSm =  13,                  ! highest (of all XE) SpS of H-like ion
+     +    Nwork = 50+ 12*NSTm+ NSTm**2  ! For NAG d02eaf work area 'WEAF'	
 
       integer, public, parameter :: 
-     +   nFAI = 301,   ! in each SpS, containing AI ELs: artificial number for the 1st (lowest) AI EL on the list of this SpS .
-     +   nvM  = 12300, ! number of hv points on hv axis. Among them: 100 points in soft [hvMin, hvSmo] domain & 200 points in [hvMaxf, hvMax] domain
+     +   nFAI = 201,   ! in each SpS, containing AI ELs: artificial number for the 1st (lowest) AI EL on the list of this SpS .  
+     +   nvM  = 12300, ! number of hv points on hv axis. Among them: 100 points in soft [hvMin, hvSmo] domain & 200 points in [hvMaxf, hvMax] domain 
      +   mSpe = 6,     ! Number of TREX frames = number of t-points chosen for printing files 61 - 76,171-176, 371-376,
-c                        = number of t-points in scenario.
-     +   MNLe = 11566,  ! Not more than "MNLe" spectral lines are expected for all XEs in common LineList
+c                        = number of t-points in scenario.      
+     +   MNLe = 2600,  ! Not more than "MNLe" spectral lines are expected for all XEs in common LineList
      +   LaMx = 2,     ! Number of zones, here 1 sphere but it is processed as La=2
      +   np5kap= 2272, ! Number of v-points on  5 mils kapton PCD response curve [1mil = 25.4 mcm; mils= mInch] 
      +   np10ka= 2301, ! Number of v-points on 10 mils kapton PCD  
@@ -71,26 +71,26 @@ c    +    Uam  = 1.6605402d-24,   ! g; atomic mass unit
      +  PoLeNu(nXE,6), ! For each XE, Six levels chosen for printing their POP(t) in file "POPs_BS_AL" & "POPs_BS_MG". 
      +  gpEq(mSpe),    ! serial numbers of t point at which t = tres(...)
      +  KeRedu,    ! -1, 0 or 1 from FLAG. Ionization potential lowering model: none (-1), IonSphe (0) or DebHu (1). 
-     +  La, Law,   ! serial # of plasma zone under study (w-layer).
+     +  La, Law,   ! serial # of plasma zone under study (w-layer). 
      +  KeySmooth, ! > 1 means "Replace broken-line t-depe of params with smooth Lor-type t-depe"
      +  tresPeak,  ! # = 1,2, ...,6 in "tres(#)" chosen for the peak of Te(t)
      +  linM4,     ! number of spectral lines in [hvmin, hvmax] domain (sum over XE)  
      +  nX, n7, ii, ! Chemical Element (XE) number & w-variable for XE#
-     +  iTX1, iTX2,         ! 1st & last v-point within TREX v-range  
-     +  i, iv, kw, k1, k2,  ! w-variables 
-     +  iSS, jSS, kQS, kS,  ! w-variables 
+     +  iTX1, iTX2,        ! 1st & last v-point within TREX v-range  
+     +  i, iv, kw, k1, k2, ! w-variables 
+     +  iSS, jSS, kQS, kS, ! w-variables 
      +  k, k3, kf, j, ng, 
-     +  kU, kL, lin, nLam,  ! w-variables
-     +  npts, Nlim, Ifail,  ! used in D01ahf and d02
-     +  iv1770,            ! for ScaF
-     +  PrFr,       !  = 1,2,3,4 is "tres(#)" for printing "Resume" & "UnderstandPCD"  
+     +  kU, kL, lin, nLam, ! w-variables
+     +  npts, Nlim, Ifail, ! used in D01ahf and d02
+     +  iv1770,            ! for ScaF 
+     +  PrFr,   ! = 1,2,3,4 is "tres(#)" for printing "Resume" & "UnderstandPCD"  
      +  npa     ! number of parts of each (ti-tf] interval, i.e. including "tf". Now 4 <= npa <= 48
 
       real(8), public :: 
-     +   EmTot(LaMx,nvM),           ! plasma emissivity [W/cc/sr/eV] in LaMx zones.
+     +   EmTot(LaMx,nvM),           ! plasma emissivity [W/cc/sr/eV] in LaMx zones. 
      +   AbTot(LaMx,nvM),           ! plasma absorption coefficient corrected for stimulated emissiony [1/cm]
      +   absorBF(nvM),  emisFB(nvM),   ! [1/cm], [W/cc/sr/eV] 
-     +   SpInEff(LaMx,nvM),            ! [W/cm2/sr/eV] Space- direction- average spectral intensity of radiation in BS
+     +   SpInEff(LaMx,nvM),            ! [W/cm2/sr/eV] Space- direction- average spectral intensity of radiation in BS 
      +   Yield(nvM), Yietf,  ! Radiation spectral yield [J/eV], Radiation yield [J/sr] up to present 'tf', t-inter of Power
      +    E(NSTm,nXE),       ! EL Energy relative to THIS-SS ground state
      +   g0(NSTm,nXE),   ! EL degeneracy: table value
@@ -127,23 +127,23 @@ c    +    Uam  = 1.6605402d-24,   ! g; atomic mass unit
      +   WPhI(NSTm,NSTm), WiRR(NSTm,NSTm), ! photoIonization & induced RR probabs, 1/s
      +   WDC(NSTm,NSTm),                   ! probability of Dielectronic Capture into AI EL of He-like & Li-like ions
      +   PM(NSTm,NSTm),           ! Probability Matrix [1/s]
-     +   Wout(NSTm, nXE, LaMx),   ! EL depletion rate, PM(k,k)=-Wout(k)
-     +   POPt(NSTm,nXE,LaMx),     ! relative abundance of ELs
+     +   Wout(NSTm, nXE, LaMx),   ! EL depletion rate, PM(k,k)=-Wout(k) 
+     +   POPt(NSTm,nXE,LaMx),     ! relative abundance of ELs 
      +   POPZ(HSSm+1,nXE,LaMx),         ! relative abundance of ionization stages, including nucl, which has SS= HSS+1 
      +   hvTX(npTX),   RespTX(5,npTX),  ! TREX response (product) in 5 orders of mice reflection 
      +   ReTX(5,nvM), SpOutOr(5,nvM),   ! 5 orders of mica 
      +   Tab1(5,nvM), SumTab1(nvM),         ! Gamma(jhv)*Teta(khv,Te); Gamma==ReTX(j,iv); Teta==Emi/ni^2;  For Table 1 of the paper:j-Sum of "Tab1"
-     +   hv8Be(npBe8),   RespoBe(npBe8),    ! hv points of response of PCD-Be (that with Beryllium filter), 8mcm Be+CH transmi * abso of 0.5mm diamond
-     +   hv5kap(np5kap), Resp5kap(np5kap),  ! hv points of response of PCD-5  (that with  5 mils kapton filter)  [1mil = 25.4 mcm; mils= mInch]
+     +   hv8Be(npBe8),   RespoBe(npBe8),    ! hv points of response of PCD-Be (that with Beryllium filter), 8mcm Be+CH transmi * abso of 0.5mm diamond 
+     +   hv5kap(np5kap), Resp5kap(np5kap),  ! hv points of response of PCD-5  (that with  5 mils kapton filter)  [1mil = 25.4 mcm; mils= mInch] 
      +   hv10ka(np10ka), Resp10ka(np10ka),  ! hv points of response of PCD-10 (that with 10 mils kapton filter)
      +   hv40ka(np40ka), Resp40ka(np40ka),  ! hv points of response of PCD-40 (that with 40 mils kapton filter). PCD response ~ filter transmi * diamond abso
      +   kRp(k13po), Ksp(k13po),            ! 119-point fit to spherical K13 function Ks(kR) 
-     +   TePr(4), nALpr(4), nePr(4),
+     +   TePr(4), nALpr(4), nePr(4), 
      +   PopHe(4), PopH(4), PopLiGS(4), 
      +   SpOut1(nvM), Conv2(nvM),        ! z-average SpIn along LOSs #1 (centr) & LOS #2 (off-axis) of dz1
      +   RadFlux(nvM), Ar(LaMx+2), 
      +   hvCh(MNLe,nXE), hvC(MNLe), ! Spectral line Centers before & after hv-regulation
-     +   hvV(nvM),                  ! sequence of hv points on hv axis [eV]
+     +   hvV(nvM),                  ! sequence of hv points on hv axis [eV] 
      +   tres(mSpe),                ! instants for changing params & prints
      +   Dfr(mSpe), TeFr(mSpe), TDfr(mSpe), nFr(mSpe), peMG(mSpe),  ! tres-values [cm, eV, keV, i/cc, perc]
      +   FWkVcGAU(nXE), ! FWHMgau(TD)/hvC; equal for all lines of XE,La. 
@@ -151,49 +151,49 @@ c    +    Uam  = 1.6605402d-24,   ! g; atomic mass unit
      +   FWvoi(MNLe),              ! FWHM of Voigt line shape, eV    
      +   HtoD(nHDpo), RpK(nTARpo), ! For single-cell K13 RF: values of 'H/D' & 'k*R'	      
      +   fK13(nHDpo,nTARpo),       ! input K(H/D,k*R) martix; see read (102)
-     +   AtMass(nXE), Imas(nXE),  ! ion mass in [a.u.] & [g].   Imas(nX)= AtMass(nX)*1.66054d-24
+     +   AtMass(nXE), Imas(nXE),  ! ion mass in [a.u.] & [g].   Imas(nX)= AtMass(nX)*1.66054d-24 
      +   Volu(LaMx),        ! cm^3; Volume of cylindric shell
      +   ZC(nXE),      ! each-XE mean ion charge (for screen & MHD printouts; for HoltSum, ...) compu in the end of AtKins together with POPZ
      +   Zbar(LaMx),   ! mean ion charge in plasma of Z1520 AL+Mg alloy 
      +   WEAF(Nwork),  ! NAG WorkArea 
-     +   Den(nXE),        ! ion number density for all XE & w-XE;  i/cc 
+     +   Den(nXE),     ! ion number density for all XE & w-XE;  i/cc 
      +   tgp(300),     ! t-points of t axis, Can be done bigger but usually we use ~100 of 300
-     +   DE, BEk,      ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans.
+     +   DE, BEk,      ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans. 
      +   Scale,        ! t-Scale=10^40 for d02
      +   SumP, tstep,      ! sum POP 
      +   ti, tf, strt, tm, ! time-step [s]. Initial & final instants of present time-step: tf= ti+ tstep; tm=(ti+tf)/2. Start-value of "ti".
      +   tiS, tfS,         ! NAG params and WorkArea 
      +   R2,               ! radius of BS [cm]
-     +   Tion, Te,   ! ion & electron temperature in w-layer [eV], prescribed (Scenario)
+     +   Tion, Te,   ! ion & electron temperature in w-layer [eV], prescribed (Scenario) 
      +   TiD,        ! Doppler temperature of thermal+3Dhydro motion of ions    
      +   paMG,       ! ions of MG part in total ion number density DenI
      +   DenI, Dene, ! total ion & electron density, i/cc & e/cc
-     +   ZC1, ZC2,   ! mean (all-XE, all-SpS, inclu atoms) ion charge and charge^2 for 'redPI' subr
+     +   ZC1, ZC2,   ! mean (all-XE, all-SpS, inclu atoms) ion charge and charge^2 for 'redPI' subr 
      +   Sah,        ! Sah = Dene*(one-bp)/(6.03717d21*Te**1.5d0)
      +   InvDebRad,  ! inverse debye radius [1/cm]
-     +   bp, bc, bw,     ! params of e-beam for non=Maxw EED (given by "bp > 0."), see EED function 
-     +   AulMin,         ! Min allowed value of Einst A() coef. If A() < AulMin, we replace it by A() =0 in "Intro" 
-     +   fluMin,         ! Min allowed value of Abso OscStrenght. If f() < fluMin, we replace A bt 0 in "Intro" 
+     +   bp, bc, bw, ! params of e-beam for non=Maxw EED (given by "bp > 0."), see EED function 
+     +   AulMin,     ! Min allowed value of Einst A() coef. If A() < AulMin, we replace it by A() =0 in "Intro" 
+     +   fluMin,        ! Min allowed value of Abso OscStrenght. If f() < fluMin, we replace A bt 0 in "Intro" 
      +   hvMin, hvMax,  ! edges of full hv interval [eV]; given in FLAG.inp
-     +   hvSmo,          ! edge of [hvMin,hvSmo] domain, where lines have large FWHM (because of W >> A) & do not need fine resolution; comes from FLAG
-     +   hvMiF, hvMaF,  ! edges of Super-Fine hv interval
-     +   hveV, RadPow,   ! outgoing Radiation Power thru plasma surf [W]
-     +   rer,               ! used in D01ahf(...)
+     +   hvSmo,         ! edge of [hvMin,hvSmo] domain, where lines have large FWHM (because of W >> A) & do not need fine resolution; comes from FLAG
+     +   hvMiF, hvMaF,  ! edges of Super-Fine hv interval 
+     +   hveV, RadPow,  ! outgoing Radiation Power thru plasma surf [W]
+     +   rer,           ! used in D01ahf(...)
      +   freqEI,      ! in Braginskii
-     +   CouL, RO,          ! Coulomb Log, mass density RO
-     +   wtot, wtot1,       ! w-var for CPpCm in 'AtKins'
+     +   CouL, RO,    ! Coulomb Log, mass density RO 
+     +   wtot, wtot1,           ! w-var for CPpCm in 'AtKins' 
      +   POPk, POPkr, popgrat,  ! used for PhI with Geff 
      +   whv, wtra, ww, Du,     ! w-variables
-     +   distII, TeBS,          ! used in functions SigExc, SigInz, SigPhi for avoiding too large values via FAC fit errors.  No corre in REVERSE processes as (1) they are expre via direct & (2) must provide equilibration.
-     +   dDu, teiBr, teiE,      ! e-i time of momentum transfer & energy transfer
+     +   distII, TeBS,          ! used in functions SigExc, SigInz, SigPhi for avoiding too large values via FAC fit errors.  No corre in REVERSE processes as (1) they are expre via direct & (2) must provide equilibration.             
+     +   dDu, teiBr, teiE,      ! e-i time of momentum transfer & energy transfer 
      +   TeCO, neCO, teiTco, TeDot, 
      +   TePrCO, tmPrCO, SoCO, abCO, TeDotPow, 
-     +   TiBS, MeanM, dhv, ReverseKKF, Wing,
-     +   xx1, xx2, xx3, xx4, Frac, TX1, TX2, RadY,
-     +   Lac, drr, rMid, GTe, niBar0, Mx1, Vx,
+     +   TiBS, MeanM, dhv, ReverseKKF, Wing,   
+     +   xx1, xx2, xx3, xx4, Frac, TX1, TX2, RadY, 
+     +   Lac, drr, rMid, GTe, niBar0, Mx1, Vx, 
      +   Dstrt, TeStrt, TDstrt, nStrt, peMGst,  ! initial values [cm, eV, eV, i/cc   % ]          
      +   dtW, tip, HWL1, HWL2, PeakTe,          ! HWHM of Lor Te(t) before & after Te^; peak value of Te(t) 
-     +   EzDot, EzPr
+     +   EzDot, EzPr          
        
 
       DATA kRp /0., 

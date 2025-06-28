@@ -286,7 +286,7 @@ c   Read all "ELsXE....inp" files.
         do k= nuGS(iSS,nX), nuGS(iSS+1,nX)-1                ! all non-AI ELs of this SS   
           read(nFi,'(a5,a5, f3.0, 2f11.3)') QSname1(k,nX), 
      +      QSname2(k,nX), g0(k,nX), E(k,nX)
-          kiSS(k,nX)= iSS 
+          kiSS(k,nX)= iSS
         enddo   
         if(iSS.LT.HSS(nX)) goto 2 
 
@@ -304,7 +304,7 @@ c   Read all "ELsXE....inp" files.
           read(nFi,'(a9)') title
           do k = kAI1(j,nX), kAI2(j,nX)  
             read(nFi,'(a5,a5, f3.0, 2f11.3)') QSname1(k,nX),  
-     +           QSname2(k,nX), g0(k,nX), E(k,nX) 
+     +           QSname2(k,nX), g0(k,nX), E(k,nX)
             kiSS(k,nX)= j
           enddo 
         enddo
@@ -343,7 +343,11 @@ c  Read excitation cross sections and f's from all 'ExcXE....inp' files.  Note: 
         if(abs(Fxw).gt.1.d-30) STOP 'OPEN "Fx" array'
 
         DE= E(kU,nX) - E(kL,nX) 
-        if(DE .le. zero) STOP 'Excitation down in reading Exc...inp'
+        if(DE .le. zero) then
+            write(*,'(7i8,2f12.5)')
+     +        iSS, nFAI, LL, LU, kL,kU, nX, E(kL,nX), E(kU,nX)
+            STOP 'Excitation down in reading Exc...inp'
+        endif
 
         MthdEX(kL,kU,nX)= mth
 

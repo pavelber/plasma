@@ -8,8 +8,8 @@ def process_line(line, start, end):
         num = int(num_str)
 
         # Check if the number is in the specified range
-        if 200 <= num <= 299:
-            num += 100
+        if 600 <= num <= 800:
+            num -= 300
 
         # Replace the original number with the modified one
         modified_line = line[:start] + str(num).rjust(4) + line[end:]
