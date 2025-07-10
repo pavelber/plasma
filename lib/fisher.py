@@ -49,7 +49,7 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             level_low = level[1]
             spectr_num_high = str(int(spectr_num_low) + 1)
             level_high = level[2]
-            if bcfp_from_databases:
+            if bcfp_line is not None and bcfp_from_databases:
                 branching_ration = float(bcfp_line.split()[4])
             else:
                 branching_ration = in1_data.get_branching_ratio(spectr_num_high, level_high)
@@ -119,4 +119,4 @@ def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, b
 
 
 if __name__ == "__main__":
-    run_for_fisher(True, 1, 9, "O", "C:\\Users\\javaa\\Downloads\\", "BCFP-formula.INP", False)
+    run_for_fisher(True, 1, 9, "O", "C:\\Users\\javaa\\Downloads\\O", "BCFP.INP", False)

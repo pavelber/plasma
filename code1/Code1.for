@@ -340,7 +340,10 @@ c  Read excitation cross sections and f's from all 'ExcXE....inp' files.  Note: 
         if(LU.lt.nFAI) kU= nuGS(iSS,nX)-1+LU
         if(LL.ge.nFAI) kL= kAI1(iSS,nX) + LL-nFAI  ! order# in XE total EL list for AI EL
         if(LU.ge.nFAI) kU= kAI1(iSS,nX) + LU-nFAI 
-        if(abs(Fxw).gt.1.d-30) STOP 'OPEN "Fx" array'
+        if(abs(Fxw).gt.1.d-30 .AND. mth.ne.16) then
+            write(*,*) 'OPEN Fx array: ISS=', ISS, 'LL=', LL, 'LU=', LU
+            STOP 'OPEN "Fx" array'
+        endif
 
         DE= E(kU,nX) - E(kL,nX) 
         if(DE .le. zero) then
@@ -366,10 +369,9 @@ c       Fx(kL,kU,nX)= Fxw     ! 5th Excit coef not used in Methods #5 and #11
         A(kU,kL,nX)= 4.3450d7* flu(kL,kU,nX) *g0(kL,nX)
      +               *(E(kU,nX)-E(kL,nX))**2 /g0(kU,nX)
 
-        write(*,'(i7, i7, i7, i7)')  HSS(nX), kL, kU, Nnu(nX)
         if(iSS.eq.HSS(nX) .and. kL.eq.Nnu(nX)-4 .and.                    ! Pavel's change -2 to -4 to make it run for Kr
      +                          kU.eq.Nnu(nX)-1) goto 7                  ! It must be the last line of "ExcXE.inp"
-        if(mth.eq.-5 .or. mth.eq.0  .or. mth.eq.5 .or. mth.eq.11) goto 6 ! "-5" is "5 of low accyracy"; Lenya
+        if(mth.eq.0  .or. mth.eq.5 .or. mth.eq.11 .or. mth.eq.16) goto 6 ! "-5" is "5 of low accyracy"; Lenya
 
         write(*,'(a65,5i5)') 'Excit CrosSec fit-method is unknown for XE,
      +  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
