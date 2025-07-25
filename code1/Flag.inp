@@ -13,13 +13,13 @@
 0      KeRedu= -1 or 0.  "-1" means "no reduction of inization energy, "0" means "reduction in the Ion Sphere approach"
 -----------------------------------------
   t[s]    D[cm]  Te[eV]  TD[keV]  ni(AL+MG)[cm^-3]  % Mg ions in this ni
-0.00d-9   0.01,   100.,    4. ,      0.6d21 ,       5.52   start time;  5.52% in ni is 5% by mass, see comment to Den(1) & Den(2) in subroutine "Scenario"
-0.20d-9   0.01,   400.,    8. ,      0.9d21 ,       5.52   tres(1)     
-0.35d-9   0.01,   900.,   24. ,      1.5d21 ,       5.52   tres(2)   
-0.45d-9   0.01,  1500.,   32. ,      2.0d21 ,       5.52   tres(3)   
-0.50d-9   0.01,  1500.,   26. ,      2.0d21 ,       5.52   tres(4)     
-0.65d-9   0.01,   700.,   16. ,      1.4d21 ,       5.52   tres(5)   
-1.00d-9   0.01,   200.,    5. ,      0.4d21 ,       5.52   tres(6). The run ends after last print, see "if(FrNu .eq. mSpe) STOP" 
+0.00d-9   0.01,  5000.,    4. ,      0.6d21 ,       5.52   start time;  5.52% in ni is 5% by mass, see comment to Den(1) & Den(2) in subroutine "Scenario"
+0.20d-9   0.01,  5000.,    8. ,      0.9d21 ,       5.52   tres(1)
+0.35d-9   0.01,  5000.,   24. ,      1.5d21 ,       5.52   tres(2)
+0.45d-9   0.01,  5000.,   32. ,      2.0d21 ,       5.52   tres(3)
+0.50d-9   0.01,  5000.,   26. ,      2.0d21 ,       5.52   tres(4)
+0.65d-9   0.01,  5000.,   16. ,      1.4d21 ,       5.52   tres(5)
+1.00d-9   0.01,  5000.,    5. ,      0.4d21 ,       5.52   tres(6). The run ends after last print, see "if(FrNu .eq. mSpe) STOP"
 -------------------------------------------------
 10   "npa" is the number of t-points in (tres(j), tres(j+1)] interval. This number includes t= tres(j+1) point 
       Results of computatiom must be independent of "npa", therefore, for each problem 
