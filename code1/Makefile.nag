@@ -1,0 +1,19 @@
+# Makefile for NAG-only version
+
+FORTRAN = fl32
+FFLAGS = -c
+
+PROGRAM = code1_nag_only.exe
+SOURCE = code1_nag_only.for
+
+# Only NAG library needed
+LIBS = naglib.lib
+
+all: $(PROGRAM)
+
+$(PROGRAM): $(SOURCE)
+	$(FORTRAN) $(SOURCE) $(LIBS)
+
+clean:
+	@if exist code1_nag_only.obj del code1_nag_only.obj
+	@if exist $(PROGRAM) del $(PROGRAM)

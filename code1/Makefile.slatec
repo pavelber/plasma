@@ -1,0 +1,26 @@
+# Makefile for Windows using nmake and fl32 to build SLATEC library
+
+FORTRAN = fl32
+FFLAGS = -c
+LIB = lib
+LIBFLAGS = /OUT:
+
+SLATEC_DIR = slatec
+LIB_NAME = libslatec.lib
+
+all: $(LIB_NAME)
+
+# Build the library by compiling all .f files and then creating the library
+$(LIB_NAME):
+	@echo Compiling all Fortran files in $(SLATEC_DIR) directory...
+	@for %%f in ($(SLATEC_DIR)\*.f) do $(FORTRAN) $(FFLAGS) /Fo$(SLATEC_DIR)\ %%f
+	@echo Creating library $(LIB_NAME)...
+	$(LIB) $(LIBFLAGS)$(LIB_NAME) $(SLATEC_DIR)\*.obj
+
+# Inference rule for nmake to compile .f files to .obj files in the slatec directory
+{$(SLATEC_DIR)}.f{$(SLATEC_DIR)}.obj:
+	$(FORTRAN) $(FFLAGS) /Fo$(SLATEC_DIR)\ $<
+
+clean:
+	@if exist $(SLATEC_DIR)\*.obj del $(SLATEC_DIR)\*.obj
+	@if exist $(LIB_NAME) del $(LIB_NAME)

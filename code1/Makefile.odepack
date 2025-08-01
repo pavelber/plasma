@@ -1,0 +1,26 @@
+# Makefile for Windows using nmake and fl32 to build ODEPACK library
+
+FORTRAN = fl32
+FFLAGS = -c
+LIB = lib
+LIBFLAGS = /OUT:
+
+ODEPACK_DIR = odepack
+LIB_NAME = libodepack.lib
+
+all: $(LIB_NAME)
+
+# Build the library by compiling all .f files and then creating the library
+$(LIB_NAME):
+	@echo Compiling all Fortran files in $(ODEPACK_DIR) directory...
+	@for %%f in ($(ODEPACK_DIR)\*.f) do $(FORTRAN) $(FFLAGS) /Fo$(ODEPACK_DIR)\ %%f
+	@echo Creating library $(LIB_NAME)...
+	$(LIB) $(LIBFLAGS)$(LIB_NAME) $(ODEPACK_DIR)\*.obj
+
+# Inference rule for nmake to compile .f files to .obj files in the odepack directory
+{$(ODEPACK_DIR)}.f{$(ODEPACK_DIR)}.obj:
+	$(FORTRAN) $(FFLAGS) /Fo$(ODEPACK_DIR)\ $<
+
+clean:
+	@if exist $(ODEPACK_DIR)\*.obj del $(ODEPACK_DIR)\*.obj
+	@if exist $(LIB_NAME) del $(LIB_NAME)

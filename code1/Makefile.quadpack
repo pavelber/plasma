@@ -1,0 +1,26 @@
+# Makefile for Windows using nmake and fl32 to build QUADPACK library
+
+FORTRAN = fl32
+FFLAGS = -c
+LIB = lib
+LIBFLAGS = /OUT:
+
+QUADPACK_DIR = quadpack
+LIB_NAME = libquadpack.lib
+
+all: $(LIB_NAME)
+
+# Build the library by compiling all .f files and then creating the library
+$(LIB_NAME):
+	@echo Compiling all Fortran files in $(QUADPACK_DIR) directory...
+	@for %%f in ($(QUADPACK_DIR)\*.f) do $(FORTRAN) $(FFLAGS) /Fo$(QUADPACK_DIR)\ %%f
+	@echo Creating library $(LIB_NAME)...
+	$(LIB) $(LIBFLAGS)$(LIB_NAME) $(QUADPACK_DIR)\*.obj
+
+# Inference rule for nmake to compile .f files to .obj files in the quadpack directory
+{$(QUADPACK_DIR)}.f{$(QUADPACK_DIR)}.obj:
+	$(FORTRAN) $(FFLAGS) /Fo$(QUADPACK_DIR)\ $<
+
+clean:
+	@if exist $(QUADPACK_DIR)\*.obj del $(QUADPACK_DIR)\*.obj
+	@if exist $(LIB_NAME) del $(LIB_NAME)

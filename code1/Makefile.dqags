@@ -1,0 +1,19 @@
+# Makefile for Netlib-only version
+
+FORTRAN = fl32
+FFLAGS = -c
+
+PROGRAM = dqags_test.exe
+SOURCE = dqags_test.for
+
+# Try with minimal netlib libraries
+LIBS = libslatec.lib libodepack.lib libquadpack.lib
+
+all: $(PROGRAM)
+
+$(PROGRAM): $(SOURCE)
+	$(FORTRAN) $(SOURCE) $(LIBS) /Fe$(PROGRAM)
+
+clean:
+	@if exist dqags_test.obj del dqags_test.obj
+	@if exist $(PROGRAM) del $(PROGRAM)
