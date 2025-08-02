@@ -10,8 +10,8 @@ FFLAGS = -c
 # 1. Add the .f filename to the ADDITIONAL_SOURCES list below (space-separated)
 # 2. Add the corresponding .obj filename to the ADDITIONAL_OBJS list
 # 3. The object files will be automatically compiled and linked
-ADDITIONAL_SOURCES = emiabso.f eff.f open_read.f linelist.f txscans.f rtespin.f scenario.f pmg0.f
-ADDITIONAL_OBJS = emiabso.obj eff.obj open_read.obj linelist.obj txscans.obj rtespin.obj  scenario.obj pmg0.obj
+ADDITIONAL_SOURCES = emiabso.f eff.f open_read.f linelist.f txscans.f rtespin.f scenario.f pmg0.f functions.f ws.f atkins.f subroutines.f powyie.f
+ADDITIONAL_OBJS = emiabso.obj eff.obj open_read.obj linelist.obj txscans.obj rtespin.obj  scenario.obj pmg0.obj functions.obj ws.obj atkins.obj subroutines.obj powyie.obj
 
 # Original object files
 OBJS = mo1.obj $(ADDITIONAL_OBJS)
