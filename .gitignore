@@ -3,3 +3,5 @@ venv
 *.pyc
 *.exe
 *.obj
+.idea/*
+*.lib
