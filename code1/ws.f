@@ -1,14 +1,21 @@
-
-
       SUBROUTINE Ws()  ! Transition probabilities for Rate Equations.
       use mo1          ! In each W-matrix, first index shows INITIAL EL of the transition.
       implicit none
-      integer  lUL, lw, kAI
+      integer  lUL, lw
       real(8)  pv(nvM), freq, Wave, DEJ, BemHz, Bem, Bab, hvCw,
-     +         AbSpIn, up, rate, prob, Ejm, wFac, D01ahf,
+     +         AbSpIn, up, rate, prob,
      +         SigRR, V, fun, SigPhi, eeV, dev, Voigt2,     ! Voigt2 is Sawa's connector to JELRT Viogt; Earlier used "VoigtJS" that is Jenya's Voigt function but is was WRONG
      +         FWevGau, EED, Sca, ArPv                      ! Gauss,
-      external FVSinz, FVSmi, FVStbr, FVSrr, FVSex, FVSdx   ! functions mentioned by name (no argument) in d01
+      external FVSinz, FVSmi, FVStbr, FVSrr, FVSex, FVSdx   ! functions mentioned by name (no argument) in DQAGS
+
+c     DQAGS variables
+      integer limit, lenw, neval, ier, last
+      parameter (limit = 100)
+      parameter (lenw = 4 * limit)
+      integer iwork(limit)
+      real(8) work(lenw)
+      real(8) epsabs, epsrel, result, abserr, a_int, b_int
+
       WI  = zero
       WMI = zero
       WEX = zero
@@ -110,20 +117,38 @@ c                                     Thus many lines are formally present but t
      +        BE(kf).lt.1.d-3)       cycle  ! this EL is dead; leave WI(k,kf)= 0
            j = KiSS(k,nX)
            BEk= Eth(k,kf,nX)-DPI(j,nX)      ! energy for "(j,k) + e = (j+1,kf) +2e" ionization
-           if(BEk .GE. 0.99*up)      cycle  ! "Te" too low, see limits of d01 integral below
+           if(BEk .GE. 0.99*up)      cycle  ! "Te" too low, see limits of DQAGS integral below
 
            if(k.GT.Nnu(nX)   .AND.          ! AI EL. Because of big DPI this k=AI --> kf ionization
      +        BEk .LT. zero) BEk= 1.        ! does not require E, but I give formal 1 eV to avoid 0.
 c                                           Note: "BEk < 0" never happens for non-AI k because big DPI cuts it.
-           Ifail= -1
-           rate= D01AHF(BEk, up, tol, NPTS, rer, FVSinz, Nlim, Ifail)  ! cc/s
+c          Replace D01AHF with DQAGS for ionization rate integration
+           a_int = BEk
+           b_int = up
+           epsabs = tol
+           epsrel = tol
+           call DQAGS(FVSinz, a_int, b_int, epsabs, epsrel, result,
+     +               abserr, neval, ier, limit, lenw, last, iwork, work)
+           if(ier .ne. 0) then
+              write(*,'(a,i3,a,2f10.3)') 'DQAGS error in FVSinz, ier=',
+     +               ier, ' BEk,up=', BEk, up
+           endif
+           rate = result                    ! cc/s
            WI(k,kf)= rate * Dene            ! Probability, 1/s
 
-           rate= D01ahf(1.d-7, up, tol, NPTS, rer, FVStbr, Nlim, Ifail)
+c          Replace D01AHF with DQAGS for three-body recombination
+           a_int = 1.d-7
+           b_int = up
+           call DQAGS(FVStbr, a_int, b_int, epsabs, epsrel, result,
+     +               abserr, neval, ier, limit, lenw, last, iwork, work)
+           if(ier .ne. 0) then
+              write(*,'(a,i3)') 'DQAGS error in FVStbr, ier=', ier
+           endif
+           rate = result
            WTB(kf,k)= rate * Dene
 
            prob = 0.                     ! probability of PHOTO-ionization
-           do iv= 2, nvM                 ! Explicit Sum instead of d01, which is too slow with multy-spike "SpInEff"
+           do iv= 2, nvM                 ! Explicit Sum instead of DQAGS, which is too slow with multy-spike "SpInEff"
              if(hvV(iv).GE. BEk) then
                dhv = hvV(iv) - hvV(iv-1)
                fun= FoPi*SigPhi(hvV(iv))*SpInEff(La,iv)/hvV(iv)/BolJ  ! 1/s/eV= sr*cm2*(W/cm2/sr/eV)/J ; BlackFold probability page
@@ -132,10 +157,18 @@ c                                           Note: "BEk < 0" never happens for no
            enddo
            WPhI(k,kf)= prob   ! 1/s
 
-           rate= D01ahf(1.d-7, up, tol, NPTS, rer, FVSrr, Nlim, iFail)
+c          Replace D01AHF with DQAGS for radiative recombination
+           a_int = 1.d-7
+           b_int = up
+           call DQAGS(FVSrr, a_int, b_int, epsabs, epsrel, result,
+     +               abserr, neval, ier, limit, lenw, last, iwork, work)
+           if(ier .ne. 0) then
+              write(*,'(a,i3)') 'DQAGS error in FVSrr, ier=', ier
+           endif
+           rate = result
            WRR(kf,k) = rate * Dene
 
-           prob= zero       ! simple Sum instead of d01 which is bad for multy-spike "SpInEff"
+           prob= zero       ! simple Sum instead of DQAGS which is bad for multy-spike "SpInEff"
            do iv = 2, nvM
              eeV = hvV(iv) - BEk  ! energy of recombining free electron
              if(eeV.gt.0.) then
@@ -161,10 +194,28 @@ c                                           Note: "BEk < 0" never happens for no
             DE= E(kf,nX) - E(k,nX)            ! as both belong to same "j", thus have common GrSt
             if(DE.le.0.) STOP 'DE<=0 in Ex1'  ! cannot happen because we check and correct "ELsXE...inp" in "Intro" subr. Later distorsion never observed.
             if(DE.GE.up) cycle                ! gap too large for Te(ti)
-	      Ifail= -1
-            rate= D01ahf(DE, up, tol, npts, rer, FVSEx, Nlim, Ifail)
+c           Replace D01AHF with DQAGS for excitation
+            a_int = DE
+            b_int = up
+            call DQAGS(FVSEx, a_int, b_int, epsabs, epsrel, result,
+     +                abserr, neval, ier, limit, lenw, last, iwork,
+     +                work)
+            if(ier .ne. 0) then
+               write(*,'(a,i3,a,f10.3)') 'DQAGS error in FVSEx, ier=',
+     +                ier, ' DE=', DE
+            endif
+            rate = result
             WEX(k,kf)= rate * Dene
-            rate= D01ahf(1.d-7, up, tol, npts, rer, FVSDx, Nlim, Ifail)
+c           Replace D01AHF with DQAGS for de-excitation
+            a_int = 1.d-7
+            b_int = up
+            call DQAGS(FVSDx, a_int, b_int, epsabs, epsrel, result,
+     +                abserr, neval, ier, limit, lenw, last, iwork,
+     +                work)
+            if(ier .ne. 0) then
+               write(*,'(a,i3)') 'DQAGS error in FVSDx, ier=', ier
+            endif
+            rate = result
             WDX(kf,k)= rate * Dene
           enddo
         enddo
@@ -175,39 +226,52 @@ c                                              "never-dead", (ii) they have no t
               if(mthdEX(k,kf,nX).eq.-7) cycle  ! "-7" means that transition not described in "ExcitXE.inp":  leave WEX=0
               DE= E(kf,nX) - E(k,nX)           ! as both belong to same "j", thus have common GS
               if(DE.GE.up)  cycle
-	        Ifail=- 1
-              rate= D01ahf(DE, up, tol, npts, rer, FVSEx, Nlim, Ifail)
+c             Replace D01AHF with DQAGS for AI excitation
+              a_int = DE
+              b_int = up
+              call DQAGS(FVSEx, a_int, b_int, epsabs, epsrel, result,
+     +                  abserr, neval, ier, limit, lenw, last, iwork,
+     +                  work)
+              if(ier .ne. 0) then
+                 write(*,'(a,i3,a,f10.3)')
+     +                  'DQAGS error in AI FVSEx, ier=', ier, ' DE=', DE
+              endif
+              rate = result
               WEX(k,kf)= rate * Dene
-              rate= D01ahf(1.d-7, up, tol, npts,rer, FVSDx, Nlim, Ifail)
+c             Replace D01AHF with DQAGS for AI de-excitation
+              a_int = 1.d-7
+              b_int = up
+              call DQAGS(FVSDx, a_int, b_int, epsabs, epsrel, result,
+     +                  abserr, neval, ier, limit, lenw, last, iwork,
+     +                  work)
+              if(ier .ne. 0) then
+                 write(*,'(a,i3)') 'DQAGS error in AI FVSDx, ier=', ier
+              endif
+              rate = result
               WDX(kf,k)= rate * Dene
             enddo
           enddo
         endif
       enddo
 
-
-
-* Dielectronic Capture: (j,k1=reg) + e --> (j-1,kAI).  We follow Griem3 (6.35), i.e. derive WDC from detailed balance with WAiz in high-density limit.
-c                                                      Algorithm, used for "Ejm" and "WDC", is checked by exact (in LTE) Griem3 (6.34) formula
-c                                                            WDC(k1,kAI) = WAiz(kAI,k1)*popLTE(kAI)/popLTE(k1).
-c                                       tCR comparison showed "==" in all POPs (but at that time we used "PI", not "PIR" for Ejm).
-      do j = FSS(nX)+1, HSS(nX)       ! capturing ion
-        if(nuAS(j-1,nX).lt.1) goto 9       ! no AI ELs in SS=j-1
-        do k1 = nuGS(j,nX), nuGS(j+1,nX)-1    ! candidates for capturing EL, they are non-AI ELs
-          if(BE(k1) .LT. 1.d-3)  cycle        ! dead EL
-          do kAI= kAI1(j-1,nX), kAI2(j-1,nX)  ! AI ELs of SS=j-1.  Note: (i) AIELs are treated as "never-dead",
-c                                                                        (ii) they have no true BE, they carry initial BE= -1
-            if(WAiz(kAI,k1,nX) .gt. zero) then       ! this (kAI,k1) couple has DC/AI channel
-              Ejm= E(kAI,nX) -PIR(j-1,nX) -E(k1,nX)  ! General case. Griem3 "Ejm" in p.178.
-              wFac= 4.*(0.88d-16*13.6/Te)**1.5
-              rate= wFac* (g0(kAI,nX)/g0(k1,nX))
-     +            * WAiz(kAI,k1,nX) *dexp(-Ejm/Te)   ! (6.35)
-              WDC(k1,kAI) = Dene * rate              ! (6.34)
-            endif
-          enddo     ! kAI
-        enddo       ! k1
-  9     continue
-      enddo         ! j
       return
       END    ! of 'Ws' subr
 
+        DOUBLE PRECISION FUNCTION D1MACH(I)
+        IMPLICIT NONE
+        INTEGER I
+        IF (I .EQ. 1) THEN
+            D1MACH = 2.2250738585072014D-308 ! Smallest positive number
+        ELSE IF (I .EQ. 2) THEN
+            D1MACH = 1.7976931348623157D+308 ! Largest positive number
+        ELSE IF (I .EQ. 3) THEN
+            D1MACH = 1.1102230246251565D-16  ! Machine epsilon
+        ELSE IF (I .EQ. 4) THEN
+            D1MACH = 2.2204460492503131D-16  ! Smallest relative spacing
+        ELSE IF (I .EQ. 5) THEN
+            D1MACH = 0.3010299956639812D0    ! Log10(2)
+        ELSE
+            STOP 'D1MACH: Invalid argument'
+        END IF
+        RETURN
+        END

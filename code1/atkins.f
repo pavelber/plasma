@@ -1,8 +1,23 @@
+! We have a subroutine AtKins() which calculates the atomic kinetics for a given La and nX.
+! It uses various subroutines to compute ionization potentials, binding energies, and transition probabilities
+! It integrates the rate equations using the NAG library's D02EAF routine.
+! Your task is to replace NAG library's D02EAF routine with netlib ODEPACK's DLSODE routine.
+! The file is written for old microsoft powerstation 4 fortran compiler , so it uses 8-byte reals and very old syntax.
+! You should preserve the same syntax, dont cnage formatting of lines you dont touch and preserver maximum line length
+! of 72 characters. with correct positions of + characters for line continuation.
+
       SUBROUTINE AtKins() ! Atomic Kinetics for current La, nX.  On entry POP(EL#) given POPt(k,nX,La) from previous t-step (t=ti)
       use mo1             ! on exit POP(EL#) contains the distribution at t=tf and re-writes POPt(k,nX,La) for current La, nX
       implicit none
       real(8)  POP(NSTm), POPti(NSTm)  ! these files are Local in AtKins
       external POPdot     ! subroutine mentioned by name (no argument) in d02
+            integer NEQ, ITOL, ITASK, ISTATE, IOPT, MF, LRW, LIW
+      real*8  T, TOUT, RTOL, ATOL
+      real*8  RWORK(5000)
+      integer IWORK(500)
+      external JACDUM
+
+
 
       CALL redPI()        ! compute Ioniz Potentials for {Te(ti-tf),ni(ti-tf)} of MAIN: PIR(SS,nX)= PI(SS,nX)-dPI(SS,nX)
       CALL BEvPr()        ! compute Binding Energy of ELs
@@ -40,9 +55,33 @@ c  Integrate the rate equations:
       tiS= ti*Scale
       tfS= tf*Scale
 
-      CALL D02EAF(tiS, tfS, NST(nX), POP, tolD02, POPdot, WEAF, Nwork,
-     +            ifail)
+c     NAG D02EAF replaced with ODEPACK DLSODE
+c     DLSODE arguments:
+c     F, NEQ, Y, T, TOUT, ITASK, ISTATE, IOPT, RWORK, LRW, IWORK, LIW, JAC, MF
 
+      ITOL = 1          ! тип задания погрешностей (скалярные)
+      RTOL = tolD02     ! относительная точность
+      ATOL = tolD02     ! абсолютная точность
+      ITASK = 1         ! решение до TOUT
+      ISTATE = 1        ! старт интегрирования
+      IOPT = 0          ! без опций
+      MF = 10           ! метод BDF без анал. Якобиана
+
+      NEQ = NST(nX)
+      LRW = 20 + 16*NEQ
+      LIW = 20 + NEQ
+
+      T = tiS
+      TOUT = tfS
+
+      CALL DLSODE(POPdot, NEQ, POP, T, TOUT, ITOL, RTOL, ATOL,
+     +            ITASK, ISTATE, IOPT, RWORK, LRW, IWORK, LIW,
+     +            JACDUM, MF)
+
+      if (ISTATE .lt. 0) then
+         write(*,*) 'DLSODE error, ISTATE=', ISTATE
+         STOP 'DLSODE failed'
+      endif
 ***   After-D02 printout in "Comment.dat". Only in PrFr time:
       if(ng .eq. gpEq(PrFr)) then  ! "ng" is the NUMBER of "tf"-point on t axis
         write(41,'(//a7, f5.3, a20)') 'tf=', tf*1.d9,
@@ -96,3 +135,8 @@ c Save 1D arrays POP(k) and BE(k) in 3D arrays for next t-step with this "La" an
       Return
       END   ! of 'AtKins' subr
 
+      subroutine JACDUM(NEQ, T, Y, ML, MU, PD, NROWPD)
+      integer NEQ, ML, MU, NROWPD
+      real(8)  T, Y(*), PD(NROWPD,*)
+      return
+      end

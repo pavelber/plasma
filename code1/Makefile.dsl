@@ -7,7 +7,7 @@ PROGRAM = dlsode_test.exe
 SOURCE = dlsode_test.for
 
 # Try with minimal netlib libraries - remove quadlib.lib that might be causing conflicts
-LIBS = libslatec.lib libodepack.lib libquadpack.lib
+LIBS = libslatec.lib
 
 all: $(PROGRAM)
 
