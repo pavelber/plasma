@@ -45,21 +45,21 @@
       Return
       END     ! of 'BEvPr' subr
 
+      SUBROUTINE POPdot(NEQ, T, Y, YDOT)
+      use mo1
+      implicit none
+      integer NEQ, ik, jk
+      double precision T, Y(NEQ), YDOT(NEQ), sum
 
-      SUBROUTINE POPdot(tSC, wPOP, dPOPpdt)
-	use mo1
-	implicit none
-	real(8) tSC, wPOP(NSTm), dPOPpdt(NSTm), sum, xx
-      do k = 1, NST(nX)
-        sum = zero
-        do k1 = 1, NST(nX)              ! For k1=k the PM(k,k)= -Wout(k,nX,La)
-          sum = sum+ wPOP(k1)*PM(k1,k)  ! for RateEq dPOP(k)/dt= sum(k)
+      do ik = 1, NEQ
+        sum = 0.d0
+        do jk = 1, NEQ
+          sum = sum + Y(jk)*PM(jk,ik)
         enddo
-        dPOPpdt(k)= sum/Scale           ! for slow-time d02
+        YDOT(ik) = sum/Scale
       enddo
-      xx= tSC*zero   ! to avoid "tSC not used" warning
-      Return
-      END
 
+      T = T * 0.d0
 
-
+      return
+      end

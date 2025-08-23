@@ -5,12 +5,12 @@
 FORTRAN = fl32
 FFLAGS = -c
 
-# Libraries in the same order as successful Makefile.dsl, plus naglib for additional symbols
-LIBS = libslatec.lib libodepack.lib libquadpack.lib naglib.lib
+# Libraries in the same order as successful Makefile.dsl
+LIBS = libslatec.lib libodepack.lib libquadpack.lib
 
 # List of additional source files (including atkins.f, which uses DLSODE from ODEPACK)
-ADDITIONAL_SOURCES = emiabso.f eff.f open_read.f linelist.f txscans.f rtespin.f scenario.f pmg0.f functions.f ws.f atkins.f subroutines.f powyie.f
-ADDITIONAL_OBJS = emiabso.obj eff.obj open_read.obj linelist.obj txscans.obj rtespin.obj  scenario.obj pmg0.obj functions.obj ws.obj atkins.obj subroutines.obj powyie.obj
+ADDITIONAL_SOURCES = emiabso.f eff.f open_read.f linelist.f txscans.f rtespin.f scenario.f pmg0.f functions.f ws.f atkins.f subroutines.f powyie.f rkf45.f
+ADDITIONAL_OBJS = emiabso.obj eff.obj open_read.obj linelist.obj txscans.obj rtespin.obj  scenario.obj pmg0.obj functions.obj ws.obj atkins.obj subroutines.obj powyie.obj rkf45.obj
 
 OBJS = mo1.obj $(ADDITIONAL_OBJS)
 EXE = Code1.exe

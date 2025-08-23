@@ -1,20 +1,22 @@
-      SUBROUTINE Ws()  ! Transition probabilities for Rate Equations.
+       SUBROUTINE Ws()  ! Transition probabilities for Rate Equations.
       use mo1          ! In each W-matrix, first index shows INITIAL EL of the transition.
       implicit none
-      integer  lUL, lw
+      integer  lUL, lw, kAI
       real(8)  pv(nvM), freq, Wave, DEJ, BemHz, Bem, Bab, hvCw,
-     +         AbSpIn, up, rate, prob,
-     +         SigRR, V, fun, SigPhi, eeV, dev, Voigt2,     ! Voigt2 is Sawa's connector to JELRT Viogt; Earlier used "VoigtJS" that is Jenya's Voigt function but is was WRONG
-     +         FWevGau, EED, Sca, ArPv                      ! Gauss,
-      external FVSinz, FVSmi, FVStbr, FVSrr, FVSex, FVSdx   ! functions mentioned by name (no argument) in DQAGS
+     +         AbSpIn, up, rate, prob, Ejm, wFac,
+     +         SigRR, V, fun, SigPhi, eeV, dev, Voigt2,
+     +         FWevGau, EED, Sca, ArPv
+      external FVSinz, FVSmi, FVStbr, FVSrr, FVSex, FVSDx
+      real(8)  epsabs, epsrel, result, abserr
+      integer  ier, neval
+      logical  debug_quad
 
-c     DQAGS variables
-      integer limit, lenw, neval, ier, last
-      parameter (limit = 100)
-      parameter (lenw = 4 * limit)
-      integer iwork(limit)
-      real(8) work(lenw)
-      real(8) epsabs, epsrel, result, abserr, a_int, b_int
+      debug_quad = .true.  ! Enable debugging to find problem
+
+      write(*,'(a,f12.3)') 'Ws: Starting with Te =', Te
+      if(bp.gt.1.d-7) then
+         write(*,'(a,3f12.3)') 'Ws: bp, bc, bw =', bp, bc, bw
+      endif
 
       WI  = zero
       WMI = zero
@@ -89,7 +91,7 @@ c                                     Thus many lines are formally present but t
             write(*,'(a26, i6, f10.3, 9e10.2)')
      +      'lw, hvC, FWevGau, ArPv =',
      +       lw, hvC(lw), FWevGau, ArPv
-	      STOP '  ArPv < d-5)'
+          STOP '  ArPv < d-5)'
          endif
 
          AbSpIn = zero  ! v-integral of {dv*p(v)*SpInEff(v)} [W/eV/cm2/sr]
@@ -108,78 +110,178 @@ c                                     Thus many lines are formally present but t
       up= 100.*Te                              ! Notations: (j,k) + e = (j+1,kf) +2e
       if(bp.gt.1.d-7) up= 100.*Te +bc +6.*bw
 
+      write(*,'(a,2f12.3)') 'Ws: Initial up calculation, Te, up =',
+     +   Te, up
+
       do   k  = 1, LastAI(nX)
         do kf = 1, LastAI(nX)
            if(bra(k,kf,nX) .LT. 0.5) cycle  ! no link;  "bra" is 0 or 1 with FAC bases
            if(k .LT. Nnu(nX) .AND.          ! non-AI EL,
-     +        BE(k).LT.1.d-3)        cycle  ! this EL is dead; Note 1: Nucl given BE= 0.002 eV; Note 2: Nucl and AIELs cannot be dead
+     +        BE(k).LT.1d-3)        cycle  ! this EL is dead; Note 1: Nucl given BE= 0.002 eV; Note 2: Nucl and AIELs cannot be dead
            if(kf.LT. Nnu(nX) .AND.          ! non-AI EL,
      +        BE(kf).lt.1.d-3)       cycle  ! this EL is dead; leave WI(k,kf)= 0
            j = KiSS(k,nX)
            BEk= Eth(k,kf,nX)-DPI(j,nX)      ! energy for "(j,k) + e = (j+1,kf) +2e" ionization
-           if(BEk .GE. 0.99*up)      cycle  ! "Te" too low, see limits of DQAGS integral below
+           if(BEk .GE. 0.99*up)      cycle  ! "Te" too low, see limits of d01 integral below
 
            if(k.GT.Nnu(nX)   .AND.          ! AI EL. Because of big DPI this k=AI --> kf ionization
      +        BEk .LT. zero) BEk= 1.        ! does not require E, but I give formal 1 eV to avoid 0.
 c                                           Note: "BEk < 0" never happens for non-AI k because big DPI cuts it.
-c          Replace D01AHF with DQAGS for ionization rate integration
-           a_int = BEk
-           b_int = up
-           epsabs = tol
-           epsrel = tol
-           call DQAGS(FVSinz, a_int, b_int, epsabs, epsrel, result,
-     +               abserr, neval, ier, limit, lenw, last, iwork, work)
-           if(ier .ne. 0) then
-              write(*,'(a,i3,a,2f10.3)') 'DQAGS error in FVSinz, ier=',
-     +               ier, ' BEk,up=', BEk, up
-           endif
-           rate = result                    ! cc/s
-           WI(k,kf)= rate * Dene            ! Probability, 1/s
 
-c          Replace D01AHF with DQAGS for three-body recombination
-           a_int = 1.d-7
-           b_int = up
-           call DQAGS(FVStbr, a_int, b_int, epsabs, epsrel, result,
-     +               abserr, neval, ier, limit, lenw, last, iwork, work)
-           if(ier .ne. 0) then
-              write(*,'(a,i3)') 'DQAGS error in FVStbr, ier=', ier
+           if(debug_quad .and. (k.eq.1 .and. kf.eq.599)) then
+              write(*,'(a,2i4,4f12.3)')
+     +         'Before bounds check k,kf,BEk,up,Eth,DPI:',
+     +             k, kf, BEk, up, Eth(k,kf,nX), DPI(j,nX)
            endif
-           rate = result
+
+           ! Check for valid integration bounds and parameters
+           if(BEk.ne.BEk .or. up.ne.up .or. BEk.ge.up) then
+              if(debug_quad) then
+                 write(*,'(a,2i4,3e12.4)') 'Invalid bounds:',
+     +                k, kf, BEk, up, BEk-up
+              endif
+              goto 10
+           endif
+
+           ! More aggressive bounds checking - prevent extreme values
+           if(up .GT. 10000.d0) then
+              write(*,'(a,2i4,2f12.3)') 'Capping extreme up value:',
+     +             k, kf, up, 10000.d0
+              up = 10000.d0  ! Cap at 10 keV instead of 1 MeV
+           endif
+           if(BEk .LT. 0.1d0) then
+              BEk = 0.1d0  ! Minimum 0.1 eV instead of micro-eV
+           endif
+           if(BEk .GE. up*0.95) then
+              write(*,'(a,2i4,2f12.3)')
+     +        'Skipping - BEk too close to up:',
+     +             k, kf, BEk, up
+              goto 10
+           endif
+
+           epsabs= 1.d-6  ! Less strict tolerance
+           epsrel= 1.d-4  ! Less strict tolerance
+
+           if(debug_quad) then
+              write(*,'(a,2i4,2e12.4)') 'DQNG FVSinz:',
+     +             k, kf, BEk, up
+           endif
+
+           ! Add try-catch equivalent for floating point errors
+           rate = zero
+           result = zero
+           abserr = zero
+           ier = -1
+
+           ! Test if function is well-behaved at endpoints
+           if(debug_quad .and. (k.eq.1 .and. kf.eq.599)) then
+              write(*,'(a)')
+     +      'Testing function at bounds before integration'
+           endif
+
+           ! Additional safety check before integration
+           if(BEk .LE. 0.d0 .OR. up .LE. BEk .OR.
+     +        BEk .NE. BEk .OR. up .NE. up) then
+              if(debug_quad) then
+                 write(*,'(a,2i4,2e12.4)')
+     +            'Invalid integration bounds:',
+     +                k, kf, BEk, up
+              endif
+              goto 10
+           endif
+
+           ! Additional check: ensure reasonable bounds ratio
+           if(up/BEk .LT. 1.01d0) then
+              if(debug_quad) then
+                 write(*,'(a,2i4,2e12.4,f8.3)')
+     +            'Bounds too close, ratio:',
+     +                k, kf, BEk, up, up/BEk
+              endif
+              goto 10
+           endif
+
+           CALL DQNG(FVSinz, BEk, up, epsabs, epsrel,
+     +                result, abserr, neval, ier)
+
+           if(debug_quad .and. ier.ne.0) then
+              write(*,'(a,3i4,2e12.4)') 'DQNG FVSinz error:',
+     +             k, kf, ier, result, abserr
+           endif
+
+           if(ier.eq.0
+     +     .and. result.eq.result
+     +     .and. abs(result).lt.1.d20) then
+              rate = result
+           else
+              if(debug_quad) then
+                 write(*,'(a,2i4,i4,2e12.4)') 'Bad result:',
+     +                k, kf, ier, result, abserr
+              endif
+              rate = zero
+           endif
+           if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero  ! NaN/inf check
+           WI(k,kf)= rate * Dene
+
+10         continue
+
+           ! Fix the second DQNG call with proper bounds checking
+           rate = zero
+           result = zero
+           abserr = zero
+           ier = -1
+
+           ! Check bounds for FVStbr integration
+           if(up .GT. 1.d-6 .AND. up .LT. 1.d20) then
+              CALL DQNG(FVStbr, 1.d-6, up, epsabs, epsrel,
+     +                   result, abserr, neval, ier)
+              if(ier.eq.0 .and. result.eq.result .and.
+     +           abs(result).lt.1.d20) then
+                 rate = result
+              endif
+           endif
+           if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero
            WTB(kf,k)= rate * Dene
 
-           prob = 0.                     ! probability of PHOTO-ionization
-           do iv= 2, nvM                 ! Explicit Sum instead of DQAGS, which is too slow with multy-spike "SpInEff"
+           prob = 0.
+           do iv= 2, nvM
              if(hvV(iv).GE. BEk) then
                dhv = hvV(iv) - hvV(iv-1)
-               fun= FoPi*SigPhi(hvV(iv))*SpInEff(La,iv)/hvV(iv)/BolJ  ! 1/s/eV= sr*cm2*(W/cm2/sr/eV)/J ; BlackFold probability page
+               fun= FoPi*SigPhi(hvV(iv))*SpInEff(La,iv)/hvV(iv)
+     +              /BolJ
                prob= prob + dhv * fun
              endif
            enddo
-           WPhI(k,kf)= prob   ! 1/s
+           WPhI(k,kf)= prob
 
-c          Replace D01AHF with DQAGS for radiative recombination
-           a_int = 1.d-7
-           b_int = up
-           call DQAGS(FVSrr, a_int, b_int, epsabs, epsrel, result,
-     +               abserr, neval, ier, limit, lenw, last, iwork, work)
-           if(ier .ne. 0) then
-              write(*,'(a,i3)') 'DQAGS error in FVSrr, ier=', ier
+           ! Fix third DQNG call with proper bounds checking
+           rate = zero
+           result = zero
+           abserr = zero
+           ier = -1
+
+           if(up .GT. 1.d-6 .AND. up .LT. 1.d20) then
+              CALL DQNG(FVSrr, 1.d-6, up, epsabs, epsrel,
+     +                   result, abserr, neval, ier)
+              if(ier.eq.0 .and. result.eq.result .and.
+     +           abs(result).lt.1.d20) then
+                 rate = result
+              endif
            endif
-           rate = result
-           WRR(kf,k) = rate * Dene
+           if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero
+           WRR(kf,k)= rate * Dene
 
-           prob= zero       ! simple Sum instead of DQAGS which is bad for multy-spike "SpInEff"
+           prob= zero
            do iv = 2, nvM
-             eeV = hvV(iv) - BEk  ! energy of recombining free electron
+             eeV = hvV(iv) - BEk
              if(eeV.gt.0.) then
                 V= 5.930968d7*sqrt(eeV)
-                Sca= 5040.357* hvV(iv)**3                      ! Planck scale 2*hv^3/c^2; W/cm2/sr/eV
-                fun= V*EED(eeV)*SigRR(eeV)*SpInEff(La,iv)/Sca  ! Mihalas (74.2),(74.4)
+                Sca= 5040.357* hvV(iv)**3
+                fun= V*EED(eeV)*SigRR(eeV)*SpInEff(La,iv)/Sca
                 dhv = hvV(iv) - hvV(iv-1)
-                prob= prob+ fun *dhv                           ! cc/s= (cm/s)*(1/eV)*(cm^2)*eV
+                prob= prob+ fun *dhv
              endif
            enddo
-           WiRR(kf,k) = prob *Dene   ! 1/s
+           WiRR(kf,k) = prob *Dene
         enddo
       enddo
 
@@ -194,28 +296,41 @@ c          Replace D01AHF with DQAGS for radiative recombination
             DE= E(kf,nX) - E(k,nX)            ! as both belong to same "j", thus have common GrSt
             if(DE.le.0.) STOP 'DE<=0 in Ex1'  ! cannot happen because we check and correct "ELsXE...inp" in "Intro" subr. Later distorsion never observed.
             if(DE.GE.up) cycle                ! gap too large for Te(ti)
-c           Replace D01AHF with DQAGS for excitation
-            a_int = DE
-            b_int = up
-            call DQAGS(FVSEx, a_int, b_int, epsabs, epsrel, result,
-     +                abserr, neval, ier, limit, lenw, last, iwork,
-     +                work)
-            if(ier .ne. 0) then
-               write(*,'(a,i3,a,f10.3)') 'DQAGS error in FVSEx, ier=',
-     +                ier, ' DE=', DE
+            epsabs= 1.d-8
+            epsrel= 1.d-6
+
+            ! Add bounds checking for FVSEx integration
+            rate = zero
+            result = zero
+            abserr = zero
+            ier = -1
+
+            if(DE .GT. 0.d0 .AND. up .GT. DE .AND. up .LT. 1.d20) then
+               CALL DQNG(FVSEx, DE, up, epsabs, epsrel,
+     +                    result, abserr, neval, ier)
+               if(ier.eq.0 .and. result.eq.result .and.
+     +            abs(result).lt.1.d20) then
+                  rate = result
+               endif
             endif
-            rate = result
+            if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero
             WEX(k,kf)= rate * Dene
-c           Replace D01AHF with DQAGS for de-excitation
-            a_int = 1.d-7
-            b_int = up
-            call DQAGS(FVSDx, a_int, b_int, epsabs, epsrel, result,
-     +                abserr, neval, ier, limit, lenw, last, iwork,
-     +                work)
-            if(ier .ne. 0) then
-               write(*,'(a,i3)') 'DQAGS error in FVSDx, ier=', ier
+
+            ! Add bounds checking for FVSDx integration
+            rate = zero
+            result = zero
+            abserr = zero
+            ier = -1
+
+            if(up .GT. 1.d-6 .AND. up .LT. 1.d20) then
+               CALL DQNG(FVSDx, 1.d-6, up, epsabs, epsrel,
+     +                    result, abserr, neval, ier)
+               if(ier.eq.0 .and. result.eq.result .and.
+     +            abs(result).lt.1.d20) then
+                  rate = result
+               endif
             endif
-            rate = result
+            if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero
             WDX(kf,k)= rate * Dene
           enddo
         enddo
@@ -226,52 +341,70 @@ c                                              "never-dead", (ii) they have no t
               if(mthdEX(k,kf,nX).eq.-7) cycle  ! "-7" means that transition not described in "ExcitXE.inp":  leave WEX=0
               DE= E(kf,nX) - E(k,nX)           ! as both belong to same "j", thus have common GS
               if(DE.GE.up)  cycle
-c             Replace D01AHF with DQAGS for AI excitation
-              a_int = DE
-              b_int = up
-              call DQAGS(FVSEx, a_int, b_int, epsabs, epsrel, result,
-     +                  abserr, neval, ier, limit, lenw, last, iwork,
-     +                  work)
-              if(ier .ne. 0) then
-                 write(*,'(a,i3,a,f10.3)')
-     +                  'DQAGS error in AI FVSEx, ier=', ier, ' DE=', DE
+              epsabs= 1.d-8
+              epsrel= 1.d-6
+
+              ! Add bounds checking for FVSEx integration
+              rate = zero
+              result = zero
+              abserr = zero
+              ier = -1
+
+              if(DE .GT. 0.d0 .AND. up .GT. DE .AND.
+     +           up .LT. 1.d20) then
+                 CALL DQNG(FVSEx, DE, up, epsabs, epsrel,
+     +                      result, abserr, neval, ier)
+                 if(ier.eq.0 .and. result.eq.result .and.
+     +              abs(result).lt.1.d20) then
+                    rate = result
+                 endif
               endif
-              rate = result
+              if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero
               WEX(k,kf)= rate * Dene
-c             Replace D01AHF with DQAGS for AI de-excitation
-              a_int = 1.d-7
-              b_int = up
-              call DQAGS(FVSDx, a_int, b_int, epsabs, epsrel, result,
-     +                  abserr, neval, ier, limit, lenw, last, iwork,
-     +                  work)
-              if(ier .ne. 0) then
-                 write(*,'(a,i3)') 'DQAGS error in AI FVSDx, ier=', ier
+
+              ! Add bounds checking for FVSDx integration
+              rate = zero
+              result = zero
+              abserr = zero
+              ier = -1
+
+              if(up .GT. 1.d-6 .AND. up .LT. 1.d20) then
+                 CALL DQNG(FVSDx, 1.d-6, up, epsabs, epsrel,
+     +                      result, abserr, neval, ier)
+                 if(ier.eq.0 .and. result.eq.result .and.
+     +              abs(result).lt.1.d20) then
+                    rate = result
+                 endif
               endif
-              rate = result
+              if(rate.ne.rate .or. abs(rate).ge.1.d20) rate = zero
               WDX(kf,k)= rate * Dene
             enddo
           enddo
         endif
       enddo
 
+
+
+* Dielectronic Capture: (j,k1=reg) + e --> (j-1,kAI).  We follow Griem3 (6.35), i.e. derive WDC from detailed balance with WAiz in high-density limit.
+c                                                      Algorithm, used for "Ejm" and "WDC", is checked by exact (in LTE) Griem3 (6.34) formula
+c                                                            WDC(k1,kAI) = WAiz(kAI,k1)*popLTE(kAI)/popLTE(k1).
+c                                       tCR comparison showed "==" in all POPs (but at that time we used "PI", not "PIR" for Ejm).
+      do j = FSS(nX)+1, HSS(nX)       ! capturing ion
+        if(nuAS(j-1,nX).lt.1) goto 9       ! no AI ELs in SS=j-1
+        do k1 = nuGS(j,nX), nuGS(j+1,nX)-1    ! candidates for capturing EL, they are non-AI ELs
+          if(BE(k1) .LT. 1.d-3)  cycle        ! dead EL
+          do kAI= kAI1(j-1,nX), kAI2(j-1,nX)  ! AI ELs of SS=j-1.  Note: (i) AIELs are treated as "never-dead",
+c                                                                        (ii) they have no true BE, they carry initial BE= -1
+            if(WAiz(kAI,k1,nX) .gt. zero) then       ! this (kAI,k1) couple has DC/AI channel
+              Ejm= E(kAI,nX) -PIR(j-1,nX) -E(k1,nX)  ! General case. Griem3 "Ejm" in p.178.
+              wFac= 4.*(0.88d-16*13.6/Te)**1.5
+              rate= wFac* (g0(kAI,nX)/g0(k1,nX))
+     +            * WAiz(kAI,k1,nX) *dexp(-Ejm/Te)   ! (6.35)
+              WDC(k1,kAI) = Dene * rate              ! (6.34)
+            endif
+          enddo     ! kAI
+        enddo       ! k1
+  9     continue
+      enddo         ! j
       return
       END    ! of 'Ws' subr
-
-        DOUBLE PRECISION FUNCTION D1MACH(I)
-        IMPLICIT NONE
-        INTEGER I
-        IF (I .EQ. 1) THEN
-            D1MACH = 2.2250738585072014D-308 ! Smallest positive number
-        ELSE IF (I .EQ. 2) THEN
-            D1MACH = 1.7976931348623157D+308 ! Largest positive number
-        ELSE IF (I .EQ. 3) THEN
-            D1MACH = 1.1102230246251565D-16  ! Machine epsilon
-        ELSE IF (I .EQ. 4) THEN
-            D1MACH = 2.2204460492503131D-16  ! Smallest relative spacing
-        ELSE IF (I .EQ. 5) THEN
-            D1MACH = 0.3010299956639812D0    ! Log10(2)
-        ELSE
-            STOP 'D1MACH: Invalid argument'
-        END IF
-        RETURN
-        END

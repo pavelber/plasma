@@ -1,23 +1,12 @@
-! We have a subroutine AtKins() which calculates the atomic kinetics for a given La and nX.
-! It uses various subroutines to compute ionization potentials, binding energies, and transition probabilities
-! It integrates the rate equations using the NAG library's D02EAF routine.
-! Your task is to replace NAG library's D02EAF routine with netlib ODEPACK's DLSODE routine.
-! The file is written for old microsoft powerstation 4 fortran compiler , so it uses 8-byte reals and very old syntax.
-! You should preserve the same syntax, dont cnage formatting of lines you dont touch and preserver maximum line length
-! of 72 characters. with correct positions of + characters for line continuation.
-
       SUBROUTINE AtKins() ! Atomic Kinetics for current La, nX.  On entry POP(EL#) given POPt(k,nX,La) from previous t-step (t=ti)
       use mo1             ! on exit POP(EL#) contains the distribution at t=tf and re-writes POPt(k,nX,La) for current La, nX
       implicit none
       real(8)  POP(NSTm), POPti(NSTm)  ! these files are Local in AtKins
       external POPdot     ! subroutine mentioned by name (no argument) in d02
-            integer NEQ, ITOL, ITASK, ISTATE, IOPT, MF, LRW, LIW
+
+      integer NEQ, ITOL, ITASK, ISTATE, IOPT, MF, LRW, LIW
       real*8  T, TOUT, RTOL, ATOL
-      real*8  RWORK(5000)
-      integer IWORK(500)
-      external JACDUM
-
-
+      integer IFLAG
 
       CALL redPI()        ! compute Ioniz Potentials for {Te(ti-tf),ni(ti-tf)} of MAIN: PIR(SS,nX)= PI(SS,nX)-dPI(SS,nX)
       CALL BEvPr()        ! compute Binding Energy of ELs
@@ -36,7 +25,7 @@ CUT-off block
           POP(nuGS(kiSS(k,nX)+1 ,nX)) =
      +    POP(nuGS(kiSS(k,nX)+1 ,nX)) + POP(k)        !  Add it to GS of next SS
           POP(k)= zero                                !  empty cut EL
-	  endif
+          endif
         POPt(k,nX,La) = POP(k)  ! update because "POP" is local here while subr "Ws" uses "POPt(k,nX,La)"
       enddo
 
@@ -55,42 +44,37 @@ c  Integrate the rate equations:
       tiS= ti*Scale
       tfS= tf*Scale
 
-c     NAG D02EAF replaced with ODEPACK DLSODE
-c     DLSODE arguments:
-c     F, NEQ, Y, T, TOUT, ITASK, ISTATE, IOPT, RWORK, LRW, IWORK, LIW, JAC, MF
-
-      ITOL = 1          ! тип задания погрешностей (скалярные)
-      RTOL = tolD02     ! относительная точность
-      ATOL = tolD02     ! абсолютная точность
-      ITASK = 1         ! решение до TOUT
-      ISTATE = 1        ! старт интегрирования
-      IOPT = 0          ! без опций
-      MF = 10           ! метод BDF без анал. Якобиана
+c     NAG D02EAF replaced with Netlib RKF45
+      ITOL = 1          ! 1: scalar tolerances
+      RTOL = tolD02     ! relative tolerance
+      ATOL = tolD02     ! absolute tolerance
+      ITASK = 1         ! solve up to TOUT
+      ISTATE = 1        ! first call for integrator
+      IOPT = 0          ! no optional inputs
+      MF = 10           ! not used by RKF45, kept for similarity
 
       NEQ = NST(nX)
-      LRW = 20 + 16*NEQ
-      LIW = 20 + NEQ
-
       T = tiS
       TOUT = tfS
+      IFLAG = 0
 
-      CALL DLSODE(POPdot, NEQ, POP, T, TOUT, ITOL, RTOL, ATOL,
-     +            ITASK, ISTATE, IOPT, RWORK, LRW, IWORK, LIW,
-     +            JACDUM, MF)
+      CALL RKF45(POPdot, NEQ, POP, T, TOUT, ITOL, RTOL, ATOL,
+     +           ISTATE, IFLAG)
 
-      if (ISTATE .lt. 0) then
-         write(*,*) 'DLSODE error, ISTATE=', ISTATE
-         STOP 'DLSODE failed'
+      if (IFLAG .lt. 0) then
+         write(*,*) 'RKF45 error, IFLAG=', IFLAG
+         STOP 'RKF45 failed'
       endif
-***   After-D02 printout in "Comment.dat". Only in PrFr time:
+
+***   After-RKF45 printout in "Comment.dat". Only in PrFr time:
       if(ng .eq. gpEq(PrFr)) then  ! "ng" is the NUMBER of "tf"-point on t axis
         write(41,'(//a7, f5.3, a20)') 'tf=', tf*1.d9,
-     +                                   'ns.  POPs after d02'
+     +                                   'ns.  POPs after RKF45'
         do k= 1, NST(nX)
           if(k.eq.1) write(41,'(/a56)')       'XE  EL#   QSname        E
      +        g0      Wout      POPtf'
           write(41,'(i2, i5, a6,a5,   f11.3, f7.0,    2e11.4)')
-     2		       nX, k, QSname1(k,nX), QSname2(k,nX),
+     2               nX, k, QSname1(k,nX), QSname2(k,nX),
      3               E(k,nX), g0(k,nX),     -PM(k,k), POP(k)
         enddo
       endif
@@ -98,16 +82,18 @@ c     F, NEQ, Y, T, TOUT, ITASK, ISTATE, IOPT, RWORK, LRW, IWORK, LIW, JAC, MF
 check POPs obtained:
       SumP= zero
       do k= 1, NST(nX)
-	  if( k.LT.Nnu(nX).AND. BE(k).LT. 1.d-3
-     +                  .AND.POP(k).GT. 1.d-15) STOP 'Populated dead EL'
-	  if(POP(k) .LT.-1.d-12) Write(*,'(a29,e10.2, a17,i2, i4,e14.6)')  ! NAG d02 with tolD02= 1.d-6 provides |sumPOP - 1| < 1.e-8  but some small POPs may be negative |POP|<1.e-12
-     +     'found POP < -1.d-12;  POP=', POP(k),                         ! If these negative values are < -1.e12 we send screen info
+          if( k.LT.Nnu(nX).AND. BE(k).LT. 1.d-3
+     +                     .AND.POP(k).GT. 1.d-15) STOP
+     +                     'Populated dead EL'
+          if(POP(k) .LT.-1.d-12)
+     +                     Write(*,'(a29,e10.2, a17,i2, i4,e14.6)')  ! NAG d02 with tolD02= 1.d-6 provides |sumPOP - 1| < 1.e-8  but some small POPs may be negative |POP|<1.e-12
+     +     'found POP < -1.d-12;  POP=', POP(k),
      +     'for XE, EL, BE=', nX, k, BE(k)
-        sumP= sumP+ POP(k)
+          sumP= sumP+ POP(k)
       enddo
       if(abs(SumP-one) .gt. 1.d-6) then
          write(*,'(/a20, e9.2)') 'SumPOPs - 1 =', SumP - one
-         STOP 'Sum POPs ne 1 after d02'
+         STOP 'Sum POPs ne 1 after RKF45'
       endif
 
 calculate POPZ(SS)
@@ -119,7 +105,7 @@ calculate POPZ(SS)
       enddo
 
       if(nX.eq.1) write(21,'(f7.4, f8.3, 6e11.4)') tf*1.e9, Te/1000.,
-     +       POP(PoLeNu(1,1)), POP(PoLeNu(1,2)), POP(PoLeNu(1,3)),	   ! POP of six levels of AL chosen "FLAG.inp".
+     +       POP(PoLeNu(1,1)), POP(PoLeNu(1,2)), POP(PoLeNu(1,3)),     ! POP of six levels of AL chosen "FLAG.inp".
      +       POP(PoLeNu(1,4)), POP(PoLeNu(1,5)), POP(PoLeNu(1,6))
 
       if(nX.eq.2) write(22,'(f7.4, f8.3, 6e11.4)') tf*1.e9, Te/1000.,
@@ -129,14 +115,8 @@ calculate POPZ(SS)
 c Save 1D arrays POP(k) and BE(k) in 3D arrays for next t-step with this "La" and "XE"
       do k= 1, NST(nX)
          POPt(k,nX,La)= POP(k)
-	    BEp(k,nX,La)= BE(k)
+         BEp(k,nX,La)= BE(k)
       enddo
 
       Return
       END   ! of 'AtKins' subr
-
-      subroutine JACDUM(NEQ, T, Y, ML, MU, PD, NROWPD)
-      integer NEQ, ML, MU, NROWPD
-      real(8)  T, Y(*), PD(NROWPD,*)
-      return
-      end

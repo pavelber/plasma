@@ -3,15 +3,6 @@
   <component name="CopilotDiffPersistence">
     <option name="pendingDiffs">
       <map>
-        <entry key="$PROJECT_DIR$/code1/Makefile">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/code1/Makefile" />
-              <option name="originalContent" value="# Makefile for Windows using nmake and fl32&#10;&#10;.SUFFIXES: .for .obj .exe&#10;&#10;FORTRAN = fl32&#10;FFLAGS = -c&#10;&#10;# Libraries in the same order as successful Makefile.dsl&#10;LIBS = libslatec.lib libodepack.lib libquadpack.lib&#10;&#10;# List of additional source files (including atkins.f, which uses DLSODE from ODEPACK)&#10;ADDITIONAL_SOURCES = emiabso.f eff.f open_read.f linelist.f txscans.f rtespin.f scenario.f pmg0.f functions.f ws.f atkins.f subroutines.f powyie.f&#10;ADDITIONAL_OBJS = emiabso.obj eff.obj open_read.obj linelist.obj txscans.obj rtespin.obj  scenario.obj pmg0.obj functions.obj ws.obj atkins.obj subroutines.obj powyie.obj&#10;&#10;OBJS = mo1.obj $(ADDITIONAL_OBJS)&#10;EXE = Code1.exe&#10;&#10;all: $(EXE)&#10;&#10;# Link using the same approach as successful Makefile.dsl&#10;# This ensures DLSODE from ODEPACK is found for atkins.f&#10;$(EXE): Code1.for $(OBJS) $(LIBS)&#10;&#9;$(FORTRAN) Code1.for $(OBJS) $(LIBS)&#10;&#10;# Compile main module&#10;mo1: mo1.obj&#10;&#10;mo1.obj: mo1.for&#10;&#9;$(FORTRAN) $(FFLAGS) mo1.for&#10;&#10;# Pattern rule to compile .f files to .obj files&#10;%.obj: %.f&#10;&#9;$(FORTRAN) $(FFLAGS) $&lt;&#10;&#10;# Clean rule&#10;clean:&#10;&#9;@if exist *.obj del *.obj&#10;&#9;@if exist $(EXE) del $(EXE)&#10;" />
-              <option name="updatedContent" value="# Makefile for Windows using nmake and fl32&#10;&#10;.SUFFIXES: .for .obj .exe&#10;&#10;FORTRAN = fl32&#10;FFLAGS = -c&#10;&#10;# Libraries in the same order as successful Makefile.dsl, plus naglib for additional symbols&#10;LIBS = libslatec.lib libodepack.lib libquadpack.lib naglib.lib&#10;&#10;# List of additional source files (including atkins.f, which uses DLSODE from ODEPACK)&#10;ADDITIONAL_SOURCES = emiabso.f eff.f open_read.f linelist.f txscans.f rtespin.f scenario.f pmg0.f functions.f ws.f atkins.f subroutines.f powyie.f&#10;ADDITIONAL_OBJS = emiabso.obj eff.obj open_read.obj linelist.obj txscans.obj rtespin.obj  scenario.obj pmg0.obj functions.obj ws.obj atkins.obj subroutines.obj powyie.obj&#10;&#10;OBJS = mo1.obj $(ADDITIONAL_OBJS)&#10;EXE = Code1.exe&#10;&#10;all: $(EXE)&#10;&#10;# Link using the same approach as successful Makefile.dsl&#10;# This ensures DLSODE from ODEPACK is found for atkins.f&#10;$(EXE): Code1.for $(OBJS) $(LIBS)&#10;&#9;$(FORTRAN) Code1.for $(OBJS) $(LIBS)&#10;&#10;# Compile main module&#10;mo1: mo1.obj&#10;&#10;mo1.obj: mo1.for&#10;&#9;$(FORTRAN) $(FFLAGS) mo1.for&#10;&#10;# Pattern rule to compile .f files to .obj files&#10;%.obj: %.f&#10;&#9;$(FORTRAN) $(FFLAGS) $&lt;&#10;&#10;# Clean rule&#10;clean:&#10;&#9;@if exist *.obj del *.obj&#10;&#9;@if exist $(EXE) del $(EXE)" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
         <entry key="$PROJECT_DIR$/code1/dqags_nag_test.for">
           <value>
             <PendingDiffInfo>

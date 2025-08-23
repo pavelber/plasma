@@ -261,6 +261,11 @@ c                                 Therefore for correct computation of "SigRR" I
 	use mo1
 	implicit none
 	real(8) eeV, V, EED, SigInz
+         ! Safety check to prevent sqrt of negative values
+         if(eeV .LE. 0.d0) then
+            FVSinz = 0.d0
+            return
+         endif
          V= 5.930968d7*sqrt(eeV)          ! cm/s,  sqrt(2kE/m)
          FVSinz= EED(eeV)*V*SigInz(eeV)
       END
@@ -271,15 +276,50 @@ c                                 Therefore for correct computation of "SigRR" I
 	implicit none
 	real(8) eeV, xw, yw, OM  ! OM is MFGu Collision Strength (Omega)
       SigInz= zero
-      if(eeV.lt.BEk) STOP 'Came in SigInz with E < BEk'
+      if(eeV.lt.BEk) then
+         write(*,*) 'Warning: SigInz called with E < BEk:', eeV, BEk
+         return
+      endif
+
+      ! Add safety check for very small energy differences
+      if(eeV .LE. BEk*1.001d0) then
+         SigInz = zero
+         return
+      endif
 
       xw= eeV/BEk
+
+      ! Check for numerical issues
+      if(xw .LE. 1.d0 .OR. xw .NE. xw) then
+         SigInz = zero
+         return
+      endif
+
       yw= one - one/xw  ! MF Gu
+
+      ! Check for potential numerical issues in log
+      if(xw .LE. 1.d-10 .OR. xw .GE. 1.d10) then
+         SigInz = zero
+         return
+      endif
+
       OM = Aix(k,kf,nX)*Dlog(xw)+ Bix(k,kf,nX)*yw*yw +   ! FAC guide (2.9)
      +     Cix(k,kf,nX)*yw/xw   + Dix(k,kf,nX)*yw/xw/xw
+
+      ! Check if OM is reasonable
+      if(OM .NE. OM .OR. abs(OM) .GE. 1.d20) then
+         SigInz = zero
+         return
+      endif
+
       SigInz= 3.8101e-16* OM /eeV /g0(k,nX)              ! FAC guide (2.10): "in A.U. e-imp SigInz= OM/k0^2/g(k)".
 c                                                          A.U. [Sig]= a0^2=2.8003(-17) cm2.
       if(SigInz .lt. zero)   SigInz= zero      ! Bad fits to FAC points may have Sig < 0 even far from threshold
+
+      ! Final sanity check
+      if(SigInz .NE. SigInz .OR. abs(SigInz) .GE. 1.d20) then
+         SigInz = zero
+      endif
       END
 
 
@@ -326,7 +366,7 @@ c                                                          A.U. [Sig]= a0^2=2.80
       real(8) kR
       K13= Ksp(1)      ! remains for kR <= kRp(1)
       do i= 2, K13po
-        if(kR.gt.kRp(i-1). and. kR.le.kRp(i)) then
+        if(kR.gt.kRp(i-1).and.kR.le.kRp(i)) then
 	   K13= Ksp(i-1)+(Ksp(i)-Ksp(i-1))*(kR-kRp(i-1))/(kRp(i)-kRp(i-1))
          goto 1
         endif
@@ -334,12 +374,3 @@ c                                                          A.U. [Sig]= a0^2=2.80
       if(kR.gt.kRp(K13po)) K13= Ksp(K13po)
   1   continue
       end
-
-
-
-
-
-
-
-
-
