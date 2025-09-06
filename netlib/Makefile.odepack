@@ -1,26 +1,29 @@
-# Makefile for Windows using nmake and fl32 to build ODEPACK library
+# Makefile for Windows using nmake and gfortran to build ODEPACK library
 
-FORTRAN = fl32
-FFLAGS = -c
-LIB = lib
-LIBFLAGS = /OUT:
+FORTRAN = gfortran
+# Use legacy Fortran features and fixed format
+FFLAGS = -c -std=legacy -ffixed-form -fno-sign-zero -w
+LIB = ar
+LIBFLAGS = rcs
 
 ODEPACK_DIR = odepack
-LIB_NAME = libodepack.lib
+LIB_NAME = libodepack.a
 
 all: $(LIB_NAME)
 
 # Build the library by compiling all .f files and then creating the library
 $(LIB_NAME):
 	@echo Compiling all Fortran files in $(ODEPACK_DIR) directory...
-	@for %%f in ($(ODEPACK_DIR)\*.f) do $(FORTRAN) $(FFLAGS) /Fo$(ODEPACK_DIR)\ %%f
+	@for %%f in ($(ODEPACK_DIR)\*.f) do $(FORTRAN) $(FFLAGS) -o $(ODEPACK_DIR)\%%~nf.o %%f
 	@echo Creating library $(LIB_NAME)...
-	$(LIB) $(LIBFLAGS)$(LIB_NAME) $(ODEPACK_DIR)\*.obj
-
-# Inference rule for nmake to compile .f files to .obj files in the odepack directory
-{$(ODEPACK_DIR)}.f{$(ODEPACK_DIR)}.obj:
-	$(FORTRAN) $(FFLAGS) /Fo$(ODEPACK_DIR)\ $<
+	$(LIB) $(LIBFLAGS) $(LIB_NAME) $(ODEPACK_DIR)\*.o
 
 clean:
+	@if exist $(ODEPACK_DIR)\*.o del $(ODEPACK_DIR)\*.o
 	@if exist $(ODEPACK_DIR)\*.obj del $(ODEPACK_DIR)\*.obj
 	@if exist $(LIB_NAME) del $(LIB_NAME)
+	@if exist *.mod del *.mod
+
+# Rule to compile individual files if needed
+.f.obj:
+	$(FORTRAN) $(FFLAGS) $<

@@ -1,26 +1,29 @@
-# Makefile for Windows using nmake and fl32 to build QUADPACK library
+# Makefile for Windows using gfortran to build QUADPACK library
 
-FORTRAN = fl32
-FFLAGS = -c
-LIB = lib
-LIBFLAGS = /OUT:
+FORTRAN = gfortran
+# Use legacy Fortran features and fixed format for Fortran 77 code
+FFLAGS = -c -std=legacy -ffixed-form -fno-sign-zero -w
+LIB = ar
+LIBFLAGS = rcs
 
 QUADPACK_DIR = quadpack
-LIB_NAME = libquadpack.lib
+LIB_NAME = libquadpack.a
 
 all: $(LIB_NAME)
 
 # Build the library by compiling all .f files and then creating the library
 $(LIB_NAME):
 	@echo Compiling all Fortran files in $(QUADPACK_DIR) directory...
-	@for %%f in ($(QUADPACK_DIR)\*.f) do $(FORTRAN) $(FFLAGS) /Fo$(QUADPACK_DIR)\ %%f
+	@for %%f in ($(QUADPACK_DIR)\*.f) do $(FORTRAN) $(FFLAGS) -o $(QUADPACK_DIR)\%%~nf.o %%f
 	@echo Creating library $(LIB_NAME)...
-	$(LIB) $(LIBFLAGS)$(LIB_NAME) $(QUADPACK_DIR)\*.obj
+	$(LIB) $(LIBFLAGS) $(LIB_NAME) $(QUADPACK_DIR)\*.o
 
-# Inference rule for nmake to compile .f files to .obj files in the quadpack directory
-{$(QUADPACK_DIR)}.f{$(QUADPACK_DIR)}.obj:
-	$(FORTRAN) $(FFLAGS) /Fo$(QUADPACK_DIR)\ $<
+# Inference rule for nmake to compile .f files to .o files in the quadpack directory
+{$(QUADPACK_DIR)}.f{$(QUADPACK_DIR)}.o:
+	$(FORTRAN) $(FFLAGS) -o $@ $<
 
 clean:
+	@if exist $(QUADPACK_DIR)\*.o del $(QUADPACK_DIR)\*.o
 	@if exist $(QUADPACK_DIR)\*.obj del $(QUADPACK_DIR)\*.obj
 	@if exist $(LIB_NAME) del $(LIB_NAME)
+	@if exist *.mod del *.mod

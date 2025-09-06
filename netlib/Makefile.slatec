@@ -1,26 +1,29 @@
-# Makefile for Windows using nmake and fl32 to build SLATEC library
+# Makefile for Windows using gfortran to build SLATEC library
 
-FORTRAN = fl32
-FFLAGS = -c
-LIB = lib
-LIBFLAGS = /OUT:
+FORTRAN = gfortran
+# Use legacy Fortran features and fixed format for Fortran 77 code
+FFLAGS = -c -std=legacy -ffixed-form -fno-sign-zero -w
+LIB = ar
+LIBFLAGS = rcs
 
 SLATEC_DIR = slatec
-LIB_NAME = libslatec.lib
+LIB_NAME = libslatec.a
 
 all: $(LIB_NAME)
 
 # Build the library by compiling all .f files and then creating the library
 $(LIB_NAME):
 	@echo Compiling all Fortran files in $(SLATEC_DIR) directory...
-	@for %%f in ($(SLATEC_DIR)\*.f) do $(FORTRAN) $(FFLAGS) /Fo$(SLATEC_DIR)\ %%f
+	@for %%f in ($(SLATEC_DIR)\*.f) do $(FORTRAN) $(FFLAGS) -o $(SLATEC_DIR)\%%~nf.o %%f
 	@echo Creating library $(LIB_NAME)...
-	$(LIB) $(LIBFLAGS)$(LIB_NAME) $(SLATEC_DIR)\*.obj
+	$(LIB) $(LIBFLAGS) $(LIB_NAME) $(SLATEC_DIR)\*.o
 
-# Inference rule for nmake to compile .f files to .obj files in the slatec directory
-{$(SLATEC_DIR)}.f{$(SLATEC_DIR)}.obj:
-	$(FORTRAN) $(FFLAGS) /Fo$(SLATEC_DIR)\ $<
+# Inference rule for nmake to compile .f files to .o files in the slatec directory
+{$(SLATEC_DIR)}.f{$(SLATEC_DIR)}.o:
+	$(FORTRAN) $(FFLAGS) -o $@ $<
 
 clean:
+	@if exist $(SLATEC_DIR)\*.o del $(SLATEC_DIR)\*.o
 	@if exist $(SLATEC_DIR)\*.obj del $(SLATEC_DIR)\*.obj
 	@if exist $(LIB_NAME) del $(LIB_NAME)
+	@if exist *.mod del *.mod
