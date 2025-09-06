@@ -1,14 +1,25 @@
-
-
       SUBROUTINE Ws()  ! Transition probabilities for Rate Equations.
       use mo1          ! In each W-matrix, first index shows INITIAL EL of the transition.
       implicit none
-      integer  lUL, lw, kAI
+      integer  lUL, lw, kAI, ierr
       real(8)  pv(nvM), freq, Wave, DEJ, BemHz, Bem, Bab, hvCw,
      +         AbSpIn, up, rate, prob, Ejm, wFac, D01ahf,
      +         SigRR, V, fun, SigPhi, eeV, dev, Voigt2,     ! Voigt2 is Sawa's connector to JELRT Viogt; Earlier used "VoigtJS" that is Jenya's Voigt function but is was WRONG
      +         FWevGau, EED, Sca, ArPv                      ! Gauss,
       external FVSinz, FVSmi, FVStbr, FVSrr, FVSex, FVSdx   ! functions mentioned by name (no argument) in d01
+      
+      ! Debug variables
+      integer :: debug_unit
+      logical :: debug_opened
+      character(len=100) :: debug_msg
+      
+      ! Open debug file
+      debug_opened = .false.
+      debug_unit = 99
+      open(unit=debug_unit, file='ws_debug.txt', status='unknown', 
+     +     position='append', action='write', iostat=ierr)
+      if (ierr .eq. 0) debug_opened = .true.
+      
       WI  = zero
       WMI = zero
       WEX = zero
@@ -67,18 +78,52 @@ c                                     Thus many lines are formally present but t
          FWevGau= hvCw *FWkVcGAU(nX)  ! Gaussian FWHM [eV] of kU-->kL line of XE# = nX
          Wing   = hvCw/2.             ! Line Wing Length [eV]
          ArPv   = zero
+         
+         ! Debug: Print line parameters
+         if (debug_opened) then
+            write(debug_unit, '(a,4i6,5e15.6)') 
+     +      'LineParams: nX,kL,kU,lUL,DE,hvCw,FWevLor,FWevGau,Wing=',
+     +      nX, kL, kU, lUL, DE, hvCw, FWevLor(lUL), FWevGau, Wing
+         endif
+         
          do iv= 1, nvM
             dev= abs(hvV(iv) - hvCw)
             pv(iv)= zero
             if(hvV(iv).GT. hvCw-Wing .and.
      +         hvV(iv).LT. hvCw+Wing      ) then
                pv(iv)= Voigt2(FWevLor(lUL), FWevGau, hvCw, dev)    ! JELRT (Sawa) Voigt is OK to 1% for any L,G, but slower than wrong "VoigtJS"
+               
+               ! Debug: Print Voigt computation details for first few points
+               if (debug_opened .and. iv .le. 5) then
+                  write(debug_unit, '(a,2i6,4e15.6)') 
+     +            'VoigtCalc: iv,lUL,FWevLor,FWevGau,dev,pv=',
+     +            iv, lUL, FWevLor(lUL), FWevGau, dev, pv(iv)
+               endif
             endif
             if(iv.GT.1) ArPv = ArPv +                              ! Area under shape < 1 because line wings cut thus part of photons lost.
      +       	          0.5*(pv(iv)+pv(iv-1))*(hvV(iv)-hvV(iv-1))  ! To return them, no-wings shape will be re-norm to Integ[pBB(v)dv] = 1
          enddo                                                     ! see "/ArPv" below
 
+         ! Debug: Print ArPv computation details
+         if (debug_opened) then
+            write(debug_unit, '(a,i6,e15.6)') 
+     +      'ArPvResult: lUL,ArPv=', lUL, ArPv
+            write(debug_unit, '(a,10e12.4)') 
+     +      'First10pv: ', (pv(iv), iv=1,min(10,nvM))
+         endif
+
          if(ArPv .LT.1.d-5) then
+            ! Enhanced debug for problematic cases
+            if (debug_opened) then
+               write(debug_unit, '(a,4i6,6e15.6)') 
+     +         'PROBLEM: nX,kL,kU,lUL,DE,hvCw,FWevLor,FWevGau,ArPv=',
+     +         nX, kL, kU, lUL, DE, hvCw, FWevLor(lUL), FWevGau, ArPv
+               write(debug_unit, '(a,10e12.4)') 
+     +         'Problem pv: ', (pv(iv), iv=1,min(20,nvM))
+               write(debug_unit, '(a,10e12.4)') 
+     +         'Problem hvV: ', (hvV(iv), iv=1,min(20,nvM))
+            endif
+            
             write(*,'(a26, i6, f10.3, 9e10.2)')
      +      'lw, hvC, FWevGau, ArPv =',
      +       lw, hvC(lw), FWevGau, ArPv
@@ -208,6 +253,11 @@ c                                                                        (ii) th
         enddo       ! k1
   9     continue
       enddo         ! j
+
+          ! Close debug file
+      if (debug_opened) then
+         close(debug_unit)
+      endif
+
       return
       END    ! of 'Ws' subr
-
