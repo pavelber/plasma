@@ -86,10 +86,13 @@ c                                     Thus many lines are formally present but t
          enddo                                                     ! see "/ArPv" below
 
          if(ArPv .LT.1.d-5) then
-            write(*,'(a26, i6, f10.3, 9e10.2)')
-     +      'lw, hvC, FWevGau, ArPv =',
-     +       lw, hvC(lw), FWevGau, ArPv
-	      STOP '  ArPv < d-5)'
+            write(*,'(a26, i6, f10.3, 4e12.3)')
+     +      'lw, hvC, FWevLor, FWevGau, ArPv =',
+     +       lw, hvC(lw), FWevLor(lUL), FWevGau, ArPv
+            write(*,*) 'kL, kU, nX:', kL, kU, nX
+            write(*,*) 'A(kU,kL,nX):', A(kU,kL,nX)
+            ! Continue instead of stopping for now
+            goto 2
          endif
 
          AbSpIn = zero  ! v-integral of {dv*p(v)*SpInEff(v)} [W/eV/cm2/sr]
