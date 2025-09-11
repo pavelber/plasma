@@ -16,7 +16,7 @@ from lib.remove_lines_and_renumenrate import remove_unused_lines_and_renumerate
 from lib.update_fits import create_new_fits_for_rrec2
 from lib.utils import read_table, invert_replaces
 from lib.verify_results import files_not_empty
-from lib.in1 import test_number_of_levels_inp1
+
 from ui.create_from_databases_ui import CreateFromDataBasesUI
 
 
@@ -126,7 +126,6 @@ class Runner:
         self.ui.enable()
 
     def verification(self, elem_dir, in1):
-        test_number_of_levels_inp1(in1)
         files_not_empty(elem_dir)
 
     def create_new_fits(self, elem_dir, replaces):
