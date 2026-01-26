@@ -1,0 +1,65 @@
+ 25.d-12   [s] "FrL" is duration of each frame in file "Frames.dat".
+  1.25d-12 [s] "tstep" is the time step "dt" in computation. FrL/tstep must be integer >= 10. 
+                If you try "tstep" > FrL/10, code changes "tstep" to FrL/10.   
+  0.d-12 [s]  Start Time of computations must be 20 (or more) "tstep" prior to cental time of 1st frame.
+ 65.d-12 [s]  end-of-computation time must be > [central time of last to-be-done frame +FrL/2 + tstep]       
+ 50.d-12 [s] "tiInf" is the time chosen for printing "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat",  "AlongCeLOS.dat", "Image...dat", "SpInDi...dat"  
+  0.01       "W2max" is maximal allowed probability of crossing 2 BSs by 1 LOS  
+ ...............................
+          50.d-12,  75.d-12,  100.d-12,  125.d-12, 150.d-12,  175.d-12,  200.d-12, 225.d-12            [s] central time of 8 spectrograms (printeg in file"Frames.dat"  
+ -1.d-12, 50.d-12,  75.d-12,  100.d-12,  125.d-12, 150.d-12,  175.d-12,  200.d-12, 225.d-12, 250.d-12  [s] 10 t-points in broken-line scenario.  
+....... 1st t-point of scenario (here -1.d-12) must be earlier than Start Time   ............... 
+   1,      1,        1,        1,        2,        2,         2,        1,        1,       1   Nbs is the number of BSs in the core, at least one. 
+........Number of BSs must satisfy inequality Nbs(Nbs -1) < W2max (R2/R1)^4 , see (II.1)............... 
+        If you don't need BSs, take 1 BS of small size, low density.  
+  2.   dc [mcm] is distance from center of test BS to surface of core, see Fig.3. Note: R1 < dc < R2-R1
+.......................
+  0.01,    0.01,    0.01,      0.01,     2.,       1.5,       1.,       1.,       1.,      1.  R1t is radius [mcm] of BSs;  10 t-points
+  5.0,     5.0,     5.0,       5.0,     35.,      35.,       35.,      40.,      50.,     60.,     70.  R2t is radius [mcm] of core; 10 t-points
+  5.74,    5.74,    5.74,      5.74,    45.,      40.,       45.,      60.,      70.,     90.  R3t is outer radius [mcm] of capsule
+........R3t must be >= R2t/(1.-2/"NCL").  NCL is the number of coaxial cylindrical layers == number of concentrical radial  
+.................................................belts on seen-to-detector plane round image of target, Figs.1,2.
+ 1.,  2.,  3.    "rdi(#)" is distance [mcm] between r=0 and three "diagnostic" LOSs
+................................. 
+ 1.0d20,  1.0d20,   1.0d20,    1.0d20,     5.0d20,   4.0d20,    3.0d20,   2.0d20,  2.0d20,  1.0d20  ni [i/cc] of Kr in BS.  
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,      1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,   1.0d9   ni [i/cc] of C  in BS.   Note: ion density < 10^10 means "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,      1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,   1.0d9   ni [i/cc] of He in BS.     ..........  
+ 1.0d24,  1.0d24,   1.0d24,    1.0d24,     5.0d24,   4.0d24,    3.0d24,   2.0d24,  2.0d24,  1.0d24  ni [i/cc] of D  in BS
+................................
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     2.2d20,   2.2d20,    1.7d20,   1.2d20,  1.0d20,  0.8d20  ni [i/cc] of Kr in core
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,   1.0d9   ni [i/cc] of C  in core
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,,  1.0d9   ni [i/cc] of He in core.   Note: ion density < 10^10 means "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     2.2d24,   2.2d24,    1.7d24,   1.2d24,  1.0d24,  0.8d24  ni [i/cc] of D  in core
+....................................................... 
+ 6.0d20,  6.0d20,   6.0d20,    6.0d20,    5.0d20,   5.0d20,    4.0d20,   3.0d20,  2.0d20,  1.0d20  ni [i/cc] of Kr in capsule
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,   1.0d9   ni [i/cc] of C  in capsule.   Note: ion density < 10^10 means "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,   1.0d9   ni [i/cc] of He in capsule
+ 6.0d24,  6.0d24,   6.0d24,    6.0d24     5.0d24,   5.0d24,    4.0d24,   3.0d24,  2.0d24,  1.0d24  ni [i/cc] of D  in capsule
+................................
+ 1000.,	  1000.,    1000.,     1500.,     5000.,    5000.,     4500.,    4000.,   3500.,   3000.  Te=Ti [eV] in BSs 
+ 1200.,	  1200.,    1200.,     1200.,     4000.,    4500.,     4000.,    3000.,   2000.,   1000.  Te=Ti [eV] in core
+ 2500.,	  2500.,    2500.,     2500.,     2700.,    3000.,     2600.,    2000.,   1500.,   1200.  Te=Ti [eV] in capsule
+......................                         "u3D" [cm/s] is mean absolute velocity of ins in their collective (hydro) motion in zone
+ 1.0d7,	  1.0d7,    1.0d7,     1.0d7,     1.0d7,    1.0d7,     1.0d7,    1.0d7,   1.0d7,   1.0d7  "u3D" in BSs and due to their relative motion in the core
+ 3.0d6,	  3.0d6,    3.0d6,     3.0d6,     3.0d6,    3.0d6,     3.0d6,    3.0d6,   3.0d6,   3.0d6  "u3D" in core. 
+ 3.0d6,	  3.0d6,    3.0d6,     3.0d6,     3.0d6,    3.0d6,     3.0d6,    3.0d6,   3.0d6,   3.0d6  "u3D" in capsule
+................................  
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,      0.  e-beam part of the electron energy distribution in BS
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,      0.  in core 
+  0.      0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,      0.  in capsule
+................................
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,     20.  central energy [keV] of the electrom beam in BS
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,     20.  in core 
+ 20.,    20.,      20.,       20.,       20.,      20.,       20.,      20.,     20.,     20.  in capsule
+................................
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,      5   width [keV] of the electron beam in BS
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,      5.  in core 
+  5.,     5.,       5.,        5.,        5.,       5.,        5.,       5.,      5.,      5.  in capsule
+......................
+5    For how many QSs of Xx (<101) do you want info regarding contacts with other QSs?  File "Contacts.dat"
+3    In what zone? 1=BS, 2=core, 3=capsule.          
+251  He-like gr.st. of Kr .
+255  Upper level of IC line
+257  Upper level of He-Alpha
+265  Upper level of He-Beta 
+285                 H-alpha 3/2  

@@ -2,7 +2,7 @@
 
 .SUFFIXES: .for .obj .exe
 
-FORTRAN = fl32
+FORTRAN = c:\tools\powerfortran\BIN\fl32
 FFLAGS = -c
 
 OBJS = mo1code2.obj

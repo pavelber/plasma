@@ -1,0 +1,43 @@
+1  Serial number of ion energy level (EL) given initial population of chemical element #1 (Kr); note: one EL for all zones; here this EL is ground state of N-like Kr
+2                                                                                       2 (C )                            ; here nucleus of Carbon     
+2                                                                                       3 (He)                            ; here nucleus of Helium
+2                                                                                       4 (H )                            ; here nucleus of Deuterium 
+83.8    Kr ion mass in atomic units           
+12.0    C  ion mass  
+ 4.     He ion mass           
+ 2.     D  ion mass
+------- 
+ 0.003  "fluMin". Spectral lines with absorption oscillator strength < "fluMin" are too weak vs continuum and/or instrumental noise, 	
+                  therefore, to reduce computation time, we exclude these lines from the computations. 
+ 3.d9   "AulMin". Spectral lines with Einstein A coefficient < "AulMin" are excluded by same reason			 
+ 1.     "hvMin"  DON'T INCREASE!. Soft edge of hv interval because probability of photoinduced transition requires FULL hv interval 
+40.d3   "hvMax"  DON'T DECREASE!  Hard edge of hv interval ..............                                    
+ 9      "domNu"  <30 is number of domains in hvV(iv) array 
+  470. , 0.3     "hehv(i)" is hard edge if i-th hv domain. , "dvKv(i)" is dv/v in this domain. Each domain is (hehv(i-1), hehv(i)] 
+  930. , 0.01	 e.g. 0.3  is dv/v in (  0 < hv <=  470 eV] domain
+ 1300. , 0.05	      0.01 is dv/v in (470 < hv <=  930 eV] domain
+ 1540,	 1,e-3        0.05            (930 < hv <= 1300 eV] domain 
+ 1800. , 0.02
+ 4000. , 5.e-4
+12600. , 0.05
+17300. , 4.e-5   highly-resolved domain (here (12.6 - 17.3] keV) must include entire interval [minGaLor - maxGaLor] for which instrumental function is known.
+43000. , 0.001   Last "hehv(i)" must be > hvMax
+-------
+35     "NCL" in the code == NT in manual. 2 < NCL < 100 is the number of coaxial cylindrical tubes, see Fig.1 
+                 == number of plane radial belts on seen-to-detector plane image of target, see Fig.2
+36     "Ntet" >= 18 is number of sectors over polar angle 0 <= teta <= pi 
+30     "Nr"         is number of spherical layers IN EACH of 3 zones (BS, Core, Capsulle)   
+-------
+12700., 35000.   [eV] edges of print "Frames.dat",   see (181  
+11000., 35000.   [eV] edges of print "FramesDi1.dat".see (182 
+11000., 35000.   [eV] edges of print "FramesDi2.dat".see (183 
+11000., 35000.   [eV] edges of print "FramesDi3.dat".see (184 
+-------
+1                "nGauLor" is serial number of frame to be convolved with Gaussian and Lorentzian  
+                 instrumental functions. Convolved frames are printed in file "FrameGauLor.dat", print (191 
+12700.,  17200.	 [eV] "minGaLor" and "maxGaLor" are edges of interval for which instrumental function is known.
+                 In this interval we convolve one Frame with instrumental Gaussian and Lorentzian. 
+				 IMPORTANT: this interval must be inside one highly-resolved domain.
+6.e-4,  0.,  0.  three constants of quadratic fit to instrumental broadening: dv/v = Ains + Bins* (hv[keV]) + Cins* (hv[keV])^2
+
+
