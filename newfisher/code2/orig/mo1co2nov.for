@@ -133,7 +133,8 @@ c                       seen-to-detector plane round image of target, Figs.1,2.
      +    Bx(nQSm,nQSm),      ! e-impact excitation cross-sections of 
      +    Cx(nQSm,nQSm),      ! high-Z dopant, see Exc.inp 
      +    Dx(nQSm,nQSm),
-     +    Ex(nQSm,nQSm), 
+     +    Ex(nQSm,nQSm),
+     +    Fx(nQSm,nQSm),
      +   Aix(nQSm,nQSm),  ! Aix-Dix are 4 coefs of e-impact ioniz cross-section of high-Z dopant, see "Inz.inp"
      +   Bix(nQSm,nQSm),  
      +   Cix(nQSm,nQSm), 
@@ -141,7 +142,7 @@ c                       seen-to-detector plane round image of target, Figs.1,2.
      +   Eix(nQSm,nQSm),  ! Eix-Hix are 4 coefs of photo-ioniz cross-section of high-Z dopant, see "Inz.inp"
      +   Fix(nQSm,nQSm), 
      +   Gix(nQSm,nQSm), 
-     +   Hix(nQSm,nQSm), 
+     +   Hix(nQSm,nQSm),
      +   Eth(nQSm,nQSm),  ! State-to-state Ionization Threshold (for ioniz cross-secs) 
      +    WI(nQSm,nQSm),                   ! single ionization probability (1/s), removal of one electron per e-impact
      +   WEX(nQSm,nQSm),  WDX(nQSm,nQSm),  ! e-impact excitation & deexcitation probabilities (1/s)

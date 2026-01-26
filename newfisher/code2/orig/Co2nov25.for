@@ -256,7 +256,7 @@ c   Read "QSsXE.inp" files of C, He, D.
       Cx  = zero  
       Dx  = zero 
       Ex  = zero         
-c     Fx  = zero  ! not used in excit methods 5 and 11 
+      Fx  = zero
       Aix = zero  ! Aix-Dix are 4 coefs of e-impact ioniz cross-section, see "InzXE....inp"
       Bix = zero  
       Cix = zero 
@@ -397,13 +397,15 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
         Cx(kL,kU) = Cxw
         Dx(kL,kU) = Dxw
         Ex(kL,kU) = Exw
+        Fx(kL,kU) = Fxw
+
         flu(kL,kU,nX)= -fw   ! correct (positive) value of Absorption Oscillator Strength
 
         A(kU,kL,nX)= 4.339192d7*flu(kL,kU,nX)*DE**2 *g0(kL,nX)/g0(kU,nX)
 
         if(CountExc .GE. StrExc) goto 7  ! The last line of "Exc.inp"
 
-        if(mth.eq. 5 .or. mth.eq.11) goto 6   ! Present DaBa does not use other methods    
+        if(mth.eq. 5 .or. mth.eq.11 .or. mth.eq.16) goto 6   ! Present DaBa does not use other methods    
 
         write(*,'(a65,5i5)')'Excit CrosSec fit method is unknown for XE, 
 	+  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
@@ -2338,12 +2340,13 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
       use mo1co2nov 
       implicit none
       integer Me
-      real(8) eeV, As, Bs, Cs, Ds, Es, X, X2, Sig 
+      real(8) eeV, As, Bs, Cs, Ds, Es, Fs, X, X2, Sig, ALPHA, F, XN, E1
       As= Ax(k,kf)
       Bs= Bx(k,kf)
       Cs= Cx(k,kf)
       Ds= Dx(k,kf)
       Es= Ex(k,kf)
+      Fs= Fx(k,kf)
       Me= MthdEX(k,kf)
       if(KiSS(k,nX) .ne. j) PAUSE 'In SigExc: wrong SS'
 
@@ -2371,6 +2374,16 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
           else
              Sig= (Cs +Bs*X +As*X2)/(X+Ds)**4 /X**Es 
           endif
+
+        Case(16)            ! a-la splines with Gauss functions 0..1 from NOMAD VB
+	          ALPHA = 0.9899495D0 * DSQRT(Fs/(Fs - 1.D0)) ! numerical coefficient is 0.7 * dsqrt(2)
+	          XN = DSQRT((X-1.D0)/(X+Fs))*ALPHA
+	          E1 = 1.D0/Es
+	          Sig = (As*DEXP(-XN*XN*E1) +
+     &         Bs*DEXP(-(XN-0.333D0)**2*E1) +
+     &         Cs*DEXP(-(XN-0.666D0)**2*E1) +
+     &         Ds*DEXP(-(XN-1.000D0)**2*E1)) / X
+
       END SELECT
 
       if(Sig .LT. zero      ) Sig= zero        ! Bad fits to FAC points may have Sig < 0 even far from threshold 
