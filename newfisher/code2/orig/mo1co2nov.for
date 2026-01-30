@@ -9,12 +9,12 @@ c                                nX=1,2,3,4 is Kr,C,He,D along ion mass, see Par
      +     NST(nXE)            ! number of ELs in each of 4 DaBa [non-AI and AI] : .
 
       integer, public, parameter :: 
-     +     nQSm = 1620,                 ! number of ELs in X (nX=1). For HSSm=36 it must be <= 2300 but for HSSm>36 integer nQSm must be < 2300, to be found in compilation	   
+     +     nQSm = 2150,                 ! number of ELs in X (nX=1). For HSSm=36 it must be <= 2300 but for HSSm>36 integer nQSm must be < 2300, to be found in compilation
      +     HSSm = 36,                   ! max SpS of H-like ion in DaBa; [36 for Kr]
      +    Nwork = 50+ 12*nQSm+ nQSm**2  ! For NAG d02eaf work Area 'WEAF'	
       integer, public, parameter :: 
      +   nvL  = 16000, ! Reserved number of hv-grid points. True number of v-points "nvM" <= "nvL" in defined in "vGrid" subr"
-     +   MNLe = 15000, ! Not more than "MNLe" spectral lines are expected for all XE together (common LineList)
+     +   MNLe = 17345, ! Not more than "MNLe" spectral lines are expected for all XE together (common LineList)
      +   LaMx = 3,     ! Number of types of zones
      +   mSpe = 8,    ! Number of frames (spectrograms) or radial images.
      +   ntp= mSpe+2, ! Number of t-points in Scenario 
@@ -101,7 +101,6 @@ c                       seen-to-detector plane round image of target, Figs.1,2.
      +     hvV(nvL),       ! [eV] array of hv points
      +   SpPow(nvL)      , ! [W/eV/sr] Spectral power of radiation from the target 
      +   SpInEf(LaMx,nvL), ! OMEGA-mean RF intensity in 2 zones [W/cm2/sr/eV]
-
      +  absoFF(nvL), emisFF(nvL),  
      +  absoBF(nvL), emisFB(nvL),  
      +  absoBB(nvL), emisBB(nvL),  
@@ -109,10 +108,8 @@ c                       seen-to-detector plane round image of target, Figs.1,2.
      +  AbTot(LaMx, nvL),         ! plasma absorption coefficient corrected for stimulated emission [1/cm] in the same shells
      +  emisFBx(nvL,nXE),         ! in EmiAbso subr
      +  absoBFx(nvL,nXE),  
-
      +  rc(LOSnMx),  Ar(LOSnMx), 
      +  Image(imgs, LOSnMx), 
-
      + hvRes(mxPoRes,mDet),    ! hv array of input file "InpResp1.inp"   
      + InRes(mxPoRes,mDet),    ! on this "input" hv array, spectral response of "mDet" detectors
      +     LvJW(LaMx, nXE, nQSm),  ! LEVEL Stark width [eV], J-formulary 
@@ -120,7 +117,6 @@ c                       seen-to-detector plane round image of target, Figs.1,2.
      +    PI(HSSm,nXE),            ! Ionization Potential of each GS, table value
      +   PIR(HSSm,nXE,LaMx),  ! Ionization Potential of each GS, reduced by continuum lowering
      +   DPI(HSSm,nXE,LaMx),  ! Continuum lowering
-
      +     E(nQSm,nXE),       ! EL Energy relative to THIS-SS ground state
      +    g0(nQSm,nXE),       ! EL degeneracy: table value
      +    BE(nQSm,nXE,LaMx),  ! Binding Energy of each EL 'ti'-corrected in 'AtKins' after continuum lowering
@@ -304,6 +300,5 @@ c                                                         Spectral Response of e
      +           0.99654, 0.99703, 0.99746, 0.99784, 0.99817, 0.99846, 
      +           0.99871, 0.99893, 0.99913, 0.99929, 0.99944, 0.99956, 
      +           0.99966, 0.99975, 0.99982, 0.99987, 0.99992, 0.99995, 
-     +           0.99997, 0.99998, 0.99999, 1.0,     1.0  /    
-      end module	  
-
+     +           0.99997, 0.99998, 0.99999, 1.0,     1.0  /
+      end module

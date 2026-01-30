@@ -1,5 +1,5 @@
       use mo1co2nov        
-      implicit none   
+      implicit none
       CALL OpenFiles() ! Open Output files, write titles of columns
       CALL Intro()     ! Read input files; fill in atomic data arrays and 
 c                        initial population ("POPs") of energy levels ("ELs")
@@ -586,7 +586,7 @@ c                                    Note: must be R1 < dc < R2-R1
       read(14,'(a9)') comme  
 
       do j = 1, ntp
-         if(R3t(i) .LE. R2t(j)/(1.-2./NCL)) then
+         if(R3t(j) .LE. R2t(j)/(1.-2./NCL)) then
             write(*,'(/a16, i2, a32)')  'At t-point #', j, 
      +                   'R3 <= R2/(1-2/NCL); increase R3' 
             STOP 'My STOP'
@@ -817,7 +817,7 @@ c  Print common (all-XE) line list into file #30
                dvTOv = dvKv(j+1)
             endif
          enddo          	    
-         if(hvV(iv) .GT. hvMax) then
+         if(hvV(iv) .GE. hvMax) then
              nvM = iv
 	       goto 2
          endif
@@ -2011,6 +2011,7 @@ c                                       For convenience of computations I gave t
           if(KiSS(kf,nX).ne.j+1)    PAUSE    'SS error in WI'
 
           BEk= Eth(k,kf) -DPI(j,nX,La)      ! ionization energy for "(j,k) + e --> (j+1,kf) +2e"   
+          if(BEk .LE. 1.d-3)        goto 1  ! BEk too small or negative
           if(BEk .GT. 0.99*upTB)    goto 1  ! BEk too big for e-impact ioniz at present Te: see limits of D01ahf integral below.  
 c                                             Go to photo-ionization
 
