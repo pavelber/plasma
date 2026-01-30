@@ -1,0 +1,53 @@
+ 25.d-12 [s] "FrL" is duration of each frame in "Frames.dat".
+ 2.5d-12 [s] "tstep" is the time step of computation. FrL/tstep must be integer >= 10. 
+              If you try "tstep" > FrL/10 then the code changes "tstep" to FrL/10.   
+-25.d-12 [s]  start time of computations must be atleast 30 "tstep" prior to cental time of 1st frame.
+ 70.d-12 [s] "StopTime" is end-of-computation time. "StopTime" must be > [central time of last WANTED frame +FrL/2 + tstep]       
+ 50.d-12 [s] "tiInf" is the time to print "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat",  "AlongCeLOS.dat", "Image...dat", "diFrame...dat"  
+.................................
+          50.d-12,  75.d-12,  100.d-12,  125.d-12, 150.d-12,  175.d-12,  200.d-12, 225.d-12             [s] central time of 8 frames [s]  
+          50.d-12,  75.d-12,  100.d-12,  125.d-12, 150.d-12,  175.d-12,  200.d-12, 225.d-12             [s] time of 8 spectrograms from "diagnostic" LOSs
+-30.d-12, 50.d-12,  75.d-12,  100.d-12,  125.d-12, 150.d-12,  175.d-12,  200.d-12, 225.d-12,  250.d-12  [s] 10 t-points in the broken-line scenario.  
+.......The 1st t-point of scenario (here -30.d-12) must be earlier than Start Time   ...............                                                                                
+   3,       3,        3,         3,         3,        3,       3,       80,       15,         3   number of BSs in the core. This number must be > 2  
+   0.05,    0.05,     0.05,      0.05,      0.05,     0.05,    0.05,      1.,       1.,        1.  radius [um] of BSs; 9 t-points
+   1.0,     1.0,      1.0,       1.0,       1.0,      1.0,     3.,      50.,      60.,       70.  radius [um] of core; 9 t-points
+   1.01,    1.01,     1.01,      1.01,      1.01,     1.01,    1.01,    3.01,    90.,      110.  radius [um] of capsule; 9 t-points
+   0.1, 0.5, 1.0                                                                                  "rdi(#)" is distanse [um] between r=0 and 3 "diagnostic" LOSs
+..............................       Note: R2 must be >> R1, see (II.1) in  Manual 2 
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,   2.7d22,   2.0d20,  1.0d20,    1.0d20  ni [i/cc] of Ge in BS.  
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,   1.3d24,   1.0d9,   1.0d9,     1.0d9   ni [i/cc] of C  in BS.  Note: C  is given low density to  show "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,   1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of He in BS.        He is given low density to  show "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,   1.0d24,   2.0d24,  1.0d24,    1.0d24  ni [i/cc] of D  in BS
+...............................
+ 2.0d22,  2.0d22,   2.0d22,    2.0d22,    2.0d22,   2.0d22,    2.7d22,   2.0d20,  1.0d20,    1.0d20  ni [i/cc] of Ge in core
+ 1.0d24,  1.0d24,   1.0d24,    1.0d24,    1.0d24,   1.0d24,    1.3d24,   1.0d9,   1.0d9,     1.0d9   ni [i/cc] of C  in core  Note: C  is given low density to  show "missing"
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of He in core        He is given low density to  show "missing"
+ 1.0d24,  1.0d24,   1.0d24,    1.0d24,    1.0d24,   1.0d24,    1.0d24,   2.0d24,  1.0d24,   1.0d24  ni [i/cc] of D  in core
+...............................
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,    3.0d20,   2.0d20,  1.0d20,    1.0d22  ni [i/cc] of Ge in capsule
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,    2.6d24,    4.0d23,  2.0d23,    1.0d23  ni [i/cc] of C  in capsule
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,     1.0d9,    1.0d9,   1.0d9,     1.0d9   ni [i/cc] of He in capsule
+ 1.0d9,   1.0d9,    1.0d9,     1.0d9,     1.0d9,    1.0d9,    2.6d24,   1.0d25,  1.0d24,    1.0d24  ni [i/cc] of D  in capsule
+................................
+ 2000.,	  2000.,    2000.,     2000.,     2000.,    2000.,     2100.,    2500.,   3500.,     3000.  Te=Ti [eV] in BSs 
+ 2500.,	  2500.,    2500.,     2500.,     2500.,    2500.,     2500.,    2500.,   2000.,     2000.  Te=Ti [eV] in core
+ 1000.,	  1000.,    1000.,     1000.,     1000.,    1000.,     1400.,    1400.,   1500.,     1500.  Te=Ti [eV] in capsule
+......................                         "u3D" [cm/s] is mean absolute velocity of ins in their collective (hydro) motion in zone
+ 2.0d7,	  2.0d7,    2.0d7,     2.0d7,     2.0d7,    2.0d7,     2.0d7,    4.5d7,   2.0d7,     1.0d7  "u3D" in BSs and due to their relative motion in the core
+ 2.0d7,	  2.0d7,    2.0d7,     2.0d7,     2.0d7,    2.0d7,     2.0d7,    3.0d7,   1.0d6,     1.0d7  "u3D" in core. 
+ 2.0d7,	  2.0d7,    2.0d7,     2.0d7,     2.0d7,    2.0d7,     2.0d7,    4.0d7,   1.0d6,     1.0d7  "u3D" in capsule
+................................  
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,         0.   e-beam part of the electron energy distribution in BS
+  0.,     0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,         0.   in core 
+  0.      0.,       0.,        0.,        0.,       0.,        0.,       0.,      0.,         0.   in capsule
+................................
+ 15.,    15.,      15.,       15.,       15.,      15.,       15.,      15.,     15.,        20.   central energy [keV] of the electrom beam in BS
+ 15.,    15.,      15.,       15.,       15.,      15.,       15.,      15.,     15.,        20.   in core 
+ 30.,    30.,      30.,       30.,       30.,      30.,       30.,      30.,     30.,        20.   in capsule
+................................
+ 10.,    10.,      10.,       10.,       10.,      10.,       10.,      10.,     10.,         5.   width [keV] of the electron beam in BS
+ 10.,    10.,      10.,       10.,       10.,      10.,       10.,      10.,     10.,         5.   in core 
+ 30.,    30.,      30.,       30.,       30.,      30.,       30.,      30.,     30.,         5.   in capsule
+
+

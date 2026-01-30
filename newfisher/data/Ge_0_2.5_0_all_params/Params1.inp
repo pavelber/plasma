@@ -1,0 +1,35 @@
+1  Serial number of ion energy level (EL) given initial population of chemical element #1 (Ge); note: one EL for all zones; here this EL is ground state of O-like Ge
+2                                                                                       2 (C )                            ; here nucleus of Carbon     
+2                                                                                       3 (He)                            ; here nucleus of Helium
+2                                                                                       4 (H )                            ; here nucleus of Deuterium 
+72.6    Ge ion mass in atomic units           
+12.0    C  ion mass  
+ 4.     He ion mass           
+ 2.     D  ion mass
+------- 
+ 0.003  "fluMin". Spectral lines with absorption oscillator strength < "fluMin" are 	
+                  too weak vs continuum and/or instrumental noise, thus we exclude these lines from computations. 
+ 3.d5   "AulMin". Spectral lines with Einstein A coefficient < "AulMin" are excluded by same reason			 
+ 1.     "hvMin"  DON'T INCREASE!. Soft edge of hv interval because probability of photoinduced transition requires FULL hv interval 
+40.d3   "hvMax"  DON'T DECREASE!  Hard edge of hv interval ..............                                    
+11      "domNu"  <30 is number of domains in hvV(iv) array 
+  470. , 0.3     "hehv(i)", "dvKv(i)" are array of hard edge of each hv-domain. Each domain is (hehv(i-1), hehv(i)] 
+  930. , 0.01	 e.g. 0.01 is dv/v in [470 < hv <=  930 eV] domain
+ 1300. , 0.05         0.05            [930 < hv <= 1300 eV] 
+ 1540. , 1.e-2
+ 1800. , 0.02
+ 9000. , 5.e-2
+12600. , 5.e-5
+13600. , 3.e-2
+14800. , 0.005
+17100. , 7.e-2
+50000. , 0.05
+-------
+40               "LOSn" <100 is the number of radial zones in computation of from-the-target radiation power
+ 9000., 15000.   [eV] edges of print "Frames.dat",   see (181  
+ 9000., 15000.   [eV] edges of print "FramesDi1.dat".see (182 
+ 9000., 15000.   [eV] edges of print "FramesDi2.dat".see (183 
+ 9000., 15000.   [eV] edges of print "FramesDi3.dat".see (184 
+ 
+
+

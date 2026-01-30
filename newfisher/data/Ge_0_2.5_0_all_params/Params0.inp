@@ -1,0 +1,8 @@
+  25  6  2  1  first spectroscopic symbol (SS) in each of 4 "QSs.inp"; here SS=25 for O-like Ge
+  32  6  2  1  SS of H-like ion in each of 4 "QSs.inp". NIF code doesn't accept SS[H] > 36
+ 521  2  2  2  nucleus # in 4 "QSs.inp".
+1198  2  2  2  number of states in each of 4 "QSs.inp"; NIF code doesn't accept > 2300 states.
+----------------------
+165871   the number of strings in file "Exc.inp" (including the title)
+140747   the number of strings in file "Inz.inp" (including the title)
+ 37288   the number of strings in file "AIw.inp" (including the title)
