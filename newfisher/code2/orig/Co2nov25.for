@@ -2011,6 +2011,7 @@ c                                       For convenience of computations I gave t
           if(KiSS(kf,nX).ne.j+1)    PAUSE    'SS error in WI'
 
           BEk= Eth(k,kf) -DPI(j,nX,La)      ! ionization energy for "(j,k) + e --> (j+1,kf) +2e"   
+          if(BEk .LE. 1.d-3)        goto 1  ! BEk <= 0 causes log domain error in SigInz. Skip e-impact.
           if(BEk .GT. 0.99*upTB)    goto 1  ! BEk too big for e-impact ioniz at present Te: see limits of D01ahf integral below.  
 c                                             Go to photo-ionization
 
