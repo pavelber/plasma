@@ -499,7 +499,11 @@ c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
         Gix(ki,kf)= Gxw 
         Hix(ki,kf)= Hxw 
         Eth(ki,kf)= thre   ! State-to-state non-reduced Ionization Threshold; in the compu it will be reduced by DPI(iSS1,nX)] 	           
-        bra(ki,kf,nX)= one ! "one" means yes ionization channel (e-impact and phot) from "ki" to "kf". When using FAC-bases: "bra" is either 1 or 0
+        if(thre .gt. 1.d-3) then
+           bra(ki,kf,nX)= one ! "one" means yes ionization channel
+        else
+           bra(ki,kf,nX)= zero 
+        endif
 
         if(CountInz .LT. StrInz) goto 9  
         close(nFi)
@@ -817,7 +821,7 @@ c  Print common (all-XE) line list into file #30
                dvTOv = dvKv(j+1)
             endif
          enddo          	    
-         if(hvV(iv) .GT. hvMax) then
+         if(hvV(iv) .GE. hvMax) then
              nvM = iv
 	       goto 2
          endif
