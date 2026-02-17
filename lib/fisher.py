@@ -119,4 +119,4 @@ def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, b
 
 
 if __name__ == "__main__":
-    run_for_fisher(True, 1, 9, "Ge", "C:\work4\\tmp\Ge-new-long", "BCFP.INP", True)
+    run_for_fisher(True, 1, 9, "Ge", "C:\\work4\\tmp\Ge-new-long", "BCFP.INP", True)
