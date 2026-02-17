@@ -4,6 +4,7 @@ from lib.utils import skip_n_lines
 
 class IN1:
     def __init__(self, in1_path=None):
+        print("in1 reader, version 12/07")
         self._header = None  # List to store header lines
         self._ionization_potential = {}
         self._header_fifth_column = {}
@@ -75,7 +76,7 @@ class IN1:
                         continue
                     else:
                         level = line[59:68].strip()
-                        energy = float(line[27:37].strip())
+                        energy = float(line[26:37].strip())
                         g = float(line[16:23].strip())
                         config = line[0:10].split()
 
