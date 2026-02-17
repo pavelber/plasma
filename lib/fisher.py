@@ -87,7 +87,7 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
                 rrec_parts = rrec_line.split()
                 rrec_fit = " %6s %13s %12s %12s %12s %13.3f" % (
                     rrec_parts[3], rrec_parts[4], rrec_parts[5], rrec_parts[6], rrec_parts[7], energy)
-                outf.write(bcfp_fit + rrec_fit + params + "\n")
+                outf.write(bcfp_fit + rrec_fit  + "\n")
 
 
 def run_qsege(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, use_fac_lev=True):
@@ -119,4 +119,4 @@ def run_for_fisher(dont_run_all_tools, min_sp_num, max_sp_num, element, o_dir, b
 
 
 if __name__ == "__main__":
-    run_for_fisher(True, 1, 9, "O", "C:\\Users\\javaa\\Downloads\\O", "BCFP.INP", False)
+    run_for_fisher(True, 1, 9, "Ge", "C:\work4\\tmp\Ge-new-long", "BCFP.INP", True)

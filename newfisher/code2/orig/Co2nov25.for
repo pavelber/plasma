@@ -182,7 +182,7 @@ c      open(342, file= 'LorDev.dat')
       character*1 po1     ! for conversion of EL name symbols (1 position) in p.q.n., Lorb, ...
       integer char2int                      ! symbol-to-integer convertor function
       integer iniQS, nSS, mth, LL, LU, ki,  
-     +        iSS1, iQS1, iSS2, iQS2,  nFi                 
+     +        iSS1, iQS1, iSS2, iQS2,  nFi, nBadInz                 
       real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, 
      +        thre, mePh  
 
@@ -428,7 +428,7 @@ c                       Read 'Params1.inp'.
         read(13,*) AtMass(nX)  ! ion mass [a.u.] for Doppler and Stark calculation of line widths
       enddo
       read(13,*) empty
-
+      
       read(13,*) fluMin  ! minimal absorption oscillator strength. Spectral lines with flu < "fluMin" are 	
       read(13,*) comme   ! too weak vs continuum and/or instrumental noise, thus we exclude these lines from computations. 
 
@@ -470,6 +470,9 @@ c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
       do nX= 1, 1             ! nXE; X (=Kr) only
         nFi= 13+ 100*nX       ! "Inz.inp" fail # 
         read(nFi,'(a9)') title
+        
+        open(99, file='BadInz.log', status='unknown') ! Open log file
+        nBadInz = 0                                   ! Initialize counter
 	  CountInz = 1
   9     read(nFi,*) iSS1, iQS1, iSS2, iQS2, Axw, Bxw, Cxw, 
      +              Dxw, MePh, Exw, Fxw, Gxw, Hxw, thre    ! ioniz threshold
@@ -503,10 +506,16 @@ c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
            bra(ki,kf,nX)= one ! "one" means yes ionization channel
         else
            bra(ki,kf,nX)= zero 
+           nBadInz = nBadInz + 1
+           write(99, '(a, 4i6, e12.4)') 
+     +        'Bad: iSS, iQS, fSS, fQS, Eth =', 
+     +                 iSS1, iQS1, iSS2, iQS2, thre
         endif
 
         if(CountInz .LT. StrInz) goto 9  
         close(nFi)
+        close(99) ! Close log file
+        write(*,*) 'Bad transitions in BadInz.log:', nBadInz
       enddo  ! nX-loop;, here Kr only
 
 c  Read AI Probabilities from 'AIw.inp'. 
