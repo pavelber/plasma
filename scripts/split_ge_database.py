@@ -378,8 +378,11 @@ def split_exc(in_path, lo_path, hi_path):
                 fhi.write(raw)
                 hi_count += 1
             # else: skip (e.g. nucleus 33 has no excitation rows)
+            
+
 
     print(f"  Exc.INP  Lo: {lo_count} rows, Hi: {hi_count} rows")
+    return lo_count, hi_count
 
 
 # ===========================================================================
@@ -453,6 +456,7 @@ def split_inz(in_path, lo_path, hi_path):
                 hi_count += 1
 
     print(f"  Inz.INP  Lo: {lo_count} rows, Hi: {hi_count} rows")
+    return lo_count, hi_count
 
 
 # ===========================================================================
@@ -478,6 +482,8 @@ def split_aiw(in_path, lo_path, hi_path):
     with open(in_path, 'r') as f, \
          open(lo_path, 'w') as flo, \
          open(hi_path, 'w') as fhi:
+        
+        header_seen = False
 
         for raw in f:
             line = raw.rstrip('\n').rstrip('\r')
@@ -485,25 +491,63 @@ def split_aiw(in_path, lo_path, hi_path):
             if not parts:
                 continue
 
-            # Header line
-            if not parts[0].lstrip('-').isdigit():
+            # 1. Header Line (Assume first non-empty line is header)
+            if not header_seen:
+                flo.write(raw)
+                fhi.write(raw)
+                lo_count += 1 # Header is counted as a line for StrAIw
+                hi_count += 1 # Header is counted as a line for StrAIw
+                header_seen = True
+                continue
+
+            # 2. Parse SSi. If fails, it is a TAIL line (parameters like FrL).
+            try:
+                ssi = int(parts[0])
+            except ValueError:
+                # Tail line -> Write to both, but DO NOT COUNT as transition
                 flo.write(raw)
                 fhi.write(raw)
                 continue
-
+            
             if len(parts) < 4:
+                # Should not happen if int(parts[0]) succeeded, but check anyway
                 continue
-
+                
+            # Parse full transition
+            # SSi AIQS# SSf QSf# ...
+            # 25  -1    26  2    ...
             ssi = int(parts[0])
+            qsi = int(parts[1])
+            ssf = int(parts[2])
+            qsf = int(parts[3])
 
+            # --- Lo ---
+            # Rule: Keep SSi in 20-25.
+            # AND: If SSf is 26-32, QSf MUST be 1.
+            in_lo = False
             if ssi in LO_RANGE:
+                # Check destination
+                if ssf in LO_RANGE or ssf == 33:
+                    in_lo = True
+                elif ssf in LO_EXTRA:
+                    if qsf == 1:
+                        in_lo = True
+                    # else: excited state of boundary ion -> skip
+                # else: ssf > 33? (Should not happen)
+                
+            if in_lo:
                 flo.write(raw)
                 lo_count += 1
-            elif ssi in HI_RANGE:
+
+            # --- Hi ---
+            # Rule: Keep SSi in 26-32.
+            # (Note: transitions from 25 to 26 are NOT in Hi, because SSi must be in Hi)
+            if ssi in HI_RANGE:
                 fhi.write(raw)
                 hi_count += 1
 
     print(f"  AIW.INP  Lo: {lo_count} rows, Hi: {hi_count} rows")
+    return lo_count, hi_count
 
 
 # ===========================================================================
@@ -530,7 +574,7 @@ def count_data_lines(path):
 
 
 def copy_params(in_dir, out_dir, qss_total_states, qss_nucleus_num,
-               fss, hss, exc_path, inz_path, aiw_path):
+                fss, hss, str_exc, str_inz, str_aiw):
     """
     Copy all parameter files from in_dir to out_dir, then rewrite
     Params0.inp with the correct line counts and state indices.
@@ -543,9 +587,9 @@ def copy_params(in_dir, out_dir, qss_total_states, qss_nucleus_num,
     qss_nucleus_num : Nnu  – global serial number of the nucleus entry
     fss             : first SpS in this sub-database
     hss             : H-like SpS   (same for both Lo and Hi: 32)
-    exc_path        : path to the already-written Exc.INP for this sub-db
-    inz_path        : path to the already-written Inz.INP
-    aiw_path        : path to the already-written AIW.INP
+    str_exc         : Line count for Exc.inp (Header+Transitions)
+    str_inz         : Line count for Inz.inp (Header+Transitions)
+    str_aiw         : Line count for AIw.inp (Header+Transitions, NO TAIL)
     """
     # 1. Copy verbatim files ---------------------------------------------------
     for fname in PARAM_FILES:
@@ -562,12 +606,6 @@ def copy_params(in_dir, out_dir, qss_total_states, qss_nucleus_num,
     with open(params0_src, 'r') as f:
         orig_lines = f.readlines()
 
-    # 3. Count data lines in the split atomic data files (title = 1 line).   
-    # Fortran reads "StrExc" lines total (including the title line),         
-    # so StrXxx == number of non-empty lines in the file.                    
-    str_exc = count_data_lines(exc_path)
-    str_inz = count_data_lines(inz_path)
-    str_aiw = count_data_lines(aiw_path)
 
     # 4. Rebuild Params0.inp --------------------------------------------------
     # Original layout (ignoring trailing comment text after the numbers):
@@ -658,40 +696,51 @@ def main():
 
     # --- Exc.INP ---
     print("Processing Exc.INP ...")
-    exc_lo = os.path.join(lo_dir, "Exc.INP")
-    exc_hi = os.path.join(hi_dir, "Exc.INP")
-    split_exc(os.path.join(in_dir, "Exc.INP"), exc_lo, exc_hi)
+    exc_in = os.path.join(in_dir, "Exc.inp")
+    exc_lo = os.path.join(lo_dir, "Exc.inp")
+    exc_hi = os.path.join(hi_dir, "Exc.inp")
+    exc_count_lo, exc_count_hi = split_exc(exc_in, exc_lo, exc_hi)
+    
+    # --- Params0.inp generation (Partial) ---
+    # We need StrExc, StrInz, StrAIw. We will call copy_params at the end.
 
     # --- Inz.INP ---
     print("Processing Inz.INP ...")
-    inz_lo = os.path.join(lo_dir, "Inz.INP")
-    inz_hi = os.path.join(hi_dir, "Inz.INP")
-    split_inz(os.path.join(in_dir, "Inz.INP"), inz_lo, inz_hi)
+    inz_in = os.path.join(in_dir, "Inz.inp")
+    inz_lo = os.path.join(lo_dir, "Inz.inp")
+    inz_hi = os.path.join(hi_dir, "Inz.inp")
+    inz_count_lo, inz_count_hi = split_inz(inz_in, inz_lo, inz_hi)
 
     # --- AIW.INP ---
     print("Processing AIW.INP ...")
-    aiw_lo = os.path.join(lo_dir, "AIW.INP")
-    aiw_hi = os.path.join(hi_dir, "AIW.INP")
-    split_aiw(os.path.join(in_dir, "AIW.INP"), aiw_lo, aiw_hi)
+    aiw_in = os.path.join(in_dir, "AIw.inp")
+    aiw_lo = os.path.join(lo_dir, "AIw.inp")
+    aiw_hi = os.path.join(hi_dir, "AIw.inp")
+    aiw_count_lo, aiw_count_hi = split_aiw(aiw_in, aiw_lo, aiw_hi)
 
-    # --- Params files ---
-    print("Copying and updating parameter files ...")
-    copy_params(
-        in_dir, lo_dir,
-        qss_total_states=lo_total,
-        qss_nucleus_num=lo_nnu,
-        fss=lo_fss, hss=lo_hss,
-        exc_path=exc_lo, inz_path=inz_lo, aiw_path=aiw_lo,
-    )
-    copy_params(
-        in_dir, hi_dir,
-        qss_total_states=hi_total,
-        qss_nucleus_num=hi_nnu,
-        fss=hi_fss, hss=hi_hss,
-        exc_path=exc_hi, inz_path=inz_hi, aiw_path=aiw_hi,
-    )
+    # --- Params0.inp ---
+    print("Processing Params0.inp ...")
 
-    print()
+    # 1. Lo
+    copy_params(in_dir, lo_dir,
+                qss_total_states = lo_total,
+                qss_nucleus_num  = lo_nnu,
+                fss = lo_fss,
+                hss = lo_hss,
+                str_exc = exc_count_lo,
+                str_inz = inz_count_lo,
+                str_aiw = aiw_count_lo)
+
+    # 2. Hi
+    copy_params(in_dir, hi_dir,
+                qss_total_states = hi_total,
+                qss_nucleus_num  = hi_nnu,
+                fss = hi_fss,
+                hss = hi_hss,
+                str_exc = exc_count_hi,
+                str_inz = inz_count_hi,
+                str_aiw = aiw_count_hi)
+    
     print("Done.")
 
 
