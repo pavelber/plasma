@@ -180,11 +180,14 @@ c      open(342, file= 'LorDev.dat')
       use mo1co2nov 
       implicit none
       character*1 po1     ! for conversion of EL name symbols (1 position) in p.q.n., Lorb, ...
+
       integer char2int                      ! symbol-to-integer convertor function
       integer iniQS, nSS, mth, LL, LU, ki,  
      +        iSS1, iQS1, iSS2, iQS2,  nFi, nBadInz                 
       real(8) fw, AIw, trEn, Axw, Bxw, Cxw, Dxw, Exw, Fxw,Gxw, Hxw, 
      +        thre, mePh  
+
+      write(*,*) 'Starting Intro...'
 
       read(12,*) FSS(1), FSS(2), FSS(3), FSS(4)  ! "FSS" is serial # of 1st SS of X, C, He, D in database, e.g. 30 for N-like Kr
       read(12,*) HSS(1), HSS(2), HSS(3), HSS(4)  ! "HSS" is # of H -like SS of XX, C, He, D in the DaBa;  36 for H-like Kr
@@ -193,6 +196,7 @@ c      open(342, file= 'LorDev.dat')
       read(12,'(a9)') empty                      !  separating line  
 
 c   Read "QSsXE.inp" files of C, He, D. 
+      write(*,*) 'Reading QSsXE.inp files...'
       do nX= 2, nXE    !  C, He, D
         nFi= 11 + 100*nX   ! file## == 111, 211, ... are "QSsXE...inp" in Chin-type bases for XX,C,He, D  
         read(nFi,'(a9)') empty  ! 1st line of header  
@@ -205,13 +209,21 @@ c   Read "QSsXE.inp" files of C, He, D.
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
              write(*,'(a50)') 'Re-Compile mo1co2nov.for'
-		   PAUSE 'this is the inconsistency #1'
+		   PAUSE 'Error: Inconsistency #1 - SpS mismatch'
           endif
           if(i.gt.FSS(nX)) nuGS(i,nX)= nuGS(i-1,nX)+ nuQS(i-1,nX)     ! this GS #  in the EL list of XE  
         enddo 
         nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)       ! nucl     
 
-        if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX)) PAUSE 'Inconsistency #2'
+        nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)       ! nucl     
+
+        if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX)) then
+             write(*,*) 'Error:Inconsistency #2 Nucleus index mismatch'
+             write(*,*) 'XE #', nX
+             write(*,*) 'Calculated nuGS(HSS+1):', nuGS(HSS(nX)+1, nX)
+             write(*,*) 'Expected Nnu(nX):', Nnu(nX)
+             PAUSE
+        endif
 
         read(nFi,'(a9)') empty  ! separating line   
   1     read(nFi,*) iSS 
@@ -273,6 +285,7 @@ c                   "1" will be given in "Intro" subr below.
 
       kAI1= 0     
 c   Read "QSs.inp" i.e. ELs of high-Z element (nX=1) 
+      write(*,*) 'Reading QSs.inp...'
       nX = 1
       nFi= 111                ! # of file  "QSs.inp"  
       read(nFi,'(a9)') empty  ! 1st line of header  
@@ -286,7 +299,7 @@ c     +                                   nX, FSS(nX), HSS(nX), PI(i,nX)
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
              write(*,'(a50)')      'Re-Compile mo1co2nov.for'
-		   PAUSE 'this is the inconsistency #1'
+		   PAUSE 'Error: Inconsistency #1 (QSs.inp) - SpS mismatch'
           endif
           if(i.gt.FSS(nX)) nuGS(i,nX)= nuGS(i-1,nX)+ nuQS(i-1,nX)         ! this GS #  in the EL list of XE  
 
@@ -299,7 +312,13 @@ c     +                                   nX, FSS(nX), HSS(nX), PI(i,nX)
       enddo 
       nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)       ! nucl     
 
-      if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX)) PAUSE 'Inconsistency #2'
+      if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX)) then
+           write(*,*) 'Error: Inconsistency #2 - Nucleus index mismatch'
+           write(*,*) 'XE #', nX
+           write(*,*) 'Calculated nuGS(HSS+1):', nuGS(HSS(nX)+1, nX)
+           write(*,*) 'Expected Nnu(nX):', Nnu(nX)
+           PAUSE
+      endif
 
       read(nFi,'(a9)') empty  ! separating line   
   2   read(nFi,*) iSS 
@@ -322,7 +341,11 @@ c     +                  g0(k,nX), E(k,nX), kiSS(k,nX)
       nu2(Nnu(1))  = Nnu(1) 
 
       Count= Count +1    ! counter of lines read, up to nucl (including nucl)
-      if(Count.ne.Nnu(nX)) PAUSE 'XX nucl # =/= Nnu(1)'
+      if(Count.ne.Nnu(nX)) then
+           write(*,*) 'Error: XX nucl # =/= Nnu(1)'
+           write(*,*) 'Count:', Count, ' Nnu:', Nnu(nX)
+           PAUSE
+      endif
 
       kiSS(Nnu(1),1)= HSS(1)+1 
 	     
@@ -340,7 +363,11 @@ c     +                  g0(k,nX), E(k,nX), kiSS(k,nX)
       enddo
       close(111)  ! "QSs.inp"  
 
-      if(Count .ne. NST(nX)) PAUSE 'Full Count =/= NST(1)'
+      if(Count .ne. NST(nX)) then
+           write(*,*) 'Error: Full Count =/= NST(1)'
+           write(*,*) 'Count:', Count, ' NST:', NST(nX)
+           PAUSE
+      endif
 
       do k = 1, LastAI(nX)         ! all true and AI EL# of this XE
         if(k.eq.Nnu(nX)) goto 11   ! skip nucl
@@ -369,6 +396,7 @@ Check Yes/No equal E(k,nX) in DaBa. If YES, increase 2nd energy by 0.001 eV to a
       enddo
 
 c  Read excitation cross sections and f's from 'Exc.inp'. 
+      write(*,*) 'Reading Exc.inp...'
       read(12,*) StrExc  ! From "Params0" read the number of strings in file "Exc.inp" (including the title)
 
       do nX= 1, 1            ! here X only
@@ -400,6 +428,17 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
         Fx(kL,kU) = Fxw
 
         flu(kL,kU,nX)= -fw   ! correct (positive) value of Absorption Oscillator Strength
+        
+        if(g0(kU,nX) .eq. zero) then
+             write(*,*) 'Error: g0(kU) is zero!',
+     +         'Division by zero imminent.'
+             write(*,*) 'iSS:', iSS, ' LL:', LL, ' LU:', LU
+             write(*,*) 'kL:', kL, ' kU:', kU
+             write(*,*) 'QSname(kU):', QSname(kU,nX)
+             write(*,*) 'E(kU):', E(kU,nX)
+             PAUSE
+        endif
+
 
         A(kU,kL,nX)= 4.339192d7*flu(kL,kU,nX)*DE**2 *g0(kL,nX)/g0(kU,nX)
 
@@ -414,6 +453,7 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
       enddo        ! here XE-loop is 1 to 1, i.e. X only; C, He, D have no excited levels
 
 c                       Read 'Params1.inp'.
+      write(*,*) 'Reading Params1.inp...'
       do nX= 1, nXE  
         read(13,*) iniQS   ! level number for loading initial POPs of "nX"  in zone number La  
         do La= 1, LaMx
@@ -463,6 +503,7 @@ c                                      Lorentzian), namely, FWHM/hv = Ains + Bin
       close(13)
 
 c  Read coefficients of ionization cross-section from "Inz.inp" and 
+      write(*,*) 'Reading Inz.inp...'
 c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
 
       read(12,*) StrInz  ! From "Params0" read the number of strings in file "Inz.inp" (including the title)
@@ -519,6 +560,7 @@ c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
       enddo  ! nX-loop;, here Kr only
 
 c  Read AI Probabilities from 'AIw.inp'. 
+      write(*,*) 'Reading AIw.inp...'
       read(12,*) StrAIw  ! From "Params0" read the number of strings in file "AIw.inp" (including the title)
       close(12)
 
@@ -530,17 +572,26 @@ c  Read AI Probabilities from 'AIw.inp'.
         CountAIw = CountAIw + 1
 c       write(*,'(4i5, e14.6, i6)') iSS1,iQS1, iSS2,iQS2, AIw, CountAIw   
 
-        if(iQS1.gt.0) PAUSE 'non-AI initial EL in "AIw.inp"'
-        if(abs(iQS1).gt.nuAS(iSS1,nX)) PAUSE 'AI EL # > AIQSs in SpS'  
+        if(iQS2.lt.0) kf= kAI1(iSS2,nX)-1 -iQS2    ! AI EL, "iQS2 < 0)  , ............ 
+
+        if(iQS1.gt.0) PAUSE 'Error: non-AI initial EL in "AIw.inp"'
+        if(abs(iQS1).gt.nuAS(iSS1,nX)) then
+            write(*,*) 'Error: AI EL # > AIQSs in SpS'
+            write(*,*) 'iSS1:', iSS1, ' iQS1:', iQS1, ' nuAS:',
+     +        nuAS(iSS1,nX)
+            PAUSE
+        endif
         if(iQS2.gt.nuQS(iSS2,nX)) then
           write(*,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
      +                           iSS1, iQS1, iSS2, iQS2
-          PAUSE 'In "AIw.inp" afterAI EL has # > available in SpS' 
+          write(*,*) 'nuQS(SSf):', nuQS(iSS2,nX)
+          PAUSE 'Error: In AIw.inp afterAI EL has #>available in SpS'
         endif     
         if(iQS2.LT.0  .and. abs(iQS2).gt.nuAS(iSS2,nX)) then
           write(*,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
      +                           iSS1, iQS1, iSS2, iQS2
-          PAUSE 'In "AIw.inp" AI into AI EL # > available in SpS'
+          write(*,*) 'nuAS(SSf):', nuAS(iSS2,nX)
+          PAUSE 'Error: In "AIw.inp" AI into AI EL # > available in SpS'
         endif
 	     
         ki= kAI1(iSS1,nX) -1-iQS1  ! "ki" is the  # of "iQS1" in "long" ("full") list. Remember that "iQS1" < 0:  

@@ -253,7 +253,8 @@ def write_qss_lo(header_lines, ions, out_path):
                         f.write(_renumber_global(raw, global_counter))
                         # The nucleus is typically a single line, so global_counter here is Nnu
                         nnu_index = global_counter
-                f.write('\n')
+                # No newline after Nucleus block, AI headers start immediately
+
 
         # 4. AI States for Lo ions (20-25)
         for ss in lo_ions:
@@ -311,7 +312,7 @@ def write_qss_hi(header_lines, ions, out_path):
                         c_local += 1
                         f.write(_renumber_global(raw, global_counter))
                         nnu_index = global_counter
-                f.write('\n')
+                # No newline after Nucleus block
 
         # 3. AI States for Hi ions (26-31, H-like 32 usually has no AI)
         for ss in hi_ions:
