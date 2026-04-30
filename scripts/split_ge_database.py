@@ -5,13 +5,13 @@ split_ge_database.py
 Split the "long" Ge database (spectroscopic numbers 20–32) in LonGe-nov-mth16/
 into two sub-databases:
 
-  Lo  (LoGe-nov-mth16/)  : SpS 20–25  +  ground states (QS #1) of SpS 26–32
-  Hi  (HiGe-nov-mth16/)  : SpS 26–32  (full)
+  Lo  (LoGe-nov-mth16/)  : SpS 20–28  +  ground states (QS #1) of SpS 29–32
+  Hi  (HiGe-nov-mth16/)  : SpS 29–32  (full)
 
 Physical motivation
 -------------------
 Co2nov25.for requires the full ionisation ladder, so the Lo database must
-include the ground states of all higher ions (26–32) plus the ionisation
+include the ground states of all higher ions (29–32) plus the ionisation
 transitions that connect them.
 
 File formats handled
@@ -36,20 +36,31 @@ import shutil
 import sys
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration - Database splitting boundaries
 # ---------------------------------------------------------------------------
+
+# Low database spectroscopic number boundaries
+LO_START = 20  # First spectroscopic number for low database
+LO_STOP = 28   # Last spectroscopic number for low database (inclusive)
+
+# High database spectroscopic number boundaries
+HI_START = 29  # First spectroscopic number for high database
+HI_STOP = 32   # Last spectroscopic number for high database (inclusive)
+
+# Nucleus spectroscopic number (always included in high database)
+NUCLEUS = 33
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT  = os.path.dirname(SCRIPT_DIR)
 
 DEFAULT_INPUT_DIR = os.path.join(REPO_ROOT, "newfisher", "data", "LonGe-nov-mth16")
 
-LO_RANGE = range(20, 26)   # SpS 20..25  (inclusive)
-HI_RANGE = range(26, 33)   # SpS 26..32  (inclusive) — 33 = nucleus, kept in Hi
+LO_RANGE = range(LO_START, LO_STOP + 1)   # SpS from LO_START to LO_STOP (inclusive)
+HI_RANGE = range(HI_START, HI_STOP + 1)   # SpS from HI_START to HI_STOP (inclusive)
 
-LO_EXTRA = range(26, 33)   # ions whose ground state is included in Lo
+LO_EXTRA = range(HI_START, HI_STOP + 1)   # ions whose ground state is included in Lo
 
-ALL_RANGE = range(20, 34)  # everything (including nucleus 33)
+ALL_RANGE = range(LO_START, NUCLEUS + 1)  # everything (including nucleus)
 
 
 # ---------------------------------------------------------------------------
@@ -218,7 +229,7 @@ def write_qss_lo(header_lines, ions, out_path):
         for line in new_header:
             f.write(line)
 
-        # 1. Normal States for Lo ions (20-25)
+        # 1. Normal States for Lo ions (20-28)
         for ss in lo_ions:
             for block in ions[ss]:
                 if not block['is_ai']:
@@ -228,7 +239,7 @@ def write_qss_lo(header_lines, ions, out_path):
                         f.write(_renumber_global(raw, global_counter))
             f.write('\n') # separator between ions
 
-        # 2. Normal States (Ground State only) for Hi ions (26-32)
+        # 2. Normal States (Ground State only) for Hi ions (29-32)
         for ss in hi_gs:
             if ss not in ions: continue
             # Find the FIRST normal block
@@ -256,7 +267,7 @@ def write_qss_lo(header_lines, ions, out_path):
                 # No newline after Nucleus block, AI headers start immediately
 
 
-        # 4. AI States for Lo ions (20-25)
+        # 4. AI States for Lo ions (20-28)
         for ss in lo_ions:
             for block in ions[ss]:
                 if block['is_ai']:
@@ -287,7 +298,7 @@ def write_qss_hi(header_lines, ions, out_path):
         for line in new_header:
             f.write(line)
 
-        # 1. Normal States for Hi ions (26-32)
+        # 1. Normal States for Hi ions (29-32)
         for ss in hi_ions:
             if ss == 33: continue # Nucleus handled separately
             c_local = 0
@@ -314,7 +325,7 @@ def write_qss_hi(header_lines, ions, out_path):
                         nnu_index = global_counter
                 # No newline after Nucleus block
 
-        # 3. AI States for Hi ions (26-31, H-like 32 usually has no AI)
+        # 3. AI States for Hi ions (29-32, H-like 32 usually has no AI)
         for ss in hi_ions:
             if ss == 33: continue
             for block in ions[ss]:
@@ -394,13 +405,13 @@ def split_inz(in_path, lo_path, hi_path):
     Inz.INP format:
         iSS  iQS  fSS  fQS  ...
 
-    Rules for Lo database (SpS 20-25 + GS of 26-32):
-      * Keep rows where iSS ∈ 20-25  (all ionisations from the Lo active set)
-      * Also keep rows where iSS ∈ 26-32 AND iQS == 1 AND fSS ∈ 27-33 AND fQS == 1
+    Rules for Lo database (SpS 20-28 + GS of 29-32):
+      * Keep rows where iSS ∈ 20-28  (all ionisations from the Lo active set)
+      * Also keep rows where iSS ∈ 29-32 AND iQS == 1 AND fSS ∈ 30-33 AND fQS == 1
         (ground-state-to-ground-state ionisation ladder within the "bookend" ions)
 
-    Rules for Hi database (SpS 26-32):
-      * Keep rows where iSS ∈ 26-32
+    Rules for Hi database (SpS 29-32):
+      * Keep rows where iSS ∈ 29-32
     """
     lo_count = hi_count = 0
 
@@ -432,8 +443,8 @@ def split_inz(in_path, lo_path, hi_path):
             in_lo = False
             if i_ss in LO_RANGE:
                 # Full ionisations from Lo active set.
-                # For fSS in 26-32: only keep if fQS==1 (target ground state)
-                # (because Lo only has the ground state of 26-32)
+                # For fSS in 29-32: only keep if fQS==1 (target ground state)
+                # (because Lo only has the ground state of 29-32)
                 if f_ss in LO_RANGE or f_ss == 33:
                     in_lo = True
                 elif f_ss in LO_EXTRA:
@@ -471,10 +482,10 @@ def split_aiw(in_path, lo_path, hi_path):
     SSi is the ion that autoionises; AIQS# < 0 refers to its AI states.
     SSf is the resulting (more ionised) ion.
 
-    Lo: keep rows where SSi ∈ 20-25.
-    Hi: keep rows where SSi ∈ 26-32.
+    Lo: keep rows where SSi ∈ 20-28.
+    Hi: keep rows where SSi ∈ 29-32.
 
-    Note: rows where SSf ∈ Lo_extra (26-32) but SSi ∈ Lo_range could exist,
+    Note: rows where SSf ∈ Lo_extra (29-32) but SSi ∈ Lo_range could exist,
     but their QSf# references states only in Lo or GS of Hi, so they are fine.
     """
     lo_count = hi_count = 0
@@ -515,15 +526,15 @@ def split_aiw(in_path, lo_path, hi_path):
                 
             # Parse full transition
             # SSi AIQS# SSf QSf# ...
-            # 25  -1    26  2    ...
+            # 28  -1    29  2    ...
             ssi = int(parts[0])
             qsi = int(parts[1])
             ssf = int(parts[2])
             qsf = int(parts[3])
 
             # --- Lo ---
-            # Rule: Keep SSi in 20-25.
-            # AND: If SSf is 26-32, QSf MUST be 1.
+            # Rule: Keep SSi in 20-28.
+            # AND: If SSf is 29-32, QSf MUST be 1.
             in_lo = False
             if ssi in LO_RANGE:
                 # Check destination
@@ -540,8 +551,8 @@ def split_aiw(in_path, lo_path, hi_path):
                 lo_count += 1
 
             # --- Hi ---
-            # Rule: Keep SSi in 26-32.
-            # (Note: transitions from 25 to 26 are NOT in Hi, because SSi must be in Hi)
+            # Rule: Keep SSi in 29-32.
+            # (Note: transitions from 28 to 29 are NOT in Hi, because SSi must be in Hi)
             if ssi in HI_RANGE:
                 fhi.write(raw)
                 hi_count += 1
@@ -686,12 +697,12 @@ def main():
     hi_nnu, hi_total = write_qss_hi(header_lines, ions, qss_hi)
 
     # Compute QSs metadata for Params0.inp
-    # Lo: states for SpS 20-25 (full) + 1 GS per SpS 26-32 + nucleus(33)
+    # Lo: states for SpS 20-28 (full) + 1 GS per SpS 29-32 + nucleus(33)
     lo_fss = min(LO_RANGE)   # 20
     lo_hss = max(HI_RANGE)   # 32  (H-like is still 32 in Lo)
 
-    # Hi: states for SpS 26-32 (full) + nucleus(33)
-    hi_fss = min(HI_RANGE)   # 26
+    # Hi: states for SpS 29-32 (full) + nucleus(33)
+    hi_fss = min(HI_RANGE)   # 29
     hi_hss = max(HI_RANGE)   # 32
 
     # --- Exc.INP ---

@@ -29,10 +29,13 @@ c                        initial population ("POPs") of energy levels ("ELs")
      +                                bp(La), bc(La)/1.d3, bw(La)/1.d3   ! [keV]
 
         do nX = 1, 1 ! nXE  ! For Te=Ti, Den(nX,La) of t = ti. Note: only X has lines and DPI 
+           write(*,*) '  Calling LevWi for zone', La
            CALL LevWi()     ! For these La,nX compu FWHM [eV] of all E-LEVELs "LvJW(La,nX,k)" [eV] 
 
+           write(*,*) '  Calling redPI for zone', La
            CALL redPI()     ! For these La,nX, for each jSS compu DPI(jSS,nX,La) and PIR(jSS,nX,La).  
 
+           write(*,*) '  Calling BEvPr for zone', La
            CALL BEvPr()     ! For these La,nX compu Binding Energy of outermost electron "BE(k,nX,La)".
 c                             Move POPs from BE-cut LEs to ground state of next SpS.
 
@@ -44,21 +47,27 @@ c                           Gaussian part of FWHM/hvC of lines of #nX in zone #L
            FWkVcGAU(La,nX)= sqrt(fwTiKvC(La,nX)**2 +fwTUKvC(La,nX)**2)  ! FWHMgau/hvC of 2 convolved Gaussians.
         enddo  ! nX
 
+        write(*,*) '  Calling EmiAbso for zone', La
         CALL EmiAbso()  ! Compu this-La "EmTot(La,hv)" [W/cc/sr/eV] and "AbTot(La,hv)" [1/cm]
 c                         via params of t=ti and POPi(k,nX,La).  
       enddo  ! La loop;   La is zone number; La=1 is BS, La=2 is Core, La=3 is Capsule       
 
+      write(*,*) 'Calling EffSpIn'
       CALL EffSpIn()  ! Compute due-to-all-La "SpInEf(La,iv)" [W/eV/sr/cm2] in RP of each "La", 
 c                       La-loop is inside this subr because each "La" has contribs from other "La"s.  
 c                      "SpInEf(La,iv)" is needed for Win, Wab, WphI, WiRR at t= ti" for d02 of POPs towards "tf".
 
+      write(*,*) 'Calling PowYie'
       CALL PowYie()   ! Compute Spectral Power from the target using EmTot, AmTot computed
 c	                  for params of t=ti and POPi(k,nX,La).  Print frames in files (181 - (186 and power detectors in files (187 - 189 	 
          nX = 1 
       do La = 1, LaMx	            
-         If(Den(nX,La).gt.1.d10)  ! For each (nX,La) compute Ws & PM; run d02 for POPs from "ti" to "tf" with params of "ti".  
-     +   CALL AtKins()            ! It gives "POPf(k,nX,La)" that is POP(tf) to be first used in Scenario of NEXT "ti" as POPi(k,nX,La).
+         If(Den(nX,La).gt.1.d10) then 
+           write(*,*) '  Calling AtKins for zone', La
+           CALL AtKins()            ! It gives "POPf(k,nX,La)" that is POP(tf) to be first used in Scenario of NEXT "ti" as POPi(k,nX,La).
+         endif
       enddo   
+      write(*,*) 'Finished time step'
       goto 1  ! for next t-step, where present "tf" will be "ti", thus present "POPf" will be used for computation of all quantities at "ti" 
       END     ! MAIN
 
@@ -1085,6 +1094,12 @@ c  FB EMISSION due to RR onto ions of current nX:  (SS=j+1,kf) + e  --> (j,k) + 
       do iv= 1, nvM  	
          emTot(La,iv)= emisBB(iv)+ emisFF(iv)+ emisFB(iv)  ! W/cc/sr/eV;                                     
          abTot(La,iv)= absoBB(iv)+ absoFF(iv)+ absoBF(iv)  ! 1/cm 
+         if (abTot(La,iv) .LT. -100.0) then
+             write(*,*) 'NEG ABTOT La=', La, 'iv=', iv, 'hv=', hvV(iv)
+             write(*,*) 'BB=', absoBB(iv), 'FF=', absoFF(iv)
+             write(*,*) 'BF=', absoBF(iv)
+             STOP
+         endif
       enddo 
 
       if(ti.LT.tiInf .and. tiInf.LE.tf) then  ! after processing all XE, at print-info time "tiInf" print "...emiAbso.dat"
@@ -1179,6 +1194,23 @@ c     +		      ca*1.e4, sq2*1.e4, pa2*1.e4, sq3*1.e4, pa3*1.e4, wBS   !@#$%
 
 ***   Spectral Intensity of (Capsule+Core+BSs) radiation [W/eV/sr/cm2] delivered by ray #i to any point C/1,j belonging 
 ***                                                              to spherical layer of middle radius rm= dr1*(j-0.5), see (AI.1) 
+            if (-ab3*pa3 .GT. 700.0) then 
+               write(*,*) 'ab3pa3', ab3*pa3, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab2*pa2 .GT. 700.0) then 
+               write(*,*) 'ab2pa2', ab2*pa2, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab1*pa4 .GT. 700.0) then 
+               write(*,*) 'ab1pa4', ab1*pa4, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab1*pa1 .GT. 700.0) then 
+               write(*,*) 'ab1pa1', ab1*pa1, iv, hvV(iv)
+               STOP
+            endif
+
             SpInt(1,i)=(So3*(1.-exp(-ab3*pa3))*exp(-ab2*pa2)  +  ! [W/eV/sr/cm2] from capsule towards rm, attanuated in core UNTIL surf of BS
      +                  So2*(1.-exp(-ab2*pa2))                +  ! radiation of core towards rm 
      +              wBS*So1*(1.-exp(-ab1*pa4))*exp(-ab2*pa2/2.)) ! radiation of one of (nuBS-1) BSs, attenuated in core on 
@@ -1241,6 +1273,20 @@ c     +                           sq3*1.e4, pa3*1.e4, wBS           !@#$%
 ***         Spectral Intensity of radiation [W/eV/sr/cm2] delivered to point C/2,j by ray #i. 
 
 *                                                                See Fig.4. and (AI.3)
+            if (-ab3*pa3 .GT. 700.0) then
+               write(*,*) 'ab3pa3', ab3*pa3, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab2*pa2 .GT. 700.0) then
+               write(*,*) 'ab2pa2', ab2*pa2, iv, hvV(iv)
+               write(*,*) 'ab2', ab2, 'pa2', pa2, 'R2', R2
+               STOP
+            endif
+            if (-ab1*pa4 .GT. 700.0) then
+               write(*,*) 'ab1pa4', ab1*pa4, iv, hvV(iv)
+               STOP
+            endif
+
             SpInt(2,i)= So3*(1.-exp(-ab3*pa3))*exp(-ab2*pa2)  +  ! [W/eV/sr/cm2] from capsule towards C/2,j, attanuated in core on 
 c                                                                  the ray path from cap/core interface  to C/2,j
      +                  So2*(1.-exp(-ab2*pa2))                +  ! radiation of core on the ray path fron cap/core interface  to C/2,j 
@@ -1300,6 +1346,23 @@ c     +                  'pa5, pa2, pa6, rm*Cos, wBS =',
 c     +                   pa5*1.e4, pa2*1.e4, pa6*1.e4, rm*Cos(teta)*1.e4, wBS
 
 *			Follow (AI.6):
+            if (-ab3*pa5 .GT. 700.0) then
+               write(*,*) 'ab3pa5', ab3*pa5, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab2*pa2 .GT. 700.0) then
+               write(*,*) 'ab2pa2', ab2*pa2, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab1*pa4 .GT. 700.0) then
+               write(*,*) 'ab1pa4', ab1*pa4, iv, hvV(iv)
+               STOP
+            endif
+            if (-ab3*pa6 .GT. 700.0) then
+               write(*,*) 'ab3pa6', ab3*pa6, iv, hvV(iv)
+               STOP
+            endif
+
               SpInt(3,i)= (So3*(1.-exp(-ab3*pa5))*exp(-ab2*pa2)    +  ! [W/eV/sr/cm2] from capsule to core towards C/b,j; attanuated in core
      +                     So2*(1.-exp(-ab2*pa2))                  +  ! radiation of core on the ray path towards C/3,j 
      +                 wBS*So1*(1.-exp(-ab1*pa4))*exp(-ab2*pa2/2.)    ! radiation in-Vray BS attenuated in core on mean path from surface of crossed BSs to C/3,j. 
@@ -1311,6 +1374,11 @@ c                                                                     therefore 
             else !  Fig 5  ; Follow (AI.5)
               pa3= sqrt(R3**2-ca**2) +rm*cos(teta) ! Ray path thru capsule to C/3,j
 c                                                    Check: if teta=pi/2 then pa3= sqrt(R3^2-rm^2); if teta=pi then pa3= R3-rm; teta=0 crosses core thus case Fig 6
+              
+              if (-ab3*pa3 .GT. 700.0) then
+                 write(*,*) 'ab3pa3', ab3*pa3, iv, hvV(iv)
+                 STOP
+              endif
               SpInt(3,i)= So3*(1.-exp(-ab3*pa3))   ! [W/eV/sr/cm2] from path pa3 that is thru-capsule-only
 
 c                     write(*,'(/a52, 2i3, 9f7.2)')
