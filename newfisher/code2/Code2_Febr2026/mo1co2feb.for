@@ -134,6 +134,7 @@ c                       seen-to-detector plane round image of target, Figs.1,2.
      +    Cx(nQSm,nQSm),      ! high-Z dopant, see Exc.inp 
      +    Dx(nQSm,nQSm),
      +    Ex(nQSm,nQSm), 
+     +    Fx(nQSm,nQSm),
      +   Aix(nQSm,nQSm),  ! Aix-Dix are 4 coefs of e-impact ioniz cross-section of high-Z dopant, see "Inz.inp"
      +   Bix(nQSm,nQSm),  
      +   Cix(nQSm,nQSm), 
