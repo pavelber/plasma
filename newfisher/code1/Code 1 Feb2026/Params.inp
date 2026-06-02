@@ -2,24 +2,24 @@
 20.    hvSmo [eV] is red edge of "fine resolution" interval of hv. I excluded lines at hv < hvSmo because they are weak vs free-free continu																																																																																																	 um.
 1250.  hvMiF [eV] First hv-point of "superFine" interval of hv axis
 2400.  hvMaF [eV] Last  hv-point of "superFine" .....
-16.e3  hvMax [eV] is maximal photon energy on the hv axis. It MUST be >> ionization energy of H-like ground state and >> max(Te) 
+20.e3  hvMax [eV] is maximal photon energy on the hv axis. It MUST be >> ionization energy of H-like ground state and >> max(Te) 
 3.d-3  fluMin is Minimal Absorption Oscillator Strength, "flu". Lines with flu < fluMin are excluded by taking Aul==0 in subroutine "Intro". 
 3.d6   [1/s] AulMin is Minimal value of Einstein A-coeficient, "Aul". Lines with Aul < AulMin are excluded by taking Aul==0 in subr "Intro".
 ---------
-47       Al gr.st. of Li-like ion. Serial number of the energy level for loading initial POP = 1.(nX=1)  
+236       Al gr.st. of Li-like ion. Serial number of the energy level for loading initial POP = 1.(nX=1)
 47       Mg .................................                                                  2  
-26.98    Al ion mass, a.u.;  "Atmass(1)"
+83.80    Al ion mass, a.u.;  "Atmass(1)"
 24.30    Mg ....................... 
 0      KeReDu=0 means "continuum lowering in the Ion Sphere approach". KeRedu= -1 means "no lowering",
 ----------------7-point scenario ---------------------------------
   t[s]    D[cm]  Te[eV]  TD[eV]   ni(AL+MG)[cm^-3]  % Mg ions in this ni
-0.00d-9   0.01,   100.,   300. ,      0.6d21 ,       5.52   start time;  5.52% is ni(Mg)/[ni(AL)+ni(Mg)], see comment in subr "Scenario"
-0.20d-9   0.01,   400.,  1200. ,      0.9d21 ,       5.52   tres(1)     
-0.35d-9   0.01,   900.,  3000. ,      1.5d21 ,       5.52   tres(2)   
-0.45d-9   0.01,  1300.,  4000. ,      2.0d21 ,       5.52   tres(3)   
-0.50d-9   0.01,  1300.,  4000. ,      2.0d21 ,       5.52   tres(4)     
-0.65d-9   0.01,   700.,  2000. ,      1.4d21 ,       5.52   tres(5)   
-1.00d-9   0.01,   200.,   600. ,      0.4d21 ,       5.52   tres(6). The run ends after tres(mSpe), see "if(FrNu .eq. mSpe) STOP" 
+0.00d-9   0.01,  1000.,  1000. ,      0.6d21 ,       5.52   start time;  5.52% is ni(Mg)/[ni(AL)+ni(Mg)], see comment in subr "Scenario"
+0.20d-9   0.01,  1200.,  1200. ,      0.9d21 ,       5.52   tres(1)
+0.35d-9   0.01,  2000.,  3000. ,      1.5d21 ,       5.52   tres(2)
+0.45d-9   0.01,  4000.,  4000. ,      2.0d21 ,       5.52   tres(3)
+0.50d-9   0.01,  4000.,  4000. ,      2.0d21 ,       5.52   tres(4)
+0.65d-9   0.01,  3000.,  2000. ,      1.4d21 ,       5.52   tres(5)
+1.00d-9   0.01,  2000.,   600. ,      0.4d21 ,       5.52   tres(6). The run ends after tres(mSpe), see "if(FrNu .eq. mSpe) STOP"
 -------------------------------------------------
 10  "npa" is the number of t-points between (tres(j) and tres(j+1) including t= tres(j+1); (10 <= npa < 49) . 
      Results of computatiom must be independent of "npa", therefore, for each problem 

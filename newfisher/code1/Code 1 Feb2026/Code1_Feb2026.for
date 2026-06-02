@@ -102,10 +102,10 @@ c  Print all-XE POPZ for this "La" and t = tf
       use mo1
       implicit none
       open( 13,file='Params.inp')
-      open(111,file='QSsAL272.inp') 
-      open(112,file='ExcAL272.inp')
-      open(113,file='InzAL272.inp')
-      open(114,file='AIwAL272.inp')
+      open(111,file='QSsKr.inp')
+      open(112,file='ExcKr.inp')
+      open(113,file='InzKr2.inp')
+      open(114,file='AIwKr.inp')
 
       open(211,file='QSsMG272.inp') 
       open(212,file='ExcMG272.inp')
@@ -185,7 +185,8 @@ c  Print all-XE POPZ for this "La" and t = tf
       implicit none
       character*1 po1     ! for conversion of QSname2 symbol (1 position) in p.q.n.
       integer char2int    ! symbol-to-integer convertor function
-      integer nSS, mth, LL, LU, iSS1, iEL1, iSS2, iEL2, ki, nFi
+      integer nSS, mth, LL, LU, iSS1, iEL1, iSS2, iEL2, ki, nFi,
+     +        iExcLn, iAIwLn
       real(8) Axw, Bxw, Cxw, Dxw, Exw, Fxw, Gxw, Hxw, 
      +        fw, ONEplusD, AIw, trEn, thre
 
@@ -237,8 +238,13 @@ c   Read all "ELsXE....inp" files.
             LastAI(nX)= kAI2(i,nX)     
           endif
         enddo 
-        nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)           ! nucl     
-        if(nuGS(HSS(nX)+1, nX).ne.Nnu(nX)) STOP 'Inconsistency #2'
+        nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)           ! nucl
+        if(nuGS(HSS(nX)+1, nX).ne.Nnu(nX)) then
+             write(*,'(a30, 2i3)') 'Inconsistency for XE#, nuGS()=', nX,
+     +        nuGS(HSS(nX)+1, nX)
+             write(*,'(a30, i3)') 'Nnu(nX)=', Nnu(nX)
+             STOP 'Inconsistency #2'
+        endif
 
   2     read(nFi,*) iSS 
         do k= nuGS(iSS,nX), nuGS(iSS+1,nX)-1                ! all non-AI ELs of this SS   
@@ -292,7 +298,9 @@ c  Read excitation cross sections and f's from all 'ExcXE....inp' files.  Note: 
         nFi= 12+ 100*nX             ! "ExcXE.inp" file## == 112, 212, 312, 412 
         read(nFi,'(a9)') title
         read(nFi,'(a9)') empty  
-  6     read(nFi,*) iSS, LL, LU, mth, Axw, Bxw, Cxw, Dxw, Exw, Fxw, fw 
+        iExcLn= 2
+  6     iExcLn= iExcLn + 1
+        read(nFi,*) iSS, LL, LU, mth, Axw, Bxw, Cxw, Dxw, Exw, Fxw, fw 
         if(LL.lt.nFAI) kL= nuGS(iSS,nX)-1+LL       ! order# in XE total EL list for non-AI EL           
         if(LU.lt.nFAI) kU= nuGS(iSS,nX)-1+LU
         if(LL.ge.nFAI) kL= kAI1(iSS,nX) + LL-nFAI  ! order# in XE total EL list for AI EL
@@ -300,7 +308,16 @@ c  Read excitation cross sections and f's from all 'ExcXE....inp' files.  Note: 
         if(abs(Fxw).gt.1.d-30) STOP 'OPEN "Fx" array'
 
         DE= E(kU,nX) - E(kL,nX) 
-        if(DE .le. zero) STOP 'Excitation down in reading Exc...inp'
+        if(DE .le. zero) then
+          write(*,*) 'Excitation down in reading Exc...inp'
+          write(*,*) 'nX, file unit, input line=', nX, nFi, iExcLn
+          write(*,*) 'iSS, LL, LU, mth=', iSS, LL, LU, mth
+          write(*,*) 'mapped kL, kU=', kL, kU
+          write(*,*) 'E(kL), E(kU), DE=', E(kL,nX), E(kU,nX), DE
+          write(*,*) 'Lower QS=', QSname1(kL,nX), QSname2(kL,nX)
+          write(*,*) 'Upper QS=', QSname1(kU,nX), QSname2(kU,nX)
+          STOP 'Excitation down in reading Exc...inp'
+        endif
 
         MthdEX(kL,kU,nX)= mth
 
@@ -377,25 +394,64 @@ c  Read AI Probabilities from 'AIwXE....inp' file
       do nX= 1, nXE
         nFi= 14+ 100*nX        ! "AIwXE....inp"  files are ## == 114, 214, 314, 414 
         read(nFi,'(a9)') title
-  8     read(nFi,*) iSS1, iEL1, iSS2, iEL2, AIw, trEn  ! the energy "trEn" is for consistency control only 
-        if(iEL1.lt.nFAI) STOP 'non-AI initial state in "AIw...inp"'   
-        if(iEL2.ge.nFAI) STOP 'AI final state in "AIw...inp"'     
+        iAIwLn= 1
+  8     iAIwLn= iAIwLn + 1
+        read(nFi,*) iSS1, iEL1, iSS2, iEL2, AIw, trEn  ! the energy "trEn" is for consistency control only
+        if(iEL1.lt.nFAI) then
+          write(*,*) 'non-AI initial state in "AIw...inp"'
+          write(*,*) 'nX, file unit, input line=', nX, nFi, iAIwLn
+          write(*,*) 'iSS1, iEL1, iSS2, iEL2=', iSS1, iEL1,
+     +                 iSS2, iEL2
+          write(*,*) 'nFAI=', nFAI
+          write(*,*) 'AIw, trEn=', AIw, trEn
+          STOP 'non-AI initial state in "AIw...inp"'
+        endif
+        if(iEL2.ge.nFAI) then
+          write(*,*) 'AI final state in "AIw...inp"'
+          write(*,*) 'nX, file unit, input line=', nX, nFi, iAIwLn
+          write(*,*) 'iSS1, iEL1, iSS2, iEL2=', iSS1, iEL1,
+     +                 iSS2, iEL2
+          write(*,*) 'nFAI=', nFAI
+          write(*,*) 'AIw, trEn=', AIw, trEn
+          STOP 'AI final state in "AIw...inp"'
+        endif
         if(iSS1.eq.111) goto 402                                    ! "111" shows stop-reading line: file end.  MY contribution.
 
         ki= kAI1(iSS1,nX)+ iEL1-nFAI  ! order# in XE total EL list for AI initial EL 
         kf= nuGS(iSS2,nX)-1 +iEL2     ! order# in XE total EL list for non-AI final EL
 Consistancy control 1: 
         if(kiSS(kf,nX) .ne. kiSS(ki,nX)+1) then
-	     write(*,*) 'XE, ki, kf =', nX, ki, kf 
+	     write(*,*) 'AIw consistency error: wrong ion stages'
+	     write(*,*) 'nX, file unit, input line=', nX, nFi, iAIwLn
+	     write(*,*) 'iSS1, iEL1, iSS2, iEL2=', iSS1, iEL1,
+     +                  iSS2, iEL2
+	     write(*,*) 'mapped ki, kf=', ki, kf
+	     write(*,*) 'kiSS(ki), kiSS(kf)=', kiSS(ki,nX), kiSS(kf,nX)
+	     write(*,*) 'AIw, trEn=', AIw, trEn
+	     write(*,*) 'Initial QS=', QSname1(ki,nX), QSname2(ki,nX)
+	     write(*,*) 'Final QS=', QSname1(kf,nX), QSname2(kf,nX)
+	     write(*,*) 'XE, ki, kf =', nX, ki, kf
            STOP 'have error in "AIaXE...inp" level numbers'
         endif
 Consistancy control 2: AI transition energy DE == E(qAI) - [PIR + E(fin)], i.e. E(i) - E(f), where both E taken 
 c                      relative to common "0", which is GS of "2ex ion".  Here we check consistency of DataBases: 
 c                      compare "trEn" from "AIwXE...inp"  to  E(qAI)-[PI+E(fin)] from "ELsXE....inp".
-        if(abs(trEn-(E(ki,nX)-PI(iSS1,nX)-E(kf,nX))) .gt. 0.002) then
+        DE= E(ki,nX)-PI(iSS1,nX)-E(kf,nX)
+        if(abs(trEn-DE) .gt. 2.0) then
            write(*,'(a25)') 'Inconsistency in AI transition energy:'
+           write(*,*) 'nX, file unit, input line=', nX, nFi, iAIwLn
+           write(*,*) 'iSS1, iEL1, iSS2, iEL2=', iSS1, iEL1,
+     +                  iSS2, iEL2
+           write(*,*) 'mapped ki, kf=', ki, kf
+           write(*,*) 'AIw, trEn=', AIw, trEn
+           write(*,*) 'Computed trEn=', DE
+           write(*,*) 'Difference=', trEn-DE
+           write(*,*) 'E(ki), PI(iSS1), E(kf)=', E(ki,nX),
+     +                  PI(iSS1,nX), E(kf,nX)
+           write(*,*) 'Initial QS=', QSname1(ki,nX), QSname2(ki,nX)
+           write(*,*) 'Final QS=', QSname1(kf,nX), QSname2(kf,nX)
            write(41,'(i2, 6i4, 6e12.6)') nX, ki, iSS1, iEL1, 
-     +       kf, iSS2, iEL2, trEn, E(ki,nX)-PI(iSS1,nX)-E(kf,nX), 
+     +       kf, iSS2, iEL2, trEn, DE, 
      +      E(ki,nX), PI(iSS1,nX), E(kf,nX)  
 	    STOP 
         endif
@@ -585,7 +641,20 @@ c  Regulation according to "hvC" (thru all XE)
 c  Print common (all-XE) line list into file #30 
       do iw = 1, linM4                  
         if(hvC(iw) .lt. hvSmo) STOP '  found Line at hv < hvSmo'	
-        if(hvC(iw) .gt. hvmax) STOP '  found Line at hv > hvMax'
+        if(hvC(iw) .gt. hvmax) then
+          write(*,*) 'found Line at hv > hvMax'
+          write(*,*) 'iw, hvC, hvMax=', iw, hvC(iw), hvMax
+          write(*,*) 'nX, kU, kL=', nX3(iw), nUp(iw), nLo(iw)
+          write(*,*) 'SpS upper/lower=', kiSS(nUp(iw),nX3(iw)),
+     +                 kiSS(nLo(iw),nX3(iw))
+          write(*,*) 'Upper QS=', QSname1(nUp(iw),nX3(iw)),
+     +                 QSname2(nUp(iw),nX3(iw))
+          write(*,*) 'Lower QS=', QSname1(nLo(iw),nX3(iw)),
+     +                 QSname2(nLo(iw),nX3(iw))
+          write(*,*) 'E upper/lower=', E(nUp(iw),nX3(iw)),
+     +                 E(nLo(iw),nX3(iw))
+          STOP '  found Line at hv > hvMax'
+        endif
         Alamda= eVA/hvC(iw)          ! A
         write(30,'(i2, i4, 2f12.3, e11.3, i7, a1, a4,a4, i7, a1, a4, a4, 
      +             e12.3)')  nX3(iw), kiSS(nUp(iw),nX3(iw)),  
@@ -621,7 +690,20 @@ c  Print common (all-XE) line list into file #30
          AlfaBB(lw)= zero
         FWevLor(lw)= zero
         if(hvC(lw) .lt. hvSmo)     STOP '  Line with hvC < hvSmo'
-        if(hvC(lw) .gt. hvMax*0.9) STOP '  Line with hvC > hvMax'
+        if(hvC(lw) .gt. hvMax*0.9) then
+          write(*,*) 'Line with hvC > hvMax in EmiAbso'
+          write(*,*) 'lw, hvC, hvMax=', lw, hvC(lw), hvMax
+          write(*,*) 'nX, kU, kL=', nX3(lw), nUp(lw), nLo(lw)
+          write(*,*) 'SpS upper/lower=', kiSS(nUp(lw),nX3(lw)),
+     +                 kiSS(nLo(lw),nX3(lw))
+          write(*,*) 'Upper QS=', QSname1(nUp(lw),nX3(lw)),
+     +                 QSname2(nUp(lw),nX3(lw))
+          write(*,*) 'Lower QS=', QSname1(nLo(lw),nX3(lw)),
+     +                 QSname2(nLo(lw),nX3(lw))
+          write(*,*) 'E upper/lower=', E(nUp(lw),nX3(lw)),
+     +                 E(nLo(lw),nX3(lw))
+          STOP '  Line with hvC > hvMax'
+        endif
         kU = nUp(lw)
         kL = nLo(lw)
         nX = nX3(lw)	                                   ! nX3(iw) is XE# for this line 

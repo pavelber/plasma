@@ -1,18 +1,22 @@
 import sys
 
+END_AI_LEVEL = 49
+
+START_AI_LEVEL = 44
+
 
 def process_line(line):
     try:
         # Extract the number from positions 38-41
-        num_str = line[37:41]
+        num_str = line[START_AI_LEVEL:END_AI_LEVEL]
         num = int(num_str)
 
         # Check if the number is in the specified range
-        if 200 <= num <= 299:
-            num += 100
+        if num < 0:
+            num = -num+200
 
         # Replace the original number with the modified one
-        modified_line = line[:37] + str(num).rjust(4) + line[41:]
+        modified_line = line[:START_AI_LEVEL] + str(num).rjust(4) + line[END_AI_LEVEL:]
         return modified_line
     except ValueError:
         # If conversion to integer fails, return the original line

@@ -7,12 +7,12 @@
      +     Nnu(nXE),           ! Number of non-autoionizing energy levels (ELs) in DB. "Nnu" = the serial number of nucleus in DB
      +     NST(nXE)            ! TOTAL number of ELs in DB of XE, This number includes autoionizing (AI) and non-AI ELs 
 
-      DATA FSS / 31,  9/,   ! 1st SpSs of AL & MG in DB, here Be-like ELs
+      DATA FSS / 30,  9/,   ! 1st SpSs of AL & MG in DB, here Be-like ELs
      +     HSS / 36, 12/,   ! H -like SpSs
-     +     Nnu /297, 109/,  ! serial number of nuclei in DBs of XE. This number = the number of non-AI ELs in DB
-     +     NST /1611, 272/   ! total number of ELs in databases of Al and Mg
+     +     Nnu /298, 109/,  ! serial number of nuclei in DBs of XE. This number = the number of non-AI ELs in DB
+     +     NST /1612, 272/   ! total number of ELs in databases of Al and Mg
       integer, public, parameter :: 
-     +     NSTm = 1611,            ! max of all (here two) "NST"
+     +     NSTm = 1612,            ! max of all (here two) "NST"
      +     HSSm =  36,                  ! highest (of all XE) SpS of H-like ion
      +    Nwork = 50+ 12*NSTm+ NSTm**2  ! For NAG d02eaf work area 'WEAF'	
 
@@ -21,7 +21,7 @@
      +   nvM  = 12300, ! number of hv points on hv axis. Among them: 100 points in soft [hvMin, hvSmo] domain & 200 points in [hvMaxf, hvMax] domain 
      +   mSpe = 6,     ! Number of TREX frames = number of t-points chosen for printing files 61 - 76,171-176, 371-376,
 c                        = number of t-points in scenario.      
-     +   MNLe = 2600,  ! Not more than "MNLe" spectral lines are expected for all XEs in common LineList
+     +   MNLe = 12000, ! Not more than "MNLe" spectral lines are expected for all XEs in common LineList
      +   LaMx = 2,     ! Number of zones, here 1 sphere but processed as La=2
      +   np5kap= 2272, ! Number of v-points on  5 mils kapton PCD response curve [1mil = 25.4 mcm; mils= mInch] 
      +   np10ka= 2301, ! Number of v-points on 10 mils kapton PCD  

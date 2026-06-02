@@ -1,5 +1,10 @@
 import sys
 
+AI_LEVEL_START_1 = 6
+AI_LEVEL_END_1 = 10
+AI_LEVEL_START_2 = 16
+AI_LEVEL_END_2 = 20
+
 
 def process_line(line, start, end):
     try:
@@ -8,8 +13,8 @@ def process_line(line, start, end):
         num = int(num_str)
 
         # Check if the number is in the specified range
-        if 200 <= num <= 299:
-            num += 100
+        if num < 0:
+            num = -num+200
 
         # Replace the original number with the modified one
         modified_line = line[:start] + str(num).rjust(4) + line[end:]
@@ -23,7 +28,7 @@ def process_file(input_file):
     with open(input_file, 'r') as infile:
         lines = infile.readlines()
 
-    processed_lines = [process_line(process_line(line, 7, 11), 17, 21) for line in lines]
+    processed_lines = [process_line(process_line(line, AI_LEVEL_START_1, AI_LEVEL_END_1), AI_LEVEL_START_2, AI_LEVEL_END_2)  for line in lines]
     return ''.join(processed_lines)
 
 
