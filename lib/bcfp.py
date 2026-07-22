@@ -21,6 +21,10 @@ METHOD = 'powell'
 BAD_FIT_THRESHOLD = 1e-16
 
 
+def _numeric_string_sort_key(value):
+    return (0, int(value)) if value.lstrip('-').isdigit() else (1, value)
+
+
 class BCFP:
     def __init__(self, bcfp_path=None):
         self._transitions = {}  # Key: (from_sp, from_level, to_sp, to_level), Value: dict with 'branching_ratio' or 'coefficients'
@@ -93,7 +97,7 @@ class BCFP:
 
     def get_sp_numbers(self):
         """Get all spectroscopic numbers."""
-        return sorted(self._spectroscopic_numbers)
+        return sorted(self._spectroscopic_numbers, key=_numeric_string_sort_key)
 
     def contains_transition(self, from_sp, from_level, to_sp, to_level):
         """Check if a transition exists."""
@@ -143,7 +147,8 @@ class BCFP:
                 comment = data_dict.get('comment', '')
                 data_values_str = (f"{coeffs_D_negA_B_C[0]:16.4e} {coeffs_D_negA_B_C[1]:16.4e} "
                                    f"{coeffs_D_negA_B_C[2]:16.4e} {coeffs_D_negA_B_C[3]:16.4e}")
-                output_lines.append(f"{prefix_str}{data_values_str}{comment}\n")
+                comment_str = " " + comment if comment else ""
+                output_lines.append(f"{prefix_str}{data_values_str}{comment_str}\n")
 
         return "".join(output_lines)
 
@@ -169,8 +174,8 @@ class BCFP:
         Helper function to create a sort key for transition tuples.
         """
         from_sp_str, from_level_str, to_sp_str, to_level_str = transition_key_tuple
-        key_from_sp = from_sp_str
-        key_to_sp = to_sp_str
+        key_from_sp = _numeric_string_sort_key(from_sp_str)
+        key_to_sp = _numeric_string_sort_key(to_sp_str)
         key_from_level = BCFP._get_level_sort_tuple(from_level_str)
         key_to_level = BCFP._get_level_sort_tuple(to_level_str)
         return (key_from_sp, key_from_level, key_to_sp, key_to_level)

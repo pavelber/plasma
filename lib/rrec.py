@@ -1,5 +1,10 @@
 import os
 
+
+def _numeric_string_sort_key(value):
+    return (0, int(value)) if value.lstrip('-').isdigit() else (1, value)
+
+
 class RREC:
     def __init__(self, rrec_path=None):
         self._transitions = {}  # Key: (sp_num, from_level, to_level), Value: dict with 'method_id', 'coefficients'
@@ -53,7 +58,7 @@ class RREC:
 
     def get_sp_numbers(self):
         """Get all spectroscopic numbers."""
-        return sorted(self._spectroscopic_numbers)
+        return sorted(self._spectroscopic_numbers, key=_numeric_string_sort_key)
 
     def contains_transition(self, sp_num, from_level, to_level):
         """Check if a transition exists."""
@@ -114,9 +119,10 @@ class RREC:
         Helper function to create a sort key for transition tuples.
         """
         sp_num, from_level_str, to_level_str = transition_key_tuple
+        key_sp_num = _numeric_string_sort_key(sp_num)
         key_from_level = RREC._get_level_sort_tuple(from_level_str)
         key_to_level = RREC._get_level_sort_tuple(to_level_str)
-        return (sp_num, key_from_level, key_to_level)
+        return (key_sp_num, key_from_level, key_to_level)
 
     def replace_transitions(self, start_sp_num, other, renumeration_table):
         """

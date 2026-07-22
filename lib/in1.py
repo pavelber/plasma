@@ -2,6 +2,10 @@ from lib.exceptions import GenericPlasmaException
 from lib.utils import skip_n_lines
 
 
+def _numeric_string_sort_key(value):
+    return (0, int(value)) if value.lstrip('-').isdigit() else (1, value)
+
+
 class IN1:
     def __init__(self, in1_path=None):
         print("in1 reader, version 12/07")
@@ -253,7 +257,7 @@ class IN1:
 
     def get_sp_numbers(self):
         """Get all spectroscopic numbers."""
-        return sorted(self._ionization_potential.keys())
+        return sorted(self._ionization_potential.keys(), key=_numeric_string_sort_key)
 
     def get_levels(self, sp_num):
         """Get all levels for a given spectroscopic number."""
@@ -290,7 +294,7 @@ class IN1:
         if self._header:
             output_lines.extend(self._header)
 
-        for sp_num in sorted(self._ionization_potential.keys()):
+        for sp_num in sorted(self._ionization_potential.keys(), key=_numeric_string_sort_key):
             # Calculate regular and autoionization level counts
             levels = self._levels_per_sp_num.get(sp_num, [])
             regular_count = sum(1 for level in levels if level == "1" or (level.isdigit() and int(level) >= 0))
@@ -304,7 +308,7 @@ class IN1:
                 f"{sp_num:<3} {regular_count:>4} {autoion_count:>4}   0  {ion_pot:>7.2f}    {some_number:>4}  {ion_pot:>7.2f}   0.0000   0.0000   0.000\n"
             )
         # Spectroscopic number sections
-        for sp_num in sorted(self._ionization_potential.keys()):
+        for sp_num in sorted(self._ionization_potential.keys(), key=_numeric_string_sort_key):
 
             # Levels for this spectroscopic number
             if sp_num in self._levels_per_sp_num:

@@ -13,6 +13,10 @@ header = """  SS   #1   #2   Mthd        A          B            C            D 
 """
 
 
+def _numeric_string_sort_key(value):
+    return (0, int(value)) if value.lstrip('-').isdigit() else (1, value)
+
+
 class EXCIT:
     def __init__(self, excit_path=None):
         self._transitions = {}  # Key: (sp_num, from_level, to_level), Value: dict with 'method_id', 'coefficients', 'osc_strength'
@@ -74,7 +78,7 @@ class EXCIT:
 
     def get_sp_numbers(self):
         """Get all spectroscopic numbers."""
-        return sorted(self._spectroscopic_numbers)
+        return sorted(self._spectroscopic_numbers, key=_numeric_string_sort_key)
 
     def contains_transition(self, sp_num, from_level, to_level):
         """Check if a transition exists."""
@@ -138,9 +142,10 @@ class EXCIT:
         Helper function to create a sort key for transition tuples.
         """
         sp_num, from_level_str, to_level_str = transition_key_tuple
+        key_sp_num = _numeric_string_sort_key(sp_num)
         key_from_level = EXCIT._get_level_sort_tuple(from_level_str)
         key_to_level = EXCIT._get_level_sort_tuple(to_level_str)
-        return (sp_num, key_from_level, key_to_level)
+        return (key_sp_num, key_from_level, key_to_level)
 
     @staticmethod
     def _modify_line(line, best_id, best_params):

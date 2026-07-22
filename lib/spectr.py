@@ -2,6 +2,11 @@ import os
 
 header_template = "%f %f %f %d\n"
 
+
+def _numeric_string_sort_key(value):
+    return (0, int(value)) if value.lstrip('-').isdigit() else (1, value)
+
+
 class SPECTR:
     def __init__(self, spectr_path=None):
         self._header = None  # Tuple: (atomic_mass, param1, param2, count)
@@ -78,7 +83,7 @@ class SPECTR:
 
     def get_sp_numbers(self):
         """Get all spectroscopic numbers."""
-        return sorted(self._spectroscopic_numbers)
+        return sorted(self._spectroscopic_numbers, key=_numeric_string_sort_key)
 
     def contains_transition(self, sp_num, up_level, low_level):
         """Check if a transition exists."""
@@ -144,9 +149,10 @@ class SPECTR:
         Helper function to create a sort key for transition tuples.
         """
         sp_num, up_level_str, low_level_str = transition_key_tuple
+        key_sp_num = _numeric_string_sort_key(sp_num)
         key_up_level = SPECTR._get_level_sort_tuple(up_level_str)
         key_low_level = SPECTR._get_level_sort_tuple(low_level_str)
-        return (sp_num, key_up_level, key_low_level)
+        return (key_sp_num, key_up_level, key_low_level)
 
     def replace_transitions(self, start_sp_num, other, renumeration_table):
         """
