@@ -7,6 +7,7 @@ import tempfile
 from lib.bcfp import BCFP
 from lib.excit import EXCIT
 from lib.in1 import IN1
+from lib.merge_checks import run_post_merge_checks
 from lib.rrec import RREC
 from lib.spectr import SPECTR
 
@@ -290,7 +291,8 @@ def merge_bcfp(piter_bcfp, fac_bcfp, boundary_sp, level_map, valid_species):
 
 
 def merge_titanium(piter_dir, fac_dir, output_dir, mapping_csv, boundary_sp,
-                   fac_level_column, target_level_column, target_energy_column):
+                   fac_level_column, target_level_column, target_energy_column,
+                   run_checks=True):
     level_map = read_level_map(mapping_csv, fac_level_column, target_level_column)
     target_energy_map = read_target_energy_map(mapping_csv, target_level_column, target_energy_column)
 
@@ -324,6 +326,8 @@ def merge_titanium(piter_dir, fac_dir, output_dir, mapping_csv, boundary_sp,
     merge_rrec(piter_rrec, fac_rrec, boundary_sp, level_map, valid_species).dump_to_file(
         os.path.join(output_dir, "RREC.INP")
     )
+    if run_checks:
+        run_post_merge_checks(output_dir)
 
 
 if __name__ == "__main__":
@@ -342,6 +346,7 @@ if __name__ == "__main__":
         default=DEFAULT_TARGET_ENERGY_COLUMN,
         help="CSV column with target/Piter level energies",
     )
+    parser.add_argument("--skip-check", action="store_true", help="Do not run legacy post-merge checks")
 
     args = parser.parse_args()
     merge_titanium(
@@ -353,4 +358,5 @@ if __name__ == "__main__":
         args.fac_level_column,
         args.target_level_column,
         args.target_energy_column,
+        run_checks=not args.skip_check,
     )
