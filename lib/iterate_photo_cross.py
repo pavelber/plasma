@@ -3,12 +3,13 @@ import re
 from math import sqrt
 
 from lib.consts import ry, pi_a0_2
+from lib.levels_string import get_level_label_parts, remove_level_electrons
 
 letter_to_num = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i': 6, 'k': 7, 'l':8,'m':9,'n':10}
 
 
 def get_n0(c):
-    return int(c[0])
+    return get_level_label_parts(c)[0]
 
 
 def get_l0(c):
@@ -17,11 +18,8 @@ def get_l0(c):
 
 
 def get_num_of_electrons_last_level(c):
-    last_letter = c[-1]
-    if last_letter in letter_to_num:
-        return 1
-    else:
-        return int(last_letter)  # TODO: assumption - single digit!!!!!
+    electrons = get_level_label_parts(c)[2]
+    return electrons if electrons is not None else 1
 
 
 def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_part, out_file, f_data,
@@ -48,7 +46,7 @@ def iterate(e_n0l0, z_tilda, z_eff, last_level_without_num, m, l0, stat_weights_
 
 def compute_and_iterate(config, e_n0l0, z_n, z, stat_weights_part, out_file, f_data, alternate_sigma_computation=False):
     last_level = config[-1]
-    last_level_without_num = last_level[0:2]
+    last_level_without_num = remove_level_electrons(last_level)
     n0 = get_n0(last_level)
     l0 = get_l0(last_level)
     num_of_electrons_last_level = get_num_of_electrons_last_level(last_level)

@@ -1,38 +1,42 @@
+import re
+
 from lib.exceptions import GenericPlasmaException
 
-letters_order = ['s', 'p', 'd', 'f', 'g', 'h', 'i', 'k']
-letters_to_order = {'s': '0', 'p': '1', 'd': '2', 'f': '3', 'g': '4', 'h': '5', 'i': '6', 'k': '7'}
-levels_order = ["1s", "2s", "2p", "3s", "3p", "3d", "4s", "4p", "4d", "4f", "5s", "5p", "5d", "5f", "5g", "6s", "6p",
-                "6d", '6f', '6g', '6h', '7s', '7p', '7d', '7f', '7g', '7h']
-level_to_electrons = {
-    "1s": 2,
-    "2s": 2,
-    "2p": 6,
-    "3s": 2,
-    "3p": 6,
-    "3d": 10,
-    "4s": 2,
-    "4p": 6,
-    "4d": 10,
-    "4f": 14,
-    "5s": 2,
-    "5g": 18,
-    "5p": 6,
-    "5d": 10,
-    "5f": 14,
-    "6f": 14,
-    "6g": 18,
-    "6h": 22,
-    "6s": 2,
-    "6p": 6,
-    "6d": 10,
-    '7s': 2,
-    '7p': 6,
-    '7d': 10,
-    '7f': 14,
-    '7g': 18,
-    '7h': 22
-}
+letters_order = ['s', 'p', 'd', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n']
+letters_to_order = {letter: str(index) for index, letter in enumerate(letters_order)}
+_config_re = re.compile(r'^(\d+)([a-z])(\d*)$')
+
+
+def get_level_label_parts(config):
+    match = _config_re.match(config)
+    if match is None:
+        raise GenericPlasmaException("Invalid level configuration: " + config)
+    shell, letter, electrons = match.groups()
+    return int(shell), letter, int(electrons) if electrons else None
+
+
+def remove_level_electrons(config):
+    shell, letter, electrons = get_level_label_parts(config)
+    if electrons is None:
+        return config
+    return str(shell) + letter
+
+
+def build_levels_order(max_shell):
+    levels = []
+    for shell in range(1, max_shell + 1):
+        for letter in letters_order[:shell]:
+            levels.append(str(shell) + letter)
+    return levels
+
+
+def max_electrons_for_level(level):
+    shell, letter, electrons = get_level_label_parts(level)
+    return 4 * letters_order.index(letter) + 2
+
+
+levels_order = build_levels_order(20)
+level_to_electrons = {level: max_electrons_for_level(level) for level in levels_order}
 
 
 def create_levels_string(num_of_electrons, line):
@@ -51,7 +55,7 @@ def create_levels_string(num_of_electrons, line):
             if '+' in column or '-' in column:
                 break
             else:
-                holes[column[0:2]] = int(column[2:])
+                holes[remove_level_electrons(column)] = get_level_label_parts(column)[2]
         i += 1
     should_be = sum(num_to_electrons.values())
     if should_be != num_of_electrons:
@@ -68,14 +72,15 @@ def create_levels_string(num_of_electrons, line):
 
     # remove holes num of electrons in advance
     for hole_level in holes:
-        num_to_electrons[hole_level[0:1]] -= holes[hole_level]
+        hole_shell = str(get_level_label_parts(hole_level)[0])
+        num_to_electrons[hole_shell] -= holes[hole_level]
 
-    go_until_holes = max([int(k[0:1]) for k in holes.keys()])
-    go_until_num_of = max([int(k[0:1]) for k in num_to_electrons.keys()])
+    go_until_holes = max([get_level_label_parts(k)[0] for k in holes.keys()])
+    go_until_num_of = max([int(k) for k in num_to_electrons.keys()])
     go_until = max(go_until_holes, go_until_num_of)
     current = '1'
     for level in levels_order:
-        now = level[0:1]
+        now = str(get_level_label_parts(level)[0])
         if now != current:
             if num_to_electrons[current] > 0:  # got to next level, not all electrons used
                 raise GenericPlasmaException("Now: " + level + " result until now: " + str(result))
@@ -106,12 +111,7 @@ def create_levels_string(num_of_electrons, line):
 
 
 def find_previous(c):
-    if c[-1].isdigit() and c[-2].isdigit():
-        config_wo_electrons = c[0:-2]
-    elif c[-1].isdigit():
-        config_wo_electrons = c[0:-1]
-    else:
-        config_wo_electrons = c
+    config_wo_electrons = remove_level_electrons(c)
     index = levels_order.index(config_wo_electrons)
     if index == 0:
         return ""

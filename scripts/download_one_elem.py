@@ -15,8 +15,8 @@ if len(sys.argv) < 2:
 elem = sys.argv[1]
 nmax = 10
 osc = 1e-8
-min_sp_num = 9
-max_sp_num = 10
+min_sp_num = 1
+max_sp_num = 1
 
 (name_to_table, num_to_table) = read_table()
 
@@ -41,5 +41,5 @@ if not os.path.exists(levels_downloaded):
 if not os.path.exists(lines_downloaded):
     os.mkdir(lines_downloaded)
 
-download_piter_levels(elem, levels_downloaded, nmax)
+# download_piter_levels(elem, levels_downloaded, nmax)
 download_piter_lines(elem, lines_downloaded, nmax, osc)

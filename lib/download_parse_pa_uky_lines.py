@@ -37,6 +37,7 @@ LINES_SKIP = 18
 
 
 def download_piter_lines(elem, piter_dir, nmax, osc):
+    print(f"download_piter_lines: elem={elem}, piter_dir={piter_dir}, nmax={nmax}, osc={osc}")
     if not os.path.exists(piter_dir):
         os.mkdir(piter_dir)
     for sp_num in SPNUMS_TO_USE:
@@ -48,10 +49,12 @@ def download_piter_lines(elem, piter_dir, nmax, osc):
 
 
 def download_piter_lines_one_spnum(file, elem, sp_num_roman, nmax, osc):
+    print(f"download_piter_lines_one_spnum: file={file}, elem={elem}, sp_num_roman={sp_num_roman}, nmax={nmax}, osc={osc}")
     start_wave = 0
     end_wave = 200000
-    step_wave = 2000
+    step_wave = 200000
     has_lines = True
+    print("Downloading lines for " + elem + " " + sp_num_roman + " to " + file)
     with open(file, "wb") as piter:
         while start_wave < end_wave and has_lines:
             out_len = download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, osc, start_wave,
@@ -63,6 +66,7 @@ def download_piter_lines_one_spnum(file, elem, sp_num_roman, nmax, osc):
 
 
 def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, osc, wavel_from, wavel_to):
+    print(f"download_piter_lines_one_spnum_wavelengts: elem={elem}, sp_num_roman={sp_num_roman}, nmax={nmax}, osc={osc}, wavel_from={wavel_from}, wavel_to={wavel_to}")
     values = {
         'elmion': elem + ' ' + sp_num_roman,
         'wavl': '%d-%d' % (wavel_from, wavel_to),
@@ -71,9 +75,9 @@ def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, o
         'radv': '',
         'rvtp': 'vrad',
         'wacc': '',
-        'akival': osc,
+        'akival': '%e' % osc,
         'akitype': 'f_ik',
-        'akizero': 'incl',
+        'akizero': 'excl',
         'abun': '',
         'depl': '',
         'elo': '100000',
@@ -84,15 +88,25 @@ def download_piter_lines_one_spnum_wavelengts(piter, elem, sp_num_roman, nmax, o
         'auto': 'Suppress',
         'jval': 'useg',
         'tptype': 'as_a',
-        'mode': 'Plain',
+        'mode': ['Plain'],
         'mlin': '50000',
         "form": ['spec', 'type', 'term', 'angm', 'ener', 'prob', 'conf'],
     }
     data = urlencode(values, doseq=True).encode()
-    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+    headers = {"Content-type": "application/x-www-form-urlencoded",
+               "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+               "Referer": "https://linelist.pa.uky.edu/newpage/",
+               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+               "Origin": "https://linelist.pa.uky.edu",
+               "Sec-Fetch-Dest": "document",
+               "Sec-Fetch-Mode": "navigate",
+               "Sec-Fetch-Site": "same-origin",
+               "Sec-Fetch-User": "?1",
+               "Upgrade-Insecure-Requests": "1"
+               }
     req = Request("https://linelist.pa.uky.edu/newpage/cgi-bin/qlines.cgi", data=data,
                   headers=headers, method="POST")
-    with urlopen(req, timeout=5) as response:
+    with urlopen(req, timeout=20) as response:
         print(sp_num_roman, wavel_from, wavel_to, response.status, response.reason)
 
         for i in range(LINES_SKIP):

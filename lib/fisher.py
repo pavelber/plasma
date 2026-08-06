@@ -40,6 +40,7 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             else:
                 levels_to_bcfp_rrec[level] = (None, line)
     sorted_levels = sorted(levels_to_bcfp_rrec.keys(), key=lambda x: tuple(map(int, x)))
+    in1_sp_numbers = set(in1_data.get_sp_numbers())
 
     with (open(out_file_path, "w") as outf):
         outf.write(HEADER)
@@ -49,6 +50,11 @@ def createIonFile(element, levels_num, o_dir, in1_data, bcfp):
             level_low = level[1]
             spectr_num_high = str(int(spectr_num_low) + 1)
             level_high = level[2]
+            if spectr_num_high not in in1_sp_numbers:
+                # The union files can contain top-edge transitions to the synthetic next species
+                # (for example, max species 13 writes targets as 14/1).  IN1.INP only contains
+                # species that were generated, so there is no branching ratio or energy to emit.
+                continue
             if bcfp_line is not None and bcfp_from_databases:
                 branching_ration = float(bcfp_line.split()[4])
             else:

@@ -8,6 +8,7 @@ from shutil import copy
 from subprocess import Popen, PIPE
 
 from lib.exceptions import GenericPlasmaException
+from lib.levels_string import remove_level_electrons
 
 
 def error(s):
@@ -271,7 +272,7 @@ def invert_replaces(replaces):
 
 def remove_num_electrones(c):
     if c[-1].isdigit():
-        return c[0:-1]
+        return remove_level_electrons(c)
     else:
         return c
 

@@ -3,6 +3,7 @@ from math import sqrt, exp
 
 from lib.configurations import get_number_of_electrons
 from lib.consts import ry
+from lib.levels_string import get_level_label_parts
 
 cl_table = {'s': 1.7796E-16, 'p': 2.1597E-16, 'd': 1.2131E-16}
 cl_keys = ['s', 'p', 'd']
@@ -21,7 +22,7 @@ def get_constants_for_bernshtam_ralchenko(from_config, to_config):
     (num_of_electrons, lost_electron_config_index) = get_number_of_electrons(from_config, to_config)
     if num_of_electrons is None:
         return None, None, None
-    l = from_config[lost_electron_config_index][1]  # Use the configuration part, which lose electrons
+    l = get_level_label_parts(from_config[lost_electron_config_index])[1]
     if l not in cl_keys:
         return None, None, num_of_electrons
     c_l = get_cl(l)
