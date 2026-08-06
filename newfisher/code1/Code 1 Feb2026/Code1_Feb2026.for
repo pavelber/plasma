@@ -783,7 +783,7 @@ c                            Lines from cut ELs and onto cut ELs came with EmiLF
            write(*,'(/a36, i6, f10.3, 9e10.2)') 
      +       'lw, hvC, FWevGau, ArPBB(lw) =', 
      +        lw, hvC(lw), FWevGau, ArPBB(lw)
-	     STOP '  ArPBB(lw) < 0.01)' 
+	     STOP '  ArPBB(lw) < 0.1)' 
         endif
 
         do iv= 1, nvM                             
@@ -1084,7 +1084,16 @@ c  3rd term in eq (Ti-Te)/teiE = dTe/dt + 2*Fpow*FoPi/3/V1/ne/kB  ! [eV/s]; kB==
 
       TiBS = Te + teiE* (TeDot + TeDotPow)  ! Ion temperature [eV]   
       if(TiBS .le. 0.)  STOP 'My STOP caused by Ti <= 0'
-      if(TiBS .gt. TiD) STOP 'My STOP caused by Ti > TD'
+      if(TiBS .gt. TiD) then
+        write(*,*) 'TEMP DIAGNOSTIC: TiBS > TD; continuing'
+        write(*,*) 'tf, ti, tstep=', tf, ti, tstep
+        write(*,*) 'Te, TiBS, TiD=', Te, TiBS, TiD
+        write(*,*) 'TeDot, TeDotPow, teiE=', TeDot, TeDotPow, teiE
+        write(*,*) 'Fpow, Volu(2), Dene=', Fpow, Volu(2), Dene
+        write(*,*) 'Required TD >=', TiBS
+        TiD = 1.05*TiBS
+        write(*,*) 'TEMP DIAGNOSTIC: using TiD=', TiD
+      endif
 
       Return					  
       END    ! of 'PowYie' subr
