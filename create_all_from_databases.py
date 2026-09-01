@@ -223,10 +223,11 @@ if __name__ == "__main__":
         shutil.copy(rrec_path,rrec_path+".db")
 
         nist_in1.dump_to_file(in1_path)
-        nist_bcfp.dump_to_file(bcfp_path+".fisher")
-        nist_excit.dump_to_file(excit_path)
         nist_spectr.dump_to_file(spectr_path)
         nist_rrec.dump_to_file(rrec_path)
+
+    nist_bcfp.dump_to_file(bcfp_path + ".fisher")
+    nist_excit.dump_to_file(excit_path)
 
     #####################
     levels_num = run_for_fisher(False, min_sp_num, max_sp_num, elem, elem_dir, "BCFP.INP.fisher", False)
