@@ -21,17 +21,18 @@
    всегда режет `n > 6`.
 
 4. Есть ли у Питера сечения ионизации электронным ударом?
-   Нет. Сайт — Atomic Line List
-   ([lines](https://linelist.pa.uky.edu/newpage/),
-   [levels](https://linelist.pa.uky.edu/newpage/levels.html)):
-   только уровни и радиационные линии, без collision/ionization CS.
-   Скрипта скачивания EII в репо нет — это ожидаемо.
+   Нет. Atomic Line List даёт только уровни, радиационные линии и
+   ionization limits. Нет EII/EIE сечений, автоионизации и фотоионизации.
+   Подробнее: `docs/scripts.md`, раздел «Что есть у Питера и чего нет».
 
 5. Нужен ли полный Fisher-комплект?
-   Да: `QSs`, `Exc`, `Inz`, `AIw`, `Params`.
-   История `lib/fisher.py` / `create_all_from_databases.py`: из этой
-   ветки всегда собирали только `QSs` и `Inz`. `Exc`/`AIw`/`Params`
-   никогда не писались. Конвертер `EXCIT.INP` → `Exc` ещё предстоит.
+   Нужны `QSs`, `Exc`, `Inz`, `AIw`. `Params` не нужен.
+   Из этой ветки всегда писали только `QSs` и `Inz`.
+   `Exc` = тот же формат, что NOMAD `EXCIT.INP` (отдельного конвертера нет
+   и не нужно: копировать/переименовать).
+   `AIw` = тот же заголовок, что NOMAD `AIW.INP`. Сборщик `create_aiw()`
+   есть только для FAC (`fac.ai`). У Питера AI-уровней нет, файл будет
+   пустым (один заголовок).
 
 6. Сломан ли дамп `BCFP.INP.fisher`?
    Был сломан на чистом Питере: фиты считались в памяти, файл писался
@@ -69,7 +70,8 @@
 
 ## Дальше, когда придут ответы
 
-1. Починить/решить сборку полного комплекта: `Exc`, `AIw`, `Params`.
+1. Для Fisher: копировать `EXCIT.INP` → `Exc`, пустой `AIw` (заголовок).
+   `Params` не делать.
 2. Прогнать `create_all_from_databases.py` для C, O, Ar, Fe, Cu
    с согласованными `energy-limits`, `nmax`, `max-sp-num`.
 3. Валидация NOMAD (`scripts/validate_database.py`) и проверка Fisher-файлов.

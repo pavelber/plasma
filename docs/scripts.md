@@ -1,8 +1,9 @@
 # Скрипты подготовки и проверки баз
 
 Эта документация описывает основные Python-скрипты репозитория для подготовки
-NOMAD-compatible `INP` файлов. Раздел про Fisher/NOMAD runtime сюда намеренно
-не включен.
+NOMAD-compatible `INP` файлов и параллельного Fisher-набора (`QSs`, `Inz`).
+Fortran runtime Code1/Code2 сюда не входит; отличия их input-форматов см.
+`newfisher/code1/Code 1 Feb2026/Kr_run_changes_ru.md`.
 
 Старые внешние инструкции существуют в Google Docs:
 
@@ -195,20 +196,127 @@ python create_all_from_databases.py C:\work4\db C 6 1e-8 "1:70.8,2:150,3:250,4:3
 python create_all_from_databases.py --config "C:\path\to\config.ini"
 ```
 
-Скрипт строит базу из загруженных/подготовленных внешних данных:
+Скрипт строит NOMAD-базу из уже лежащих в `db/<element>/` данных Питера
+(University of Kentucky) и сразу пытается сделать рядом Fisher-файлы.
 
-- создает `IN1.INP`, `EXCIT.INP`, `SPECTR.INP`;
-- строит `RREC.INP` и `BCFP.INP` из `IN1`;
-- добавляет cross-section данные, если они есть;
-- удаляет неиспользуемые уровни и перенумеровывает ссылки.
+Порядок шагов в `create_all_from_databases.py`:
 
-Назначение из Scripts HowTo: создавать NOMAD input files из University of
-Kentucky и NIST данных для low-charge ions, где FAC точность хуже.
+1. Копирует `db/<elem>/levels` и `db/<elem>/lines` в `<out>/<elem>/`.
+2. Строит `IN1.INP`, `EXCIT.INP`, `SPECTR.INP` из Питера
+   (`lib/create_in1_from_databases.py`).
+3. Строит `RREC` и `BCFP.INP` из `IN1` (переходы по конфигурациям).
+4. Склеивает per-species `RREC.INP`, гоняет legacy check/fix.
+5. Удаляет неиспользуемые уровни и перенумеровывает ссылки.
+6. Пытается подставить сечения ионизации/возбуждения из
+   `db/<elem>/ionization-crosssection` и `db/<elem>/excitation-crosssection`.
+   Если файла сечения нет, ионизация фитится с табуляции формулы
+   Бернштама–Радченко или Лотца (`lib/bcfp.py` + `lib/cross_section.py`).
+7. Если задан `--replace-starting-from`, подмешивает FAC из `db/<elem>/fac`.
+8. Пишет Fisher-файлы через `run_for_fisher()`.
+
+`--formula` относится только к `RREC` (формула vs Strasbourg cuts), не к
+ионизации. Ионизация Бернштамом/Лотцем идёт всегда как fallback, без флага.
+
+Флаг `--formula` сейчас фактически не работает из CLI/INI: после разбора
+аргументов стоит `use_formula = (use_formula == 'formula')`, а к этому
+моменту значение уже `bool`, поэтому в `create_rrec_from_in1` всегда уходит
+`False` (Strasbourg). UI `ui-databases.py` этот флаг передаёт иначе и
+Fisher-шаг не вызывает.
+
+`nmax` передаётся в `should_include_level()`, но там не используется: уровни
+с главным квантовым числом `n > 6` отбрасываются жёстко.
+
+`--energy-limits` — это отсечка энергии уровня при сборке `IN1`, не
+автоматический ionization potential. IP в заголовок `IN1` берётся отдельно
+из строки `Limit` в Piter levels-файле.
 
 Опция `--replace-starting-from` подключает FAC-часть из `db/<element>/fac`,
 начиная с указанного спектроскопического номера. Это общий механизм, но для
 ручного Ti stitch по таблице соответствий лучше использовать отдельный скрипт
 `merge-titanium-piter-fac.py`.
+
+## Fisher из внешних баз (Питер)
+
+Fisher-файлы создаются тем же `create_all_from_databases.py`, не отдельным
+скриптом. Выход — каталог `<out>/<elem>/fisher/`:
+
+- `QSs<elem><N>.inp` — уровни из `IN1.INP` (`lib/create_qsege.py`, режим
+  `use_fac_lev=False`, то есть без `fac.lev`);
+- `Inz<elem><N>.INP` — ионизация электронным ударом + фотоионизация из
+  `RREC`.
+
+Нужны `QSs`, `Exc`, `Inz`, `AIw`. `Params` не нужен.
+
+Текущий пайплайн пишет только `QSs` и `Inz`. Отдельного Fisher-конвертера
+для `Exc`/`AIw` нет — и для `Exc` он, скорее всего, не нужен.
+
+`EXCIT.INP` (NOMAD) и `Exc*.inp` (Fisher) — один формат: тот же заголовок
+`SS #1 #2 Mthd A B C D E F Osc.Strngth` и те же колонки. Питер-ветка уже
+пишет `EXCIT.INP` в `create_spectr_and_excit_from_piter_match_config()`.
+Для Fisher достаточно положить этот файл как `Exc.inp` / `Exc<elem>.inp`.
+`create_excit()` в `lib/create_files_union.py` — это FAC-склейка `outpp.dat`,
+не другой формат.
+
+`AIW.INP` (NOMAD) и `AIw*.inp` (Fisher) тоже с одним заголовком
+`SSi AIQS# SSf QSf# WAI DE(eV)`. Код сборки `create_aiw()` есть только для
+FAC: читает `fac.ai`. Из Питера автоионизации нет,
+`create_in1_from_piter.py` ставит число AI-уровней в `0`. Для этой базы
+`AIw` будет пустым (один заголовок), как `db/O/AIW.INP`.
+Нумерация AI разная у Code1 (`>= 201`) и Code2 (отрицательные номера),
+но без AI-переходов это не важно.
+
+`Inz` читает `BCFP.INP.fisher`. Фиты из `create_fac_fitting_params()` и
+обновлённый `EXCIT.INP` дампятся всегда, и после FAC-merge тоже.
+Раньше `BCFP.INP.fisher` писался только при `--replace-starting-from`.
+
+Если `BCFP` ещё в format 1 (в заголовке есть `Coefficient`), `createIonFile()`
+обнуляет fit-коэффициенты EII. Бернштам-константы (`c_l`, `delta_l`, число
+электронов) считаются, но в файл не записываются. Рабочий путь — сначала
+получить format 2 (`D, -A, B, C`) через `create_fac_fitting_params()`, потом
+собрать `Inz`.
+
+### Сечения ионизации Питера и формулы
+
+Ожидаемый каталог: `db/<elem>/ionization-crosssection/`.
+Имена файлов вида `OI-OII_27-12.dat` (элемент + римские sp + уровни).
+Парсер: `parse_ionization_spectroscopic_files()` в
+`lib/create_cross_section_fits.py`.
+
+В репозитории этих каталогов нет. Скрипта скачивания **электрон-ударных**
+сечений ионизации Питера тоже нет: есть только загрузка levels/lines и
+Strasbourg photoionization cuts (см. раздел «Загрузка внешних данных»).
+`lib/cross_section_db.py` смотрит на другие имена
+(`ionization-crosssections` во множественном числе) и из
+`create_all_from_databases.py` не вызывается.
+
+Логика одного перехода в `BCFP.create_fac_fitting_params()`:
+
+1. Если есть dat-файл Питера на эту пару уровней — фитить NOMAD-коэффициенты
+   по таблице, в комментарий писать `#from db`.
+2. Иначе построить аналитическую σ(E):
+   - Бернштам–Радченко, если потерянный электрон в оболочке `s`/`p`/`d`;
+   - Лотц (`get_lotz_om2`), если число электронов известно, а `l` не из
+     `s`/`p`/`d`;
+   - пропуск, если конфигурации не сопоставить.
+3. «Табулирование» — это выборка формулы на сетке `E = 1..100` шаг `1 eV`
+   и fit теми же NOMAD-коэффициентами (`create_fits_from_range`).
+   Отдельные txt-таблицы не пишутся: `create_tabulation_files=False`.
+
+`remove_bad_fits=True` (в скрипте есть TODO «поговорить»): неудачный fit
+удаляет переход из BCFP, а не оставляет нули.
+
+### Что уже лежит в `db/` для C, O, Ar, Fe, Cu
+
+| Элемент | levels | lines | ionization-crosssection |
+|---|---|---|---|
+| C | 1–6 | 1–6 | нет |
+| O | 1–8 | 1–8 | нет |
+| Ar | 1–8 | 1–8 | нет |
+| Fe | 1–8 | 1–8 | нет |
+| Cu | 1–7 | 1–6 (4–6 почти пустые у Питера) | нет |
+
+Ядро: C=7, O=9, Ar=19, Fe=27, Cu=30. Если `max-sp-num + 1 == nucleus`,
+скрипт добавляет nucleus в `RREC`/`BCFP`. Для Ar/Fe/Cu при max=6 этого нет.
 
 ## Подготовка FAC уровней по NIST/Piter
 
@@ -339,20 +447,74 @@ python merge-fac-nist.py "C:\path\to\fac-db" "C:\path\to\nist-db" --replace-star
 Для Ti merge с ручной таблицей соответствий этот скрипт не подходит напрямую:
 используйте `merge-titanium-piter-fac.py`.
 
-## Загрузка Piter данных
+## Загрузка внешних данных
 
-Entry point:
+Питер (University of Kentucky, `linelist.pa.uky.edu`) качается так:
 
 ```powershell
-python scripts\download_one_elem.py Ti
+python scripts\download_one_elem.py Fe
 ```
 
-Скрипт создает/использует `db/<element>/levels` и `db/<element>/lines`.
-В текущем коде загрузка levels закомментирована, а lines загружаются через
-`download_piter_lines()`.
+Это `scripts/download_one_elem.py`: пишет в `db/<element>/levels` и
+`db/<element>/lines`. Сейчас вызов `download_piter_levels()` закомментирован,
+качаются только lines через `download_piter_lines()`.
 
-Перед использованием проверьте параметры внутри скрипта (`nmax`, `osc`,
-диапазон species), потому что они сейчас заданы константами в файле.
+Один спектроскопический номер:
+
+```powershell
+python scripts\download_one_elem_onesp_num.py
+```
+
+`scripts/download_one_elem_onesp_num.py` — элемент и римский номер сейчас
+зашиты в файле (`elem = "Na"`, `sp_num = "I"`), их надо править перед запуском.
+
+Массовая загрузка H…Kr:
+
+```powershell
+python scripts\download_databases.py
+```
+
+`scripts/download_databases.py` качает levels и lines для атомных номеров 1–36.
+`nmax = 10`, `osc = 1e-8`, `max_sp_num` ограничен 8.
+
+Все три скрипта lines/levels крутятся по `lib/current_data.py`:
+`SPNUMS_TO_USE`. Сейчас там только `['I']`, поэтому
+`download_piter_lines()` / `download_piter_levels()` скачают лишь первый
+спектроскопический номер, пока список не расширить. Для дырки в одном
+species надёжнее `download_piter_lines_one_spnum()`.
+
+### Что есть у Питера и чего нет
+
+Сайт: [Atomic Line List](https://linelist.pa.uky.edu/newpage/)
+(levels: [levels.html](https://linelist.pa.uky.edu/newpage/levels.html)).
+Это каталог уровней и радиационных линий, не collision-база.
+
+Есть:
+
+- уровни (`db/<elem>/levels`, `qlevels.cgi`);
+- радиационные линии и вероятности переходов (`db/<elem>/lines`, `qlines.cgi`);
+- ionization limits в levels-файлах (строка `Limit`).
+
+Нет:
+
+- сечений ионизации электронным ударом;
+- сечений возбуждения электронным ударом;
+- скоростей автоионизации;
+- сечений фотоионизации (в этом репо их берёт Strasbourg, не Питер).
+
+Отдельного скрипта под `db/<elem>/ionization-crosssection/`
+(файлы вида `OI-OII_27-12.dat`) поэтому нет. Код умеет такие dat подставить,
+если положить вручную, но у Питера их взять неоткуда.
+
+Strasbourg (фотоионизация / cuts, не Питер EII):
+
+```powershell
+python scripts\download_strasburg.py
+```
+
+Пишет `db/<elem>/strasbg-levels` и `db/<elem>/strasbg-cuts`. Элемент и
+диапазон сейчас зашиты в скрипте (`elem = "Si"`, cuts 8–9). Эти cuts идут
+в `RREC`, если `use_formula` выключен.
 
 ## Практический порядок работы
 
@@ -363,3 +525,38 @@ python scripts\download_one_elem.py Ti
 3. Исправить ошибки ссылок, сортировки или top-edge переходов.
 4. Повторить validation до `ERRORS: 0`.
 5. Только после этого использовать базу дальше.
+
+## Вопросы, которые из кода не закрыть
+
+Имеется в виду задание: базы Fisher для C, O, Ar, Fe, Cu из Питера;
+для Ar/Fe/Cu max sp = 6; сечения ионизации электронным ударом брать у
+Питера, если есть; дыры добивать табуляцией Бернштама и Лотца.
+
+1. До какого sp-числа делать C и O? Лимит 6 в задании только у «трёх
+   последних». У C в `db/` уже только 1–6. У O есть 1–8 (до H-like).
+2. Какие `energy-limits` ставить? Канона в репозитории нет. UI-дефолт
+   `1:70.8,2:150,3:250,4:350,5:450,6:550,7:750,8:1000` не равен IP этих
+   элементов. Код не подставляет `Limit` из Piter-файла как отсечку.
+3. Какой `nmax`? Аргумент обязательный, но фильтр уровней его игнорирует
+   и всегда режет `n > 6`. Менять код или оставить как есть?
+4. ~~Где скрипт скачивания EII сечений Питера?~~ В репо его нет. Есть
+   только levels/lines (`download_one_elem.py` и соседние) и Strasbourg
+   cuts. Нужен ли отдельный скрипт под `ionization-crosssection/`, или он
+   живёт вне этого репозитория?
+5. ~~Полный Fisher-комплект?~~ Нужны `QSs`, `Exc`, `Inz`, `AIw`.
+   `Params` не нужен. `Exc` = NOMAD `EXCIT.INP`. `AIw` из Питера пустой.
+6. ~~`BCFP.INP.fisher`~~ Да, сломан на чистом Питер-прогоне: фиты считаются
+   в памяти и не дампятся, `run_for_fisher()` открывает несуществующий файл.
+   Чинить дамп до прогона.
+7. `--formula` — это RREC (формула vs Strasbourg), не ионизация. Нужен ли
+   Strasbourg `RREC`, или для этих баз RREC тоже с формулы? CLI-флаг сейчас
+   всё равно всегда выключен.
+8. ~~Докачивать `lines`?~~ Да. Скачаны `db/Fe/lines/1.txt`, `3.txt` и
+   `db/Cu/lines/3.txt`–`6.txt` (`nmax=10`, `osc=1e-8`). Cu IV–VI у Питера
+   почти пустые.
+9. Неудачные фиты ионизации удалять (`remove_bad_fits=True`) или оставлять
+   нули? В коде TODO «поговорить».
+10. Сетка табуляции `1..100 eV`, шаг `1` — это ожидаемое «табулирование
+    формулы», или нужны сырые txt и другой диапазон?
+11. Какой runtime будет есть эти файлы: Code1 (AI `>= 201`, stop-marker) или
+    Code2 (отрицательные AI, счётчики `StrExc`/`StrInz`/`StrAIw`)?
