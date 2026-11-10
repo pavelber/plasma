@@ -1,3 +1,11 @@
+ ***ERROR: INVALID NZ RANGE
+ ***ERROR: VIEW-BUFFER EMPTY
+ <html>
+ <head>
+ <title>
+ TOPbase Table_Manager
+ </title>
+ </head>
  <body>
  <pre>
  ***ERROR: VIEW-BUFFER EMPTY

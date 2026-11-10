@@ -41,17 +41,26 @@ def get_bp_om(e, c_l, delta_l, num_of_electrons, branching_ration, ionization_en
     return c_l * pow(ry / ionization_energy, 2 - delta_l) * num_of_electrons * branching_ration * log(e) / e
 
 
-def create_cross_section_function(ionization_energy, branching_ration, from_config, to_config):
+def create_cross_section_function(ionization_energy, branching_ration, from_config, to_config, eii_formula='auto'):
     (c_l, delta_l, num_of_electrons) = get_constants_for_bernshtam_ralchenko(
         from_config,
         to_config)
 
     if num_of_electrons is None:
-        return None
+        return None, None
+
+    lotz = lambda x: get_lotz_om2(x, num_of_electrons, ionization_energy)
+    if eii_formula == 'lotz':
+        return lotz, 'lotz'
+    if eii_formula == 'bernstam':
+        if delta_l is None:
+            return None, None
+        return (lambda x: get_bp_om(x, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy)), 'bernstam'
+    if eii_formula != 'auto':
+        raise ValueError("eii_formula must be auto, bernstam, or lotz")
     if delta_l is None:
-        return lambda x: get_lotz_om2(x, num_of_electrons, ionization_energy)
-    bernshtam_ralchenko = lambda x: get_bp_om(x, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy)
-    return bernshtam_ralchenko
+        return lotz, 'lotz'
+    return (lambda x: get_bp_om(x, c_l, delta_l, num_of_electrons, branching_ration, ionization_energy)), 'bernstam'
 
 
 def nomad_5(params, E0, stat_weight, x):

@@ -33,6 +33,8 @@ def parse_args_and_config():
     parser.add_argument('--min-sp-num', type=int, help='Minimum sp number')
     parser.add_argument('--max-sp-num', type=int, help='Maximum sp number')
     parser.add_argument('--formula', action='store_true', help='Use formula')
+    parser.add_argument('--eii-formula', type=str, choices=['auto', 'bernstam', 'lotz'], default='auto',
+                        help='EII formula: auto (s/p/d Bernstam else Lotz), bernstam, or lotz')
     parser.add_argument('--config', type=str, help='Config file path (INI format)')
     parser.add_argument('--replace-starting-from', type=int, help='Spectroscopical number to start using FAC (optional)')
     args = parser.parse_args()
@@ -54,6 +56,7 @@ def parse_args_and_config():
         max_sp_num = int(get_param('spmax', int))
         formula = (cfg.get('formula', '').lower() == 'formula')
         replace_starting_from = get_param('replace_starting_from',str,  None) if 'replace_starting_from' in cfg else None
+        eii_formula = cfg.get('eii_formula', 'auto').lower()
     else:
         # All params must be provided as named args
         missing = [p for p in ['out_dir', 'element', 'nmax', 'energy_limits', 'min_sp_num', 'max_sp_num'] if
@@ -68,11 +71,14 @@ def parse_args_and_config():
         max_sp_num = int(args.max_sp_num)
         formula = args.formula
         replace_starting_from = args.replace_starting_from if args.replace_starting_from is not None else None
-    return out_dir, elem, nmax, energy_limits, min_sp_num, max_sp_num, formula, replace_starting_from
+        eii_formula = args.eii_formula
+    if eii_formula not in ('auto', 'bernstam', 'lotz'):
+        parser.error('--eii-formula must be auto, bernstam, or lotz')
+    return out_dir, elem, nmax, energy_limits, min_sp_num, max_sp_num, formula, replace_starting_from, eii_formula
 
 
 if __name__ == "__main__":
-    out_dir, elem, nmax, energy_limits, min_sp_num, max_sp_num, use_formula, replace_starting_from = parse_args_and_config()
+    out_dir, elem, nmax, energy_limits, min_sp_num, max_sp_num, use_formula, replace_starting_from, eii_formula = parse_args_and_config()
     if not all([out_dir, elem, nmax, energy_limits, min_sp_num, max_sp_num]):
         error('Missing required parameters. Use --help for details or check your config file.')
     energy_limits = parse_energy_limits(energy_limits)
@@ -186,10 +192,13 @@ if __name__ == "__main__":
     nist_bcfp.create_fac_fitting_params(
         in1_data=nist_in1,
         cross_section_directory=ionization_cross_section_directory,
-        create_tabulation_files=False,
-        remove_bad_fits=True #TODO: поговорить
+        create_tabulation_files=True,
+        remove_bad_fits=False,
+        eii_formula=eii_formula,
+        tabulation_dir=os.path.join(elem_dir, "tabulation")
     )
-    nist_excit.replace_fits_from_cross_sections(nist_in1, excitation_cross_section_directory)
+    if os.path.exists(excitation_cross_section_directory):
+        nist_excit.replace_fits_from_cross_sections(nist_in1, excitation_cross_section_directory)
 
     #На малых числах Нист
     if replace_starting_from is not None:

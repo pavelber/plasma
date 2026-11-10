@@ -218,7 +218,7 @@ class BCFP:
                 f.write(f"{e:8.3f} {energy_function(e):10.3e}\n")
                 e += STEP_E
 
-    def create_fac_fitting_params(self, in1_data, cross_section_directory=None, create_tabulation_files=False, remove_bad_fits=True):
+    def create_fac_fitting_params(self, in1_data, cross_section_directory=None, create_tabulation_files=False, remove_bad_fits=True, eii_formula='auto', tabulation_dir=None):
         """
         Convert a Format 1 BCFP (branching ratio + 3 coefficients) to Format 2 (4 coefficients).
         Updates the _transitions dictionary in memory.
@@ -228,6 +228,8 @@ class BCFP:
             cross_section_directory (str, optional): Directory containing cross-section files.
             create_tabulation_files (bool): If True, generate tabulation files.
             remove_bad_fits (bool): If True, remove transitions with failed fits; otherwise, keep with zeros and comment.
+            eii_formula (str): auto (s/p/d Bernstam else Lotz), bernstam, or lotz.
+            tabulation_dir (str, optional): Directory for sigma(E) tables. Defaults to <cwd>/tabulation.
         """
 
         # Load cross-sections if provided
@@ -238,9 +240,9 @@ class BCFP:
         # Create tabulation directory if needed
         outdir = None
         if create_tabulation_files:
-            outdir = path.join(path.dirname(in1_path), 'tabulation')
+            outdir = tabulation_dir if tabulation_dir else path.join(os.getcwd(), 'tabulation')
             if not path.exists(outdir):
-                os.mkdir(outdir)
+                os.makedirs(outdir)
 
         # Store transitions to remove if remove_bad_fits is True
         transitions_to_remove = []
@@ -282,7 +284,8 @@ class BCFP:
 
             # If no cross-section fit, try fitting from energy function
             if result is None:
-                energy_function = create_cross_section_function(transition_energy, coef, from_config, to_config)
+                energy_function, formula_used = create_cross_section_function(
+                    transition_energy, coef, from_config, to_config, eii_formula=eii_formula)
                 if energy_function is None:
                     print(f"Warning: No energy function for {from_sp} {from_level} -> {to_sp} {to_level}")
                     if remove_bad_fits:
@@ -294,6 +297,7 @@ class BCFP:
                         }
                     continue
 
+                comment = " # " + formula_used
                 if create_tabulation_files:
                     self.create_tabulation(energy_function, from_sp, from_level, to_sp, to_level, transition_energy, outdir)
 

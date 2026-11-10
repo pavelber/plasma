@@ -50,10 +50,6 @@ def env():
     if env_error is not None:
         raise GenericPlasmaException(env_error)
 
-    env_error = check_version("Perl", "perl -MMoose -e \"print $Moose::VERSION\"")
-    if env_error is not None:
-        raise GenericPlasmaException(env_error)
-
     print("Searching for components:")
     if os_name == "win32":
         exc_fac_name = "exc_fac_static.exe"

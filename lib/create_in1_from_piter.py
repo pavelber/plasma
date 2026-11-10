@@ -166,9 +166,8 @@ def create_in1_inp_from_piter(dir, elem, nucleus, i_spectro, energy_limits, nmax
                               energy_limits[str(f)],
                               nmax)
 
-            if int(i_spectro[-1]) + 1 == int(nucleus):
-                in1_inp.write(str(nucleus) + "\n")
-                in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
+            in1_inp.write(str(nucleus) + "\n")
+            in1_inp.write(" Nucleus                               0.00e+00 0.00e+00\n")
 
             return i_spectro
 

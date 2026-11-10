@@ -118,8 +118,12 @@ def run_check_rr(dir):
 
 def run_check_rr_return_lines(dir):
     code, std_out, std_err = runcommand_print("check_rr.exe", dir)
-    lines = std_out.split("\n")[:-2]
-    return list(map(lambda l: l.split(), lines))
+    lines = []
+    for raw in std_out.split("\n"):
+        parts = raw.split()
+        if len(parts) >= 3 and parts[0].lstrip("+-").isdigit() and parts[1].lstrip("+-").isdigit():
+            lines.append(parts)
+    return lines
 
 
 def run_fix_old_rr(dir):
