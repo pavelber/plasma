@@ -42,3 +42,40 @@ Build
   mingw32-make -f Makefile.gnu debug    -> same with bounds checking
 Run: copy Co2feb26_Generic.exe into the folder with the input files of the case
 and start it there.
+
+Sources (Nov 2026)
+------------------
+  Co2feb26_main.for     main program (time loop)
+  Co2feb26_procs.for    all subroutines and functions
+  mo1co2feb.for         module: constants, arrays, AllocArrays/AllocSized/AllocLines
+  nag_replacements_Co2_GNU.f90, lzfix_Co2_GNU.f90   as in the GNU port
+The former Co2feb26_GNU.for = Co2feb26_main.for + Co2feb26_procs.for, split so that
+tests can call the procedures with their own main program.
+
+Faster versions, same results bit for bit (Nov 2026)
+----------------------------------------------------
+  1. EmiAbso, bound-free absorption / free-bound emission: the list of BF
+     channels (k,kf) is built once per call instead of testing all 1612 x 1612
+     level pairs at every one of the ~10500 hv points; same summation order.
+  2. VOIGT: its constant tables are computed once instead of in every call.
+  3. EED in the BF loop is computed once instead of twice.
+Full Kr run to 65 ps: 5 h 43 min before, 44 min after 1 and 2. All 30 output
+files of full Kr and Ge runs are identical byte for byte to the older version.
+
+Other changes that do not change results: "do nX = 1, nXkin" (nXkin = 1 in the
+module: kinetics, lines and BF only for X) instead of "do nX = 1, 1 ! nXE";
+PAUSE replaced by CALL Pause1('...'), which behaves as PAUSE but also writes the
+message to Warnings.log and stops with exit code 1 (gfortran's PAUSE without a
+keyboard silently stopped the run with exit code 0, as a normal end).
+
+Tests
+-----
+  mingw32-make -f Makefile.gnu test       T1 + T2, about 2 min
+  mingw32-make -f Makefile.gnu test-e2e   T3, 3 time steps of Kr and Ge (~10-20 min)
+  python tests/run_tests.py e2e --update  rewrite the golden files (only on purpose)
+T1: unit tests of the physics functions (EED, cross sections, VOIGT, D01AHF, D02EAF).
+T2: one time step of all routines on the real Kr and Ge databases.
+T3: the real program, sha256 of all .dat files and of the screen output.
+All comparisons are bit for bit. Needs python 3. Golden files: tests/golden.
+
+See also PLAN_refactoring_speed.md (next steps) and PHYSICS_QUESTIONS.md.

@@ -17,6 +17,8 @@ c  AllocLines() sets MNLe from the number of spectral lines (LineList).
      +     HSSm = 0,      ! max SpS of H-like ion: max(HSS(1:nXE)) of Params0.inp
      +    Nwork = 0,      ! 50+ 12*nQSm+ nQSm**2, for NAG d02eaf work Area WEAF
      +     MNLe = 0       ! number of spectral lines + 1, set in LineList
+      integer, public, parameter ::
+     +   nXkin = 1   ! kinetics, lines and BF only for X (nX=1); C, He, D excluded
       integer, public, parameter :: 
      +   nvL  = 16000, ! Reserved number of hv-grid points. True number of v-points "nvM" <= "nvL" in defined in "vGrid" subr"
      +   LaMx = 3,     ! Number of types of zones
@@ -319,6 +321,7 @@ c                                                         Spectral Response of e
 
       contains
 
+
       SUBROUTINE AllocArrays()  ! Generic version: sizes of atomic-data arrays at run time.
 c  Reads lines 1-4 of Params0.inp (FSS, HSS, Nnu, NST of the nXE elements) on its own unit;
 c  Intro() reads the same lines again from unit 12 as before, so Params0.inp is unchanged.
@@ -331,13 +334,22 @@ c  Intro() reads the same lines again from unit 12 as before, so Params0.inp is 
       read(iu,*) w4      ! Nnu
       read(iu,*) mNST    ! NST
       close(iu)
-      HSSm = maxval(mHSS)
-      nQSm = maxval(mNST)
-      if(HSSm.lt.1 .or. nQSm.lt.2) STOP 'AllocArrays: bad HSS/NST'
-      Nwork= 50+ 12*nQSm+ nQSm**2
-      GB = (44.5d0*dble(nQSm)**2 + 30.d0*nQSm*nXE*LaMx)*8.d0/1.d9
+      if(maxval(mHSS).lt.1 .or. maxval(mNST).lt.2)
+     +   STOP 'AllocArrays: bad HSS/NST'
+      GB = (44.5d0*dble(maxval(mNST))**2
+     +      + 30.d0*maxval(mNST)*nXE*LaMx)*8.d0/1.d9
       write(*,'(a,i6,a,i4,a,f6.2,a)') ' Params0.inp: nQSm = max(NST) =',
-     +   nQSm, ',  HSSm = max(HSS) =', HSSm, ';  arrays ~', GB, ' GB'
+     +   maxval(mNST), ',  HSSm = max(HSS) =', maxval(mHSS),
+     +   ';  arrays ~', GB, ' GB'
+      CALL AllocSized(maxval(mNST), maxval(mHSS))
+      END SUBROUTINE AllocArrays
+
+
+      SUBROUTINE AllocSized(nQSmIn, HSSmIn)  ! allocate and zero all arrays of
+      integer nQSmIn, HSSmIn                 ! size nQSm, HSSm (also used by tests)
+      nQSm = nQSmIn
+      HSSm = HSSmIn
+      Nwork= 50+ 12*nQSm+ nQSm**2
 
       allocate(QSname(nQSm,nXE))
       QSname = ' '
@@ -379,7 +391,7 @@ c  Intro() reads the same lines again from unit 12 as before, so Params0.inp is 
      +   POPZ(HSSm+1,nXE,LaMx), WEAF(Nwork))
       Wout= zero;  WoutXE= zero;  POP= zero;  POPi= zero;  POPf= zero
       POPZ= zero;  WEAF= zero
-      END SUBROUTINE AllocArrays
+      END SUBROUTINE AllocSized
 
 
       SUBROUTINE AllocLines(nLines)  ! Generic version: MNLe = number

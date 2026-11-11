@@ -1,82 +1,5 @@
-      use mo1co2feb
-      implicit none
-      CALL AllocArrays() ! Generic version: array sizes from Params0.inp (max NST, max HSS) at run time
-      CALL OpenFiles() ! Open Output files, write titles of columns
-      CALL Intro()     ! Read input files; fill in atomic data arrays and 
-c                        initial population ("POPs") of energy levels ("ELs")
-      CALL LineList()  ! Find spectral lines in full [hvmin, hvmax] interval, print file "LineList.dat"
-      CALL hvPoints()  ! Build the array of hv points in full [hvMin, hvMax] interval 
-      Count = 0        ! This integer counts lines during reading atomic data files
-      FrYie = 0.		 ! FrYie(iv,frame#)= 0.  ! t-integral of SpPow(iv) [W/eV/sr] within j-th frame
-
-      tf= strt
-  1   ti= tf  
-      tf= ti+ tstep  
-      write(*,'(/a40, f6.2, a4)') 'Start ti =', ti*1.d12, 'ps:'
-
-      if(ti.GE.StopTime) then
-         CALL FixLeadingZeros()   ! .ddd instead of 0.ddd in output files, as in the old MS Fortran build (lzfix_Co2_GNU.f90)
-         STOP '   ti >= StopTime.  The End.'
-      endif
-
-      do La = 1, LaMx     ! La is zone number. La=1 is BS, La=2 is Core, La=3 is Capsule     
-        CALL SCENARIO()   ! for t= ti compute R, Te, TD, DenI, ZC1, Dene
-        write(*,'(a33, i2, e11.4, 2f7.0, e11.4, f10.4)') 
-     +          'Zone, R(cm), Te, TD, ne, Z(X) =', 
-     +           La, CeR(La), Te(La), TD(La), Dene(La), ZC(1,La)  
-
-        write(30+La,'(f7.2, e10.3, 2f7.3, e11.4, 2f10.5, 3f7.2, e11.4,   ! files "BSinfo.dat", "CoreInfo.dat", "CapInfo.dat"      
-     +                 3e10.3, f6.3, 2f8.2)')  ti*1.d12,  CeR(La)*1.d4, 
-     +                      Te(La)/1.d3, TD(La)/1.d3, Dene(La), 
-     +                 ZC1(La), ZC(1,La), ZC(2,La), ZC(3,La), ZC(4,La),  ! ZC(nX,La) is mean ion charge of (nX,La), computed in Scenario  
-     +                      Den(1,La), Den(2,La), Den(3,La), Den(4,La),  ! using "POPi", see "POPi(k,nX,La) = POPf(k,nX,La)" just there
-     +                                bp(La), bc(La)/1.d3, bw(La)/1.d3   ! [keV]
-
-        do nX = 1, 1 ! nXE  ! For Te=Ti, Den(nX,La) of t = ti. Note: only X has lines and DPI   *********** !!!! *********
-           CALL LevStW()    ! For these La,nX compu FWHM [eV] of all E-LEVELs "LvJW(La,nX,k)" [eV] 
-
-           CALL redPI()     ! For these La,nX, for each jSS compu DPI(jSS,nX,La) and PIR(jSS,nX,La).  
-
-           CALL BEvPr()     ! For these La,nX compu Binding Energy of outermost electron "BE(k,nX,La)".
-c                             Move POPs from BE-cut LEs to ground state of next SpS.
-
-c          Gaussian part of FWHM/hvC of lines of #nX in zone #La is denoted "FWkVcGAU(La,nX)"
-c             Amass = AtMass(nX) *Uam                     ! [g] mass of nX ion
-c             uTi   = sqrt(8.*BolEr*Tion(La)/pin/Amass)   ! [cm/s] mean thermal velocity of nX ion in La
-c             fwTiKvC(La,nX)= 1.4757*uTi/c                ! my page on thermal and isotropic 3D hydro broadenings                        
-c             fwTUKvC(La,nX)= 1.4757*u3D(La)/c
-c             FWkVcGAU(La,nX)= sqrt(fwTiKvC(La,nX)**2 +fwTUKvC(La,nX)**2)  ! FWHMgau/hvC of 2 convolved Gaussians.
-           FWkVcGAU(La,nX)= 7.7155e-5*sqrt(TD(La)/AtMass(nX))  ! my page on thermal & hydro broadenings, see BlackFold   
-        enddo  ! nX
-
-        CALL EmiAbso()  ! Compu this-La "EmTot(La,hv)" [W/cc/sr/eV] and "AbTot(La,hv)" [1/cm]
-c                         via params of t=ti and POPi(k,nX,La).  
-      enddo  ! La loop;   La is zone number; La=1 is BS, La=2 is Core, La=3 is Capsule       
-
-      CALL EffSpIn()  ! Compute due-to-all-La "SpInEf(La,iv)" [W/eV/sr/cm2] in RP of each "La", 
-c                       La-loop is inside this subr because each "La" has contribs from other "La"s.  
-c                      "SpInEf(La,iv)" is needed for Win, Wab, WphI, WiRR at t= ti" for d02 of POPs towards "tf".
-
-      CALL PowYie()   ! Compute Spectral Power from the target using EmTot, AmTot computed
-c	                  for params of t=ti and POPi(k,nX,La).  Print frames in files (181 - (186 and power detectors in files (187 - 189 	 
-
-      do La = 1, LaMx	 
-      do nX = 1, 1  ! nXE  ! ******** !!!! ****   
-cccc         write(*,'(a30, 2i3, e10.2)') 'La, nX, Dene(La) =',           !@#$%*******************
-cccc     +                                 La, nX, Dene(La)        
-         if(Dene(La).gt.1.e15) then  ! For each (La,nX) compute Ws & PM; run d02 for POPs from "ti" to "tf" with params of "ti".  
-c                                    ! Note: ne > 10^15 e/cc excludes inrerruption in NAG d02EAF. For some {Te, dTe/dt, Jv} this NAG subr may work even for lower ne       
-cccc                 write(*,'(a30)') 'CALLing Atkins'         !@#$%***********************
-               CALL AtKins()  ! It gives "POPf(k,nX,La)" that is POP(tf) to be first used in Scenario of NEXT "ti" as POPi(k,nX,La).
-cccc                 write(*,'(a30)') 'Returned from Atkins'   !@#$%***********************
-         endif
-      enddo   
-      enddo   
-cccc              write(*,'(a30)') 'Returning to mark 1'   !@#$%***********************
-      goto 1  ! for next t-step, where present "tf" will be "ti", thus present "POPf" will be used for computation of all quantities at "ti" 
-      END     ! MAIN
-
-
+c  Co2feb26 (Code2, Generic version): all subroutines and functions of the code.
+c  The main program is in Co2feb26_main.for; tests link these procedures with their own main.
 
       SUBROUTINE OpenFiles() 
       use mo1co2feb
@@ -219,13 +142,14 @@ c   Read "QSsXE.inp" files of C, He, D.
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
              write(*,'(a50)') 'Check Params0.inp, QSs*.inp'
-		   PAUSE 'this is the inconsistency #1'
+		   CALL Pause1('this is the inconsistency #1')
           endif
           if(i.gt.FSS(nX)) nuGS(i,nX)= nuGS(i-1,nX)+ nuQS(i-1,nX)     ! this GS #  in the EL list of XE  
         enddo 
         nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)       ! nucl     
 
-        if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX)) PAUSE 'Inconsistency #2'
+        if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX))
+     +   CALL Pause1('Inconsistency #2')
 
         read(nFi,'(a9)') empty  ! separating line   
   1     read(nFi,*) iSS 
@@ -300,7 +224,7 @@ c     +                                   nX, FSS(nX), HSS(nX), PI(i,nX)
              write(*,'(a30, 2i3)') 'Inconsistency for XE#, SS=', nX, nSS
              write(*,'(a30, 2i3)') 'i, FSS(nX)=', i, FSS(nX)
              write(*,'(a50)')      'Check Params0.inp, QSs*.inp'
-		   PAUSE 'this is the inconsistency #1'
+		   CALL Pause1('this is the inconsistency #1')
           endif
           if(i.gt.FSS(nX)) nuGS(i,nX)= nuGS(i-1,nX)+ nuQS(i-1,nX)         ! this GS #  in the EL list of XE  
 
@@ -313,7 +237,8 @@ c     +                                   nX, FSS(nX), HSS(nX), PI(i,nX)
       enddo 
       nuGS(HSS(nX)+1, nX)= nuGS(HSS(nX),nX)+ nuQS(HSS(nX),nX)       ! nucl     
 
-      if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX)) PAUSE 'Inconsistency #2'
+      if(nuGS(HSS(nX)+1, nX) .ne. Nnu(nX))
+     +   CALL Pause1('Inconsistency #2')
 
       read(nFi,'(a9)') empty  ! separating line   
   2   read(nFi,*) iSS 
@@ -336,7 +261,7 @@ c     +                  g0(k,nX), E(k,nX), kiSS(k,nX)
       nu2(Nnu(1))  = Nnu(1) 
 
       Count= Count +1    ! counter of lines read, up to nucl (including nucl)
-      if(Count.ne.Nnu(nX)) PAUSE 'XX nucl # =/= Nnu(1)'
+      if(Count.ne.Nnu(nX)) CALL Pause1('XX nucl # =/= Nnu(1)')
 
       kiSS(Nnu(1),1)= HSS(1)+1 
 	     
@@ -354,7 +279,7 @@ c     +                  g0(k,nX), E(k,nX), kiSS(k,nX)
       enddo
       close(111)  ! "QSs.inp"  
 
-      if(Count .ne. NST(nX)) PAUSE 'Full Count =/= NST(1)'
+      if(Count .ne. NST(nX)) CALL Pause1('Full Count =/= NST(1)')
 
       do k = 1, LastAI(nX)         ! all true and AI EL# of this XE
         if(k.eq.Nnu(nX)) goto 11   ! skip nucl
@@ -385,7 +310,7 @@ Check Yes/No equal E(k,nX) in DaBa. If YES, increase 2nd energy by 0.001 eV to a
 c  Read excitation cross sections and f's from 'Exc.inp'. 
       read(12,*) StrExc  ! From "Params0" read the number of strings in file "Exc.inp" (including the title)
 
-      do nX= 1, 1            ! here X only                 !@#$%***********************************
+      do nX= 1, nXkin            ! here X only                 !@#$%***********************************
         nFi= 12+ 100*nX      ! "Exc.inp" file# == 112
         read(nFi,'(a9)') title
         read(nFi,'(a9)') empty  
@@ -402,7 +327,7 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
         if(DE .le. zero) then
           write(*,'(a20, i3, 2(i5,f11.3))') 'nX, kL, E, kU, E=', 
      +                                   nX, kL, E(kL,nX), kU, E(kU,nX) 	  
-	    PAUSE 'Excitation down in reading Exc.inp'
+	    CALL Pause1('Excitation down in reading Exc.inp')
         endif
 
         MthdEX(kL,kU)= mth
@@ -423,7 +348,7 @@ c  Read excitation cross sections and f's from 'Exc.inp'.
 
         write(*,'(a65,5i5)')'Excit CrosSec fit method is unknown for XE, 
      +  iSS, LL, LU, mth=', nX, iSS, LL, LU, mth
-        PAUSE
+        CALL Pause1(' ')
   7     close(nFi)
       enddo        ! here XE-loop is 1 to 1, i.e. X only; C, He, D have no excited levels
 
@@ -481,7 +406,7 @@ c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
 
       read(12,*) StrInz  ! From "Params0" read the number of strings in file "Inz.inp" (including the title)
 
-      do nX= 1, 1             ! nXE; X (=Kr) only   !@#$%******************************************
+      do nX= 1, nXkin             ! nXE; X (=Kr) only   !@#$%******************************************
         nFi= 13+ 100*nX       ! "Inz.inp" fail # 
         read(nFi,'(a9)') title
 	  CountInz = 1
@@ -496,12 +421,12 @@ c       assign "1" to "bra(i,f,XE)" if Yes ioniz channel in "Inz.inp".
 
         if(kiSS(kf,nX) .ne. kiSS(ki,nX)+1) then
 	     write(*,*) 'XE, ki, kf =', nX, ki, kf 
-           PAUSE 'Error in "InzXE...inp" level numbers'
+           CALL Pause1('Error in "InzXE...inp" level numbers')
         endif
 
         if(mePh.ne.4) then
            write(*,'(a30, 4i6)') 'XE, ki, kf, mePh =', nX, ki, kf, mePh	! print error info
-           PAUSE 'in "Inz.inp" mePh ne 4'  
+           CALL Pause1('in "Inz.inp" mePh ne 4')  
         endif
 
         Aix(ki,kf)= Axw    ! Aix-Dix are 4 coefs of e-impact ioniz cross-section (formula #4), see "InzXE....inp"
@@ -523,7 +448,7 @@ c  Read AI Probabilities from 'AIw.inp'.
       read(12,*) StrAIw  ! From "Params0" read the number of strings in file "AIw.inp" (including the title)
       close(12)
 
-      do nX= 1, 1              !  nXE      here only X                    !@#$%************************
+      do nX= 1, nXkin              !  nXE      here only X                    !@#$%************************
         nFi= 14+ 100*nX        ! "AIw.inp"  files are ## == 114, 214, 314, 414 
         read(nFi,'(a9)') title
 	  CountAIw = 1
@@ -531,17 +456,19 @@ c  Read AI Probabilities from 'AIw.inp'.
         CountAIw = CountAIw + 1
 c       write(*,'(4i5, e14.6, i6)') iSS1,iQS1, iSS2,iQS2, AIw, CountAIw   
 
-        if(iQS1.gt.0) PAUSE 'non-AI initial EL in "AIw.inp"'
-        if(abs(iQS1).gt.nuAS(iSS1,nX)) PAUSE 'AI EL # > AIQSs in SpS'  
+        if(iQS1.gt.0) CALL Pause1('non-AI initial EL in "AIw.inp"')
+        if(abs(iQS1).gt.nuAS(iSS1,nX))
+     +   CALL Pause1('AI EL # > AIQSs in SpS')  
         if(iQS2.gt.nuQS(iSS2,nX)) then
           write(*,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
      +                           iSS1, iQS1, iSS2, iQS2
-          PAUSE 'In "AIw.inp" afterAI EL has # > available in SpS' 
+          CALL Pause1(
+     +   'In "AIw.inp" afterAI EL has # > available in SpS') 
         endif     
         if(iQS2.LT.0  .and. abs(iQS2).gt.nuAS(iSS2,nX)) then
           write(*,'(/a30, 4i5)') 'SSi, QS1, SSf, QSf =',
      +                           iSS1, iQS1, iSS2, iQS2
-          PAUSE 'In "AIw.inp" AI into AI EL # > available in SpS'
+          CALL Pause1('In "AIw.inp" AI into AI EL # > available in SpS')
         endif
 	     
         ki= kAI1(iSS1,nX) -1-iQS1  ! "ki" is the  # of "iQS1" in "long" ("full") list. Remember that "iQS1" < 0:  
@@ -554,7 +481,7 @@ Consistancy control 1:
           write(*,'(/a50)') 'In "AIwXE.inp" SS(kf) ne SS(ki)+1:' 
           write(*,'(/   4i5,   f12.3)') nX, ki, iSS1, iQS1, E(ki,nX)   
           write(*,'( i10, 2i5, f12.3)')     kf, iSS2, iQS2, E(kf,nX)  
-          PAUSE 'My STOP in consistency control, reading AIw.inp' 
+          CALL Pause1('My STOP in consistency control, reading AIw.inp') 
         endif
 
         EAI(ki,kf)= trEn  
@@ -614,7 +541,8 @@ c                    write(*,'(2i3, 7f10.4)') j, NCL, R2t(j), R3t(j)	  !@#$%%%%%
       read(14,'(a9)') empty  
 
       do k = 1, ntp 
-         if(nuBSst(k).lt.1) PAUSE 'STOP. Code assumes at least 1 BS..'
+         if(nuBSst(k).lt.1)
+     +   CALL Pause1('STOP. Code assumes at least 1 BS..')
          R1t(k)= R1t(k)/1.d4    ! [um] to [cm]   
          R2t(k)= R2t(k)/1.d4    ! [um] to [cm]   
          R3t(k)= R3t(k)/1.d4    ! [um] to [cm]   	   
@@ -718,7 +646,7 @@ c     write(*,'(/a20, i3)') 'LastFr =', LastFr
            char2int = 0
          CASE DEFAULT
            WRITE (*,*) symbol, ' not convertible into integer'
-           PAUSE 'STOPped in function char2int'
+           CALL Pause1('STOPped in function char2int')
         END SELECT
       END
 
@@ -740,7 +668,7 @@ c     write(*,'(/a20, i3)') 'LastFr =', LastFr
 c  Generic version: first only count the lines (same tests as below, nothing changed),
 c  then allocate the line arrays with MNLe = this number + 1
       lin= 0
-      do nX= 1, 1  ! nXE, Xx only, as below
+      do nX= 1, nXkin  ! nXE, Xx only, as below
         do k  = 1, NST(nX)
         do k2 = 2, NST(nX)
           if(k .eq. k2)                 cycle
@@ -755,7 +683,7 @@ c  then allocate the line arrays with MNLe = this number + 1
       CALL AllocLines(lin)
 
       linM4= 0
-      do nX= 1, 1  ! nXE, Xx only  ! count spectral lines between all ELs of each chem. element  !@#$%**********
+      do nX= 1, nXkin  ! nXE, Xx only  ! count spectral lines between all ELs of each chem. element  !@#$%**********
         lin= 0                     ! # of Spectral Line found in [hvmin*1.1, 0.9*hvmax]
         do k  = 1, NST(nX)  ! Lower state 
         do k2 = 2, NST(nX)  ! Upper state
@@ -787,13 +715,13 @@ c         Supress weak lines
 
       if(linM4.ge.MNLe) then
         write(*,'(a20,i6, a4,i6)') 'Increase MNLe=', MNLe, 'to', linM4 
-        PAUSE
+        CALL Pause1(' ')
       endif																															    
 
 c  Regulation according to "hvC" (thru all XE)
       do lnew = 1, linM4   ! It will be a Line# after regulation along hv (in the common line list for all XEs)
         hvCmin= 1.d7       ! arbitrary value before search
-        do nX = 1, 1       ! nXE, Xx only                                       !@#$%***************
+        do nX = 1, nXkin       ! nXE, Xx only                                       !@#$%***************
           do lw= 1, linM(nX)                  ! check all lines found in the range
             if(hvCh(lw,nX) .LT. hvCmin) then  ! for finding minimal hvC among all lines of all XEs
               hvCmin= hvCh(lw,nX)             ! smaller hvC found
@@ -869,7 +797,7 @@ Control of consistency:
          if(hvV(iv) .le. hvV(iv-1)) then
            write(*,'(a9,i7, a11, f14.7, a15, f14.7)') 'For iv =', iv, 
      +               'hvV(iv)=', hvV(iv),  '<= hvV(iv-1)=', hvV(iv-1)             
-           PAUSE 'Error #1 in hv sequence'	  
+           CALL Pause1('Error #1 in hv sequence')	  
          endif
       enddo
 
@@ -900,6 +828,11 @@ Control of consistency:
       real(8)  pBB(nvL), dev,
      +         FreE, EED, FWevDop, Voigt2, alfaFB,
      +         Velo, SigPhI, contrib, SiPh, SiRR, HalfLor, VoiFWHM
+      integer  nCh, ic, kEnd, kfEnd                    ! BF channel list
+      real(8)  EEDv
+      integer, allocatable :: chK(:), chKf(:)
+      real(8)  BEkEnd
+      real(8), allocatable :: chBE(:)
 
       if(.not. allocated(EmiLFul)) then  ! Generic version: MNLe is known only after LineList
         allocate(EmiLFul(MNLe), AbsoAm(MNLe), AlfaBB(MNLe), ArPBB(MNLe))
@@ -925,13 +858,14 @@ c  Full-shape BB EMISSIVITY and ABSORPTIVITY due to all lines;  Also Line Lorent
         EmiLFul(lw)= zero  ! In-Full-Shape Emissivity, W/cc/sr
         AbsoAm(lw) = zero  ! Amplitude of Absorptivity (16) except for *P(hv); i.e. [eV/cm], see (18)
 
-        if(hvC(lw) .LT. 1.1*hvMin) PAUSE 'Line with hvC < hvMin' 
-        if(hvC(lw) .GT. 0.9*hvMax) PAUSE 'Line with hvC > hvMax'
+        if(hvC(lw) .LT. 1.1*hvMin) CALL Pause1('Line with hvC < hvMin') 
+        if(hvC(lw) .GT. 0.9*hvMax) CALL Pause1('Line with hvC > hvMax')
 
         kU= nUp(lw)
         kL= nLo(lw)
         nX= nX3(lw)  ! nX3(lw) is XE# for this line 
-        if(KiSS(kU,nX).ne.KiSS(kL,nX)) PAUSE 'Confusion in SS of kU, kL'
+        if(KiSS(kU,nX).ne.KiSS(kL,nX))
+     +   CALL Pause1('Confusion in SS of kU, kL')
 
         if(kU.LT.Nnu(nX) .AND. BE(kU,nX,La).LT. 1.d-3) goto 1  ! skip line from non-AI dead EL
         if(kL.LT.Nnu(nX) .AND. BE(kL,nX,La).LT. 1.d-3) goto 1  ! skip line onto non-AI dead EL
@@ -1001,28 +935,66 @@ c                                                      	    To return these phot
 
 ******  BF absorptivity corrected for induced inverse process and FB emissivity, 
 ***                     Notations: (j,k) + hv --> (j+1, kf) + e , like in function "SigPhi" to be used
+c  Faster version (Nov 2026): all tests that do not depend on hv are made
+c  once per call, in the same k,kf order as before; the hv loop then runs
+c  only over the BF channels found (chK, chKf, chBE). The sums over the
+c  channels for each hv point are made in the same order, so the results
+c  are the same as with the old iv-k-kf loop.
+      nCh= 0
+      do nX = 1, nXkin   ! nXE, as in the hv loop below
+        do k = 1, NST(nX)
+          if(POPi(k,nX,La) .LT. 1.d-20)  cycle
+          do kf= 1, NST(nX)
+            if(POPi(kf,nX,La).LT.1.d-20) cycle
+            if(bra(k,kf,nX)  .LT. 0.5  ) cycle
+            nCh= nCh+1
+          enddo
+        enddo
+      enddo
+      allocate(chK(nCh), chKf(nCh), chBE(nCh))
+      nCh= 0
+      do nX = 1, nXkin
+        do k = 1, NST(nX)
+          if(POPi(k,nX,La) .LT. 1.d-20)  goto 9  ! Negligible contribution
+          j= KiSS(k,nX)
+          do kf= 1, NST(nX)
+            if(POPi(kf,nX,La).LT.1.d-20) goto 8
+            if(bra(k,kf,nX)  .LT. 0.5  ) goto 8  ! no channel; "bra" is 0 or 1 with FAC bases
+            if(KiSS(kf,nX)   .ne. j+1  )
+     +   CALL Pause1('Check j in BF abso')
+            if(Eth(k,kf) .LE. 0.) then
+               write(*,'(a20,3i5,f9.2, f5.1)') 'j, k, kf, bra, Eth=',
+     +                               j, k, kf, bra(k,kf,nX), Eth(k,kf)
+               STOP 'Eth < 0 while bra > 0.5'
+            endif
+            BEk= Eth(k,kf) - DPI(j,nX,La)        ! min hv required for (j,k)+hv --> (j+1,kf)+e photo-ionization
+            if(BEk .LT. 1.)              goto 8  ! We skip channel with BEk < 1eV because no reason to expect
+c                                                  scaling of from-FAC SigPhi over hv/BEk at so small BEk
+            nCh= nCh+1
+            chK(nCh) = k
+            chKf(nCh)= kf
+            chBE(nCh)= BEk
+  8         continue
+          enddo    ! kf
+  9       continue
+        enddo      ! k
+      enddo        ! nX
+      kEnd = k     ! values of k, kf, BEk as left by the old loop
+      kfEnd= kf
+      BEkEnd= BEk
+
       do iv= 1, nvM 
-        do nX = 1, 1   ! nXE    ! In this version of the code I excluded C,He, D from FBBF because they are excluded from AtKins, thus
+        do nX = 1, nXkin   ! nXE    ! In this version of the code I excluded C,He, D from FBBF because they are excluded from AtKins, thus
           absoBFx(iv,nX)= zero  ! contribution of one nX                             !@#$%*******************
           emisFBx(iv,nX)= zero  
-          do k = 1, NST(nX)  
-             if(POPi(k,nX,La) .LT. 1.d-20)  goto 7  ! Negligible contribution    
-             j= KiSS(k,nX)
-             do kf= 1, NST(nX)                       
-               if(POPi(kf,nX,La).LT.1.d-20) goto 6
-               if(bra(k,kf,nX)  .LT. 0.5  ) goto 6  ! no channel; "bra" is 0 or 1 with FAC bases 
-               if(KiSS(kf,nX)   .ne. j+1  )  PAUSE 'Check j in BF abso'
-               if(Eth(k,kf) .LE. 0.) then
-                  write(*,'(a20,3i5,f9.2, f5.1)') 'j, k, kf, bra, Eth=', 
-     +                               j, k, kf, bra(k,kf,nX), Eth(k,kf)        			 
-			    STOP 'Eth < 0 while bra > 0.5'
-               endif
-               BEk= Eth(k,kf) - DPI(j,nX,La)        ! min hv required for (j,k)+hv --> (j+1,kf)+e photo-ionization
-               if(BEk .LT. 1.)              goto 6  ! We skip channel with BEk < 1eV because no reason to expect 
-c                                                     scaling of from-FAC SigPhi over hv/BEk at so small BEk   
-               if(hvV(iv) .LT. BEk+1.d-6)   goto 6  ! hv cannot Photo-Ionize k  --> kf
+          do ic= 1, nCh                 ! BF channels (k,kf) in the old k,kf order
+               k  = chK(ic)
+               kf = chKf(ic)
+               BEk= chBE(ic)
+               if(hvV(iv) .LT. BEk+1.d-6)   cycle   ! hv cannot Photo-Ionize k  --> kf
                FreE = hvV(iv)- BEk                               ! energy of freed electron 
-               Ww= 1.46796094d-22*Dene(La)*EED(FreE)/sqrt(FreE)  ! We write "1.468" instead of "2.936../two" because 
+               EEDv= EED(FreE)                                   ! once; used twice below
+               Ww= 1.46796094d-22*Dene(La)*EEDv/sqrt(FreE)       ! We write "1.468" instead of "2.936../two" because 
 c                                                                  proved the error in (49), see comment in BlackFold
                alfaFB = Ww * (POPi(kf,nX,La)/g0(kf,nX))
      +                     / (POPi(k ,nX,La)/g0(k ,nX))
@@ -1032,26 +1004,27 @@ c                                                                  proved the er
                absoBFx(iv,nX)= absoBFx(iv,nX) + contrib               ! (50), this XE
 
 c  FB EMISSION due to RR onto ions of current nX:  (SS=j+1,kf) + e  --> (j,k) + hv   
-		  	 
+
                Velo= 5.93096887d7*sqrt(FreE)               ! Velocity of free electron = sq(2k*E/m); cm/s  
                SiRR= SiPh *g0(k ,nX)* hvV(iv)**2 /        
      +                    (g0(kf,nX)* FreE* 1.02199815d6)  ! (39); 1.022 MeV== 2mc^2, see mo1co2feb.for 9 digits 
 
                contrib= Dene(La)*Den(nX,La)*POPi(kf,nX,La)*       ! (34), (28): one kf-->k channel to (37) sum
-     +                  BolJ*hvV(iv)* Velo*EED(FreE) *SiRR/FoPi   ! SigRR is expressed via "SigPhi"
- 								   
+     +                  BolJ*hvV(iv)* Velo*EEDv *SiRR/FoPi        ! SigRR is expressed via "SigPhi"
+
                emisFBx(iv,nX)= emisFBx(iv,nX) + contrib    ! k,kf Sum (37) for this XE, [W/cc/sr/eV] 
-  6          continue
-             enddo    ! kf
-  7        continue  
-           enddo      ! k  			   
+          enddo      ! ic
         enddo         ! nX  
       enddo           ! iv 
+      k  = kEnd
+      kf = kfEnd
+      BEk= BEkEnd
+      deallocate(chK, chKf, chBE)
 
       absoBF= zero   
       emisFB= zero 
 	  
-      do nX = 1, 1    ! nXE ! Excluded C,D,He from FBBF               	!@#$%***************
+      do nX = 1, nXkin    ! nXE ! Excluded C,D,He from FBBF               	!@#$%***************
          do iv= 1, nvM                   
             emisFB(iv) = emisFB(iv) + emisFBx(iv,nX)   ! W/cc/sr/eV;  
             absoBF(iv) = absoBF(iv) + absoBFx(iv,nX)   ! 1/cm
@@ -1669,14 +1642,14 @@ ccccc                       write(*,'(a45)') 'Out from PowYie'     !@#$%********
       tiS= ti*Scale
       tfS= tf*Scale
 
-      if(nX .ne. 1) PAUSE ' Came to the rate eqs with nX=/= 1'   ! with this DaBa it must be X only; 
+      if(nX .ne. 1) CALL Pause1(' Came to the rate eqs with nX=/= 1')   ! with this DaBa it must be X only; 
 
 ccccc                      write(*,'(a35, i2)') 'Came to D02EAF, La=', La     !@#$%********************
       CALL D02EAF(tiS, tfS, NST(nX), POP, tolD02, POPdot, WEAF, Nwork,  
      +            ifail) 
 ccccc                      write(*,'(a35, i2)') 'Out from D02EAF, La=', La    !@#$%********************
 
-      if(ifail.ne.0) PAUSE 'ifail =/= 0 in d02. My STOP'  
+      if(ifail.ne.0) CALL Pause1('ifail =/= 0 in d02. My STOP')  
 	
 Consistency Control of POPs obtained:
       SumP= zero 
@@ -1685,7 +1658,7 @@ Consistency Control of POPs obtained:
           write(*,'(a36, i4, a29)') 'After d02 found POP on dead lev#',
      +    k, ', which has BE, POP and POPi ='
           write(*,'(f9.4, 2e11.3)')  BE(k,nX,La), POP(k), POPi(k,nX,La)	  
-	    PAUSE 'POP in dead EL'
+	    CALL Pause1('POP in dead EL')
         endif       
 
 	  if(POP(k).lt.-1.d-9) then                       ! Note: NAG d02 with "tolD02"= 1.d-7 at some t-step gave |sumPOP - 1| = 1.e-8   
@@ -1700,7 +1673,7 @@ Consistency Control of POPs obtained:
       if (abs(SumP-one) .gt. 1.d-5) then 	     
           write( *,'(/a68, 1pe9.1)')  'My STOP after d02 because SumPOPs
      + differs MUCH from 1, namely, by',  SumP-one 
-          PAUSE
+          CALL Pause1(' ')
       endif
 
 Correction of POPs to SUM==1
@@ -1710,7 +1683,8 @@ Correction of POPs to SUM==1
          sum1= sum1 + POP(k)
       enddo
 c        write(*,'(a35,1pe10.2)') 'Corrected: SumPOPs-1 =', Sum1-one 
-      if(abs(Sum1-one).gt. 1.d-14) PAUSE 'insufficientR correction'
+      if(abs(Sum1-one).gt. 1.d-14)
+     +   CALL Pause1('insufficientR correction')
 
 c  save 1D arrays POP(k) and BE(k) [computed for "tf"] in 3D arrays for loading in POP and BE in 
 c                                 Scenario of next "ti" == present "tf" for proper "La" and "XE" 
@@ -1749,7 +1723,8 @@ c                                 Scenario of next "ti" == present "tf" for prop
         SpheR= ( 3.*(jSS-1)/FoPi/Dene(La) )**third    ! [cm], jSS-1 is the charge of ion, see Manual (A.2)         
         DPI(jSS,nX,La)= 2.*RyeV *jSS *a0/SpheR        ! [eV], Manual (A.5). 
         PIR(jSS,nX,La)= PI(jSS,nX) - DPI(jSS,nX,La)         
-        if(PIR(jSS,nX,La) .LT. PI(jSS,nX)/2.)	PAUSE '  PIR too low.'
+        if(PIR(jSS,nX,La) .LT. PI(jSS,nX)/2.)
+     +   CALL Pause1('  PIR too low.')
       enddo    
 
       write(540+La,'(f7.2, f7.3, 20e10.4)') ti*1.d12, Te(La)/1000.,    
@@ -1888,8 +1863,10 @@ c                                          This is Level Stark width due to ALL 
       integer li, qU, qL   
       qU= nUp(li)   
       qL= nLo(li)
-      if( nX3(li) .ne. nX)  PAUSE  'Why CALLed from line of other XE ?' 
-      if(KiSS(qU,nX) .ne. KiSS(qL,nX)) PAUSE 'Line betw ELs of dif SpSs'	 
+      if( nX3(li) .ne. nX)
+     +   CALL Pause1('Why CALLed from line of other XE ?') 
+      if(KiSS(qU,nX) .ne. KiSS(qL,nX))
+     +   CALL Pause1('Line betw ELs of dif SpSs')  
 
       FWevLor(li,La)= abs(LvJW(La,nX,qU) - LvJW(La,nX,qL))                ! eV;  Reduced-Stark part of Lor FWHM of future Voigt FWHM
       if(pqn(qU,nX) .eq. pqn(qL,nX)+1) FWevLor(li,La)= FWevLor(li,La)/2.  ! Jenya's empiric (?) correction (3.51) for close pqn
@@ -1932,13 +1909,13 @@ CHECK   "BE" and POPs < 0
         if(abs(BE(k,nX,La) +13.d0) .lt. 3.d-7) then  ! means "BE' remained initial "-13" 
 	    write(*,'(2(a9,i4), a33)')
      +         'EL#', k, 'of XE#', nX, 'not given binding energy BE(k)'
-		PAUSE
+		CALL Pause1(' ')
         endif
 
         if(POPi(k,nX,La).lt.-1.d-9) then
            write(*,'(a46, i2, i5)')    
      +         'In BE-check found POP < -1.d-9 in XE, k=', nX, k 
-           PAUSE 'My STOP'
+           CALL Pause1('My STOP')
         endif
       enddo
 
@@ -2040,7 +2017,7 @@ c                                       For convenience of computations I gave t
         do kf= 1, NST(nX)       
           if(bra(k,kf,nX).LT. 0.5)  goto 2  ! no inz/rec channel; "bra" is 0 or 1 with FAC bases 
           if(BE(kf,nX,La).LT.1.d-3) goto 2  ! dead "kf". Possible only for non-AI EL.: Nucl and AI ELs have BE= 77777, see comment 6 lines above
-          if(KiSS(kf,nX).ne.j+1)    PAUSE    'SS error in WI'
+          if(KiSS(kf,nX).ne.j+1)    CALL Pause1('SS error in WI')
 
           BEk= Eth(k,kf) -DPI(j,nX,La)      ! ionization energy for "(j,k) + e --> (j+1,kf) +2e"   
           if(BEk .GT. 0.99*upTB)    goto 1  ! BEk too big for e-impact ioniz at present Te: see limits of D01ahf integral below.  
@@ -2131,7 +2108,7 @@ c                                              E(kAI) - E(k) taken relative to c
 c                                                                Thus EAI(kAI,k) = E(kAI) - [PI(j-1) + E(k)]. 
 c                                              Plasma reduces PI to PIR thus Ejm = E(kAI) - [PI(j-1)-DPI(j-1) + E(k)] =
 c                                                                                  EAI(kAI,k) + DPI(j-1,nX,La). Griem3 p.178  
-          if(Ejm .le. 0.) PAUSE 'In compu WDC met Ejm < 0'
+          if(Ejm .le. 0.) CALL Pause1('In compu WDC met Ejm < 0')
 
           wFac= 4.d0*(pin*a0**2*RyeV/Te(La))**1.5 
           rate= wFac* (g0(kAI,nX)/g0(k,nX)) 
@@ -2284,15 +2261,19 @@ c      close(342)
       implicit none
       real(8) eeV, xw, yw, OM       ! Collision Strength (Omega)
 
-  	if(nX .NE. 1  )          PAUSE ' Came in SigInz with nX =/= 1'
-      if(bra(k,kf,nX).LT. 0.5) PAUSE ' How did you get in SigInz?'    ! FAC "InzXE....inp" has no coefs for SigPhi in this channel 
+        if(nX .NE. 1  )
+     +   CALL Pause1(' Came in SigInz with nX =/= 1')
+      if(bra(k,kf,nX).LT. 0.5)
+     +   CALL Pause1(' How did you get in SigInz?')    ! FAC "InzXE....inp" has no coefs for SigPhi in this channel 
   	if(eeV.LT. BEk ) then
         write(*,'(a23, 4i4, 2e15.7)') 'XE, j, k, kf, E, BEk =', 
      +                                 nX, j, k, kf, eeV, BEk 
-                          PAUSE '  Came in SigInz with Ee < BEk' 
+                          CALL Pause1('  Came in SigInz with Ee < BEk') 
       endif
-      if(j.ne.KiSS(k,nX)) PAUSE ' Came in SigInz with j =/= KiSS(k)'    ! j is input of this func
-      if(k.eq.Nnu(nX))    PAUSE ' STOPped because came to ionize nucl.'
+      if(j.ne.KiSS(k,nX))
+     +   CALL Pause1(' Came in SigInz with j =/= KiSS(k)')    ! j is input of this func
+      if(k.eq.Nnu(nX))
+     +   CALL Pause1(' STOPped because came to ionize nucl.')
 
       xw= eeV/BEk                                                      
       yw= one - BEk/eeV                            ! MF Gu 
@@ -2327,13 +2308,15 @@ c        therefore I restrict "SigInz", "SigPhi", no need in restricting recombi
       use mo1co2feb                ! function "SigPhi" for nX, k, kf, BEk from call
 	implicit none      
 	real(8) hv, xw
-  	if(nX .ne. 1  )          PAUSE 'Came in SigPhi with nX =/= 1'
-      if(bra(k,kf,nX).LT. 0.5) PAUSE 'Came in SigPhi with bra < 0.5' ! FAC "InzXE....inp" has no coefs for SigPhi in this channel 
+        if(nX .ne. 1  )
+     +   CALL Pause1('Came in SigPhi with nX =/= 1')
+      if(bra(k,kf,nX).LT. 0.5)
+     +   CALL Pause1('Came in SigPhi with bra < 0.5') ! FAC "InzXE....inp" has no coefs for SigPhi in this channel 
   	if(hv .LE. BEk) then
          write(*,'(/a40, 2i5, 2f12.3, e11.2)') 
      +          'In func SigPhi: k, kf, BEk, hv =',           
      +           k, kf, BEk, hv 
-         PAUSE 'i.e. came in SigPhi with hv < BEk'
+         CALL Pause1('i.e. came in SigPhi with hv < BEk')
       endif
 
       xw = hv/BEk
@@ -2380,19 +2363,19 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
       Es= Ex(k,kf)
       Fs= Fx(k,kf)
       Me= MthdEX(k,kf)
-      if(KiSS(k,nX) .ne. j) PAUSE 'In SigExc: wrong SS'
+      if(KiSS(k,nX) .ne. j) CALL Pause1('In SigExc: wrong SS')
 
       if(DE.LE.zero) then   
         write(*,'(a40, 3i5,f15.4)') 'DE <= 0 in SigExc; XE, k, kf, DE=', 
      +                                                  nX, k, kf, DE
-        PAUSE 
+        CALL Pause1(' ')
       endif 
 
       X= eeV/DE      
       if(X.LT.1.) then
         write(*,'(a40, 3i5, f9.4)') 'X < 1 in SigExc; XE, k, kf, DE=', 
      +                                                nX, k, kf, DE 
-        PAUSE
+        CALL Pause1(' ')
       endif      
       X2= X*X
 
@@ -2472,6 +2455,12 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
      +  -.2565551E-4,.7228775E-4,-.1933631E-3,.4899520E-3, -.001173267,
      + .2648762E-2, -.005623190, .01119601, -.02084976, .03621573,
      + -.05851412, .08770816, -.121664, .15584, -.184, .2/
+c  Faster version (Nov 2026): the tables RI, HN, D0-D4 are constants; they
+c  were recomputed in every call, now only in the first one (same values).
+      logical TabOK
+      save    RI, HN, D0, D1, D2, D3, D4, TabOK
+      DATA TabOK /.false./
+      if(.not. TabOK) then
       DO I= 1,15
         RI(I)=-I/2.
       ENDDO
@@ -2487,6 +2476,10 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
         D3(I)=(HN(I)*D2(I)+D1(I))/RI(3)
         D4(I)=(HN(I)*D3(I)+D2(I))/RI(4)
       ENDDO
+        TabOK = .true.
+      endif
+      I = 26   ! module variable I as left by the DO I=1,25 loop above in every call before
+
 104   IF (X-5.) 105,112,112
 105   IF (Y-1.) 110,110,106
 106   IF (X.GT.1.85*(3.6-Y)) GO TO 112
@@ -2618,7 +2611,7 @@ c           PAUSE
            close(341)
            write(*,'(//a55)') 
      +	   'My STOP:  POP(k)*PM(k,kf) > 10^17; see "Happened.dat"' 
-           PAUSE
+           CALL Pause1(' ')
         endif
       enddo
       enddo
@@ -2749,3 +2742,33 @@ c                  DenI(La) is total (all-XE) ion density [i/cc] in the Layer (o
       Return
       END     ! Scenario	   
 
+
+
+      SUBROUTINE Pause1(msg)  ! replaces the old PAUSE 'msg' statements (Nov 2026)
+c  Same behavior as PAUSE in gfortran: prints the message and waits for "go";
+c  any other input, or no keyboard (end of input), stops the program.
+c  In addition the message is appended to Warnings.log with time and zone, and
+c  the stop sets exit code 1 (PAUSE stopped with code 0, as a normal end).
+      use mo1co2feb, only: ti, La
+      implicit none
+      character(*) msg
+      character(8) ans
+      integer iu, ios
+      open(newunit=iu, file='Warnings.log', position='append',
+     +     iostat=ios)
+      if(ios.eq.0) then
+        write(iu,'(a,1pe11.4,a,i2,2a)') ' ti=', ti, ' s, zone', La,
+     +        ':  PAUSE ', trim(msg)
+        close(iu)
+      endif
+      write(0,'(2a)') 'PAUSE ', trim(msg)
+      write(0,'(a)') 'To resume execution, type go.  '//
+     +               'Other input will terminate the job.'
+      ans = ' '
+      read(*,'(a)',iostat=ios) ans
+      if(ios.ne.0 .or. ans(1:2).ne.'go') then
+        write(0,'(a)') 'Stopped at PAUSE, see Warnings.log'
+        STOP 1
+      endif
+      write(0,'(a)') 'RESUMED'
+      END SUBROUTINE Pause1

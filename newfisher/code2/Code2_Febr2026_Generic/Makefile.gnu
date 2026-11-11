@@ -9,12 +9,18 @@
 #   all (default)  - build $(EXE)
 #   debug          - build with bounds checking and backtrace
 #   run            - build and run in this folder (needs the *.inp files here)
-#   clean          - remove objects, .mod files and the executable
+#   clean          - remove objects, .mod files and the executables
+#   tests          - build the test programs test_unit, test_step
+#   test           - build and run tests T1 + T2 (needs python), ~3 min
+#   test-e2e       - run test T3 (3 time steps of the real program, Kr and Ge)
+#   test-all       - T1 + T2 + T3
 #
 # Sources:
 #   mo1co2feb.for            - module; element-dependent arrays are ALLOCATABLE,
 #                              AllocArrays/AllocLines allocate them at run time
-#   Co2feb26_GNU.for         - Co2feb26.for with two tab-started continuation lines
+#   Co2feb26_main.for, Co2feb26_procs.for - main program and all procedures of
+#                              Co2feb26_GNU.for (split for tests); the GNU port is
+#                              Co2feb26.for with two tab-started continuation lines
 #                              (421, 2438) rewritten as standard column-6 continuations,
 #                              and CALL FixLeadingZeros() before the final STOP;
 #                              CALL AllocArrays() at start, line count + AllocLines in LineList
@@ -28,6 +34,7 @@ ifeq ($(FC),f77)
 endif
 
 ifeq ($(OS),Windows_NT)
+  EXEEXT  := .exe
   EXE     := Co2feb26_Generic.exe
   # Static link: the .exe runs on any Windows PC without the MinGW DLLs
   LDSTATIC := -static
@@ -47,10 +54,12 @@ LDFLAGS ?= $(LDSTATIC)
 MOD_OBJ  := mo1co2feb.o
 NAG_OBJ  := nag_replacements_Co2_GNU.o
 LZ_OBJ   := lzfix_Co2_GNU.o
-MAIN_OBJ := Co2feb26_GNU.o
-OBJS     := $(MOD_OBJ) $(NAG_OBJ) $(LZ_OBJ) $(MAIN_OBJ)
+PROC_OBJ := Co2feb26_procs.o
+MAIN_OBJ := Co2feb26_main.o
+LIB_OBJS := $(MOD_OBJ) $(NAG_OBJ) $(LZ_OBJ) $(PROC_OBJ)
+OBJS     := $(LIB_OBJS) $(MAIN_OBJ)
 
-.PHONY: all debug run clean
+.PHONY: all debug run clean tests test test-e2e test-all
 
 all: $(EXE)
 
@@ -68,12 +77,43 @@ $(NAG_OBJ): nag_replacements_Co2_GNU.f90 $(MOD_OBJ)
 $(LZ_OBJ): lzfix_Co2_GNU.f90
 	$(FC) $(FFLAGS) -c $< -o $@
 
-$(MAIN_OBJ): Co2feb26_GNU.for $(MOD_OBJ)
+$(PROC_OBJ): Co2feb26_procs.for $(MOD_OBJ)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(MAIN_OBJ): Co2feb26_main.for $(MOD_OBJ)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 debug:
 	$(MAKE) -f Makefile.gnu clean
 	$(MAKE) -f Makefile.gnu FFLAGS="-O0 -g -fcheck=bounds -fbacktrace $(FFLAGS_COMMON)"
+
+# ---- tests (see tests/run_tests.py and PLAN_refactoring_speed.md)
+TEST_IO   := tests/testio.o
+tests: test_unit$(EXEEXT) test_step$(EXEEXT) $(EXE)
+
+$(TEST_IO): tests/testio.f90
+	$(FC) $(FFLAGS) -Jtests -c $< -o $@
+
+tests/test_unit.o: tests/test_unit.f90 $(TEST_IO) $(MOD_OBJ)
+	$(FC) $(FFLAGS) -Itests -c $< -o $@
+
+tests/test_step.o: tests/test_step.f90 $(TEST_IO) $(MOD_OBJ)
+	$(FC) $(FFLAGS) -Itests -c $< -o $@
+
+test_unit$(EXEEXT): tests/test_unit.o $(TEST_IO) $(LIB_OBJS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
+
+test_step$(EXEEXT): tests/test_step.o $(TEST_IO) $(LIB_OBJS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
+
+test: tests
+	python tests/run_tests.py
+
+test-e2e: tests
+	python tests/run_tests.py e2e
+
+test-all: tests
+	python tests/run_tests.py all
 
 run: $(EXE)
 	./$(EXE)
@@ -81,8 +121,8 @@ run: $(EXE)
 # Works both when make uses cmd.exe and when it uses sh (Git Bash / MSYS / Linux)
 ifeq ($(shell echo %OS%),%OS%)
 clean:
-	rm -f *.o *.mod $(EXE)
+	rm -f *.o *.mod $(EXE) tests/*.o tests/*.mod test_unit$(EXEEXT) test_step$(EXEEXT)
 else
 clean:
-	-del /Q *.o *.mod $(EXE) 2>nul
+	-del /Q *.o *.mod $(EXE) tests\*.o tests\*.mod test_unit$(EXEEXT) test_step$(EXEEXT) 2>nul
 endif
