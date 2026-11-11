@@ -1975,13 +1975,12 @@
       use mo1co2feb  ! In each W-matrix, first index shows INITIAL EL of the transition.
       implicit none
       integer  kAI  ! mw,
-      real(8)  pv(nvL), freq, Wave, DEJ, BemHz, Bem, Bab, dev, AbSpIn, &
+      real(8)  pvq(nvL), freq, Wave, DEJ, BemHz, Bem, Bab, dev, AbSpIn, &
      &         rate, Ejm, wFac, D01ahf, EED, eeV, Sca, hvw, fun, &
      &         FWevDop, Voigt2, ArPv, SigPhiA, SiPhi, SiRR, probPhi, &
      &         probRR, probIRR, dEe, Velo
 
       external FVSinz, FVSmi, FVStbr, FVSex, FVSdx  ! functions mentioned by name (no argument) in d01
-      save pv  ! (Nov 2026) explicit: was static only because of its size
 
       WI  = zero
       WEX = zero
@@ -1996,10 +1995,15 @@
 
 !      write(*,'(a50,2i3)') 'inside subr Ws, La,nX=', La, nX
 
-      pv(1) = zero  ! pv(1) is used below (iv=2) but never set: was 0 only as static memory
       CALL TimOn(15)
 !** Probability of bound-bound INDUCED transition down (emission) and up (absorption): Wind(U,L) and Wab(L,U)
+!  (Nov 2026) OpenMP: the lines are shared between threads; each line writes only its
+!  own WInd(kU,kL) and Wab(kL,kU), and pvq is a private profile array of each thread.
+!$omp parallel do default(shared) schedule(dynamic,16) &
+!$omp   private(lw, freq, Wave, DEJ, BemHz, Bem, Bab, FWevDop, ArPv, iv, pvq, dev, AbSpIn) &
+!$omp   lastprivate(kU, kL, Wing, dhv)
       do lw= 1, linM4  ! loop over all spectral lines
+         pvq(1) = zero  ! pvq(1) is used below (iv=2); before, pv(1) was 0 only as static memory
          if( nX3(lw) .ne. nX) cycle  ! skip lines of another XE
          kU= nUp(lw)
          kL= nLo(lw)
@@ -2018,14 +2022,14 @@
          Wing   = hvC(lw)*0.3  ! Line Wing hv-Length [eV]; under-shape area will be re-norm to 1.
          ArPv   = zero
          do iv  = 2, nvM
-           pv(iv) = zero
+           pvq(iv) = zero
            if(hvV(iv).GT. hvC(lw)-Wing .and. &
      &        hvV(iv).LT. hvC(lw)+Wing)     then
                 dev = abs(hvV(iv) - hvC(lw))
-                pv(iv) = Voigt2(FWevLor(lw,La), FWevDop, hvC(lw), dev)  ! [after column 72, ignored:] ! JQSRT (Sawa) Voigt. It is slower (5x ?? than Jenya's VoigtJS) but correct to 1%
+                pvq(iv) = Voigt2(FWevLor(lw,La), FWevDop, hvC(lw), dev)  ! [after column 72, ignored:] ! JQSRT (Sawa) Voigt. It is slower (5x ?? than Jenya's VoigtJS) but correct to 1%
            endif
            dhv  = hvV(iv)-hvV(iv-1)
-           ArPv = ArPv + dhv* (pv(iv)+pv(iv-1))/2.  ! Area under shape < 1 because of the line wings cut; thus part of photons lost.
+           ArPv = ArPv + dhv* (pvq(iv)+pvq(iv-1))/2.  ! Area under shape < 1 because of the line wings cut; thus part of photons lost.
 !                                                   ! To return them, the cut shape will be re-norm to Integ[pBB(v)dv] = 1
          enddo  ! iv
 !         if(ArPv .LT. 0.5 .and. ti .GT. strt+3.*tstep)
@@ -2037,11 +2041,14 @@
          AbSpIn = zero  ! v-integral of {dv*p(v)*SpInEff(v)} [W/eV/cm2/sr]
          do iv = 2, nvM
             dhv= hvV(iv)-hvV(iv-1)
-            AbSpIn= AbSpIn + dhv*	SpInEf(La,iv)*pv(iv)/ArPv  ! "ArPv" renorm no-wings under-shape area to 1.
+            AbSpIn= AbSpIn + dhv*	SpInEf(La,iv)*pvq(iv)/ArPv  ! "ArPv" renorm no-wings under-shape area to 1.
          enddo
          WInd(kU,kL)= Bem*AbSpIn
          Wab (kL,kU)= Bab*AbSpIn
       enddo  ! lw
+!$omp end parallel do
+      lw = linM4 + 1  ! module lw, iv as left by the old serial loop
+      iv = nvM + 1
 
 !      write(*,'(a50,2i3)') 'Passed lw-loop, La,nX=', La, nX
 
@@ -2051,6 +2058,12 @@
       if(bp(La).gt.1.d-7) upTB= 10*Te(La) +bc(La) +3.*bw(La)
 
 !*****    One-electron Ionization-Recombination Loop:  (SS=j, k) + e  <--> (j+1, kf) + 2e
+!  (Nov 2026) OpenMP: the initial levels k are shared between threads; each (k,kf)
+!  writes only its own elements of WI, WTB, WPhI, WRR, WiRR; the integration context
+!  cK, cKf, cJ, cBE of D01AHF is threadprivate.
+!$omp parallel do default(shared) schedule(dynamic,1) &
+!$omp   private(k, kf, j, BEk, rate, NPTS, rer, Ifail, probPhi, probRR, probIRR, iv, hvw, &
+!$omp           SiPhi, dhv, eeV, dEe, Velo, SiRR, Sca, fun) firstprivate(Nlim)
       do k= 1, NST(nX)
         if(k .eq. Nnu(nX))       cycle  ! no ioniz of nucl, no recomb in nucl
         if(BE(k,nX,La).LT.1.d-3) cycle  ! dead "k". It can be only non-AI "k" because Nucl and AI ELs cannot get BE < 0 by lowering of continuum
@@ -2111,10 +2124,15 @@
         enddo  ! kf.
   3     continue
       enddo  ! k.  Closed ioniz/recomb loop
+!$omp end parallel do
+      k = NST(nX) + 1  ! module k as left by the old serial loop
 
       CALL TimOff(16)
       CALL TimOn(17)
 !*****  Excitation Probability matrix WEX(k,kf).  Notation (j,k) --> (j, kf>k)
+!  (Nov 2026) OpenMP over k, as above: each (k,kf) writes only WEX(k,kf) and WDX(kf,k)
+!$omp parallel do default(shared) schedule(dynamic,1) &
+!$omp   private(k, kf, j, DE, rate, npts, rer, Ifail) firstprivate(Nlim)
       do k= 1, NST(nX)
         if(BE(k,nX,La).LT.1.d-3) goto 5  ! dead EL. It can be only non-AI EL.: Nucl and AI ELs are "never dead"
 !                                          because I gave them BE= 77777.in subr "BEvPr" and it never changes.
@@ -2146,6 +2164,8 @@
         enddo  ! kf
   5     continue
       enddo  ! k
+!$omp end parallel do
+      k = NST(nX) + 1
 
       CALL TimOff(17)
       CALL TimOn(18)
@@ -2547,6 +2567,8 @@
       save    RI, HN, D0, D1, D2, D3, D4, TabOK
       DATA TabOK /.false./
       if(.not. TabOK) then
+!$omp critical (voigt_tables)   ! (Nov 2026) the first call may come from several threads
+      if(.not. TabOK) then
       DO I= 1,15
         RI(I)=-I/2.
       ENDDO
@@ -2563,6 +2585,8 @@
         D4(I)=(HN(I)*D3(I)+D2(I))/RI(4)
       ENDDO
         TabOK = .true.
+      endif
+!$omp end critical (voigt_tables)
       endif
 
 104   IF (X-5.) 105,112,112
@@ -2629,7 +2653,9 @@
       use mo1co2feb  ! matrix PM(k,kf) and EL de-population rate Wout(k); also dZ/dt
       implicit none
       Wout = zero  ! Wout(k) is Total depletion rate of 'k' into all 'kf'=/='k'
+!  (Nov 2026) OpenMP over k: each k sums its own Wout(k) over kf in the old order
 !                         must be 1D for d02
+!$omp parallel do default(shared) schedule(static) private(k, kf)
       do k = 1, NST(nX)
         if(BE(k,nX,La) .lt. 1.d-3)    goto 3  ! dead 'k'
         do kf = 1, NST(nX)  ! to all acceptors
@@ -2650,8 +2676,10 @@
         enddo
   3   continue
       enddo  ! k
+!$omp end parallel do
 
       PM= zero  !  Probability matrix PM(k,kf) is a sum over ALL k --> kf channels
+!$omp parallel do default(shared) schedule(static) private(k, kf)
       do k = 1, NST(nX)
         if(BE(k,nX,La) .lt. 1.d-3)    cycle  ! dead 'k'
         do kf = 1, NST(nX)
@@ -2664,6 +2692,9 @@
      &               +  WEX(k,kf) +  WDX(k,kf)  +  WDC(k,kf)
         enddo  ! kf
       enddo  ! k
+!$omp end parallel do
+      k = NST(nX) + 1  ! module k, kf as left by the old serial loops
+      kf = NST(nX) + 1
 
 !  For suspicious  POP(k)*PM(k,kf) > 10^17  or
 !                  POP(k)*Wout(k)  > 10^17  print details in "Happened.dat", file (341
