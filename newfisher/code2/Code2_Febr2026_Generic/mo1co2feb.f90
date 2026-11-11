@@ -226,7 +226,7 @@
      &   hvPrint4(diLOSn), &  ! [eV] hard edges of
      &   PDsign(nPD), &
      &   PowDet, &
-     &   wBS, diBSs, &  ! mean distance between centers of neibouring BS.	(II.1a)
+     &   diBSs, &  ! mean distance between centers of neibouring BS.	(II.1a)
      &   dc, &  ! distance from center of test BS to surface of core, Fig.3.
      &   tiInf, &  ! time to display "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat", "AlongCeLOS.dat"
      &   domNu, &  ! number of domains in array of photon energy points, hvV(iv)
@@ -250,7 +250,6 @@
      &   ReduReso, ReReiv, &
      &   R1, R2, R3, &  ! [cm] more practical than "CeR(La)"; t-dependent
      &   L1, L2, L3, &
-     &   So1, So2, So3, &
      &   ta1, ta2, ta3, &
      &   uTi, nDE, &  ! [cm/s] mean thermal velo of ion
      &   FrL, &  ! duration of x-ray frame;

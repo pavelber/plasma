@@ -844,7 +844,7 @@
       real(8), allocatable, save :: EmiLFul(:), AbsoAm(:), &  ! (MNLe) Amplitude of bound-bound (BB) emissivity and absorptivity
      &         AlfaBB(:), &  ! (MNLe) (nU/gU)/(nL/gL)
      &         ArPBB(:)  ! (MNLe)
-      real(8)  pBB(nvL), dev, &
+      real(8)  dev, pq, pq0, area, &
      &         FreE, EED, FWevDop, Voigt2, alfaFB, &
      &         Velo, SigPhI, contrib, SiPh, SiRR, HalfLor, VoiFWHM
       integer  nCh, ic  ! BF channel list
@@ -853,7 +853,7 @@
       real(8)  EEDv
       integer, allocatable :: chK(:), chKf(:)
       real(8), allocatable :: chBE(:)
-      save pBB  ! (Nov 2026) explicit: was static only because of its size
+      integer, allocatable :: ivLo(:), ivHi(:)  ! wing range of each line on the hv grid
 
       if(.not. allocated(EmiLFul)) then  ! Generic version: MNLe is known only after LineList
         allocate(EmiLFul(MNLe), AbsoAm(MNLe), AlfaBB(MNLe), ArPBB(MNLe))
@@ -923,37 +923,59 @@
 
       CALL TimOn(9)
       if(ti .LT. (strt+2*tstep)) goto 2
-      pBB(1)= zero  ! pBB(1) is used below but never set: was 0 only as static memory
       absoBB= zero  ! local plasma bound-bound absorption coef corre for stimulated emission [1/cm], XE-sum, line sum
       emisBB= zero  ! local plasma BB emissivity   [W/cc/sr/eV]
+!  (Nov 2026) OpenMP, in two parallel passes; the result is the same as with the old
+!  single loop over the lines, bit for bit:
+!  1) over the lines: area ArPBB(lw) under the cut Voigt profile (sum over iv in the old
+!     order) and the range ivLo..ivHi of hv points inside the wings of the line;
+!  2) over the hv points: the contributions of the lines, in the old order of lw.
+!     Outside the wings the profile is 0 and its contribution is exactly 0, so it is
+!     not added.
+      allocate(ivLo(linM4), ivHi(linM4))
+!$omp parallel do default(shared) schedule(dynamic,16) &
+!$omp   private(lw, iv, FWevDop, Wing, dev, pq, pq0, dhv, area)
       do lw= 1, linM4  ! each "hvV(iv)" may include contributions from many lines because of their long wings.
-         nX = nX3(lw)
-         kU = nUp(lw)
-         kL = nLo(lw)
-
-         FWevDop= FWkVcGAU(La,nX)*hvC(lw)
+         FWevDop= FWkVcGAU(La,nX3(lw))*hvC(lw)
          Wing   = hvC(lw)*0.3  ! Line Wing hv-Length [eV]
-         ArPBB(lw) = zero  ! Area under line shape pBB(v), was =1 until wings cut
+         ivLo(lw)= 0
+         ivHi(lw)= -1
+         area = zero  ! Area under line shape pBB(v), was =1 until wings cut
+         pq0  = zero  ! profile at the previous point (0 at iv=1)
          do iv= 2, nvM
-           pBB(iv) = 0.
+           pq = 0.
            if(hvV(iv).GT. hvC(lw)-Wing .and. &
      &        hvV(iv).LT. hvC(lw)+Wing       ) then
                 dev = abs(hvV(iv) - hvC(lw))
-                pBB(iv) = Voigt2(FWevLor(lw,La), FWevDop, hvC(lw), dev)  ! [after column 72, ignored:] ! JQSRT (Sawa) Voigt. It is slower (5x ?? than Jenya's VoigtJS) but correct to 1%
+                pq = Voigt2(FWevLor(lw,La), FWevDop, hvC(lw), dev)  ! JQSRT (Sawa) Voigt
+                if(ivLo(lw).eq.0) ivLo(lw)= iv
+                ivHi(lw)= iv
            endif
            dhv = hvV(iv)-hvV(iv-1)
-           ArPBB(lw)= ArPBB(lw) + dhv*(pBB(iv)+pBB(iv-1))/2.  ! Area under line shape < 1 because of shortened wings; thus part of photons lost.
-!                                                      	    To return these photons, the cut shape is re-norm (10 lines below) to Integ[pBB(v)dv] = 1
+           area= area + dhv*(pq+pq0)/2.  ! Area under line shape < 1 because of shortened wings; thus part of photons lost.
+           pq0 = pq
          enddo  ! iv
-         if(ArPBB(lw) .LT. 0.2) cycle  ! Lines in "continuum domains" may vave small "ArPBB(lw)" because of not-small dv/v in the hv array
-
-         do iv= 1, nvM
-           emisBB(iv)= emisBB(iv)+ EmiLFul(lw) *pBB(iv) &  ! BB emissivity [W/cc/sr/eV] DUE TO ALL lines of this XE, at hvV(iv)
-     &                                       /ArPBB(lw)  ! return photons from cut wings
-           absoBB(iv)= absoBB(iv)+ AbsoAm(lw)  *pBB(iv) &  ! [eV/cm]*[1/eV] = 1/cm  (16) DUE TO ALL LINES
-     &                                       /ArPBB(lw)  ! return photons from cut wings
-         enddo
+         ArPBB(lw)= area
       enddo  ! lw
+!$omp end parallel do
+
+!$omp parallel do default(shared) schedule(dynamic,64) private(iv, lw, FWevDop, dev, pq)
+      do iv= 1, nvM
+         do lw= 1, linM4
+           if(ArPBB(lw) .LT. 0.2) cycle  ! Lines in "continuum domains" may vave small "ArPBB(lw)" because of not-small dv/v in the hv array
+           if(iv .LT. ivLo(lw) .or. iv .GT. ivHi(lw)) cycle  ! outside the wings: contribution 0
+           FWevDop= FWkVcGAU(La,nX3(lw))*hvC(lw)
+           dev = abs(hvV(iv) - hvC(lw))
+           pq = Voigt2(FWevLor(lw,La), FWevDop, hvC(lw), dev)
+           emisBB(iv)= emisBB(iv)+ EmiLFul(lw) *pq &  ! BB emissivity [W/cc/sr/eV] DUE TO ALL lines of this XE, at hvV(iv)
+     &                                       /ArPBB(lw)  ! return photons from cut wings
+           absoBB(iv)= absoBB(iv)+ AbsoAm(lw)  *pq &  ! [eV/cm]*[1/eV] = 1/cm  (16) DUE TO ALL LINES
+     &                                       /ArPBB(lw)  ! return photons from cut wings
+         enddo  ! lw
+      enddo  ! iv
+!$omp end parallel do
+      deallocate(ivLo, ivHi)
+      if(linM4 .gt. 0) nX = nX3(linM4)  ! module nX as left by the old loop over the lines
   2   continue
 
       CALL TimOff(9)
@@ -1085,6 +1107,7 @@
       SUBROUTINE EffSpIn()  ! Mean (i.e. space- direction- average) specific intensity of radiation in zone La=1,2,3
       use mo1co2feb  ! is "SpInEf(La,hv)" [W/eV/sr/cm2], see (II.9), (AI.0). In manual "La" is "b".
       implicit none
+      real(8) So1, So2, So3, wBS  ! (Nov 2026) local, were in the module
       integer i, iv, j  ! (Nov 2026) local, was in the module
       real(8) SpInt(3,Ntet), AngSum(3,Nr), LaySum(3), dr1, dr2, dr3, &
      &                       ab1, ab2, ab3, dtet, teta, rm, g3, h3, ca, &
@@ -1101,6 +1124,11 @@
 !                                                 Straitforward averaging/integration gives 4R/3 [see page on the desk].
 !                                                 Also Google writes "The mean chord length in a sphere is 4R/3".
 !                                                 Also ratio of volume to 2D image = (4/3)piR^3/piR^2 =4R/3,
+!  (Nov 2026) OpenMP: the hv points are independent (each writes only SpInEf(:,iv));
+!  the print-out at tiInf is done after the loop, in the order of iv.
+!$omp parallel do default(shared) schedule(dynamic,32) &
+!$omp   private(iv, ab1, ab2, ab3, So1, So2, So3, LaySum, j, rm, AngSum, i, teta, g3, &
+!$omp           sq1, pa1, h3, ca, sq2, pa2, sq3, pa3, wBS, SpInt, pa5, pa6)
       do iv= 1, nvM
         ab1 = abTot(1,iv)  ! absorption coef (corrected for induced emission) [1/cm] in BS	 g
         So1 = zero
@@ -1316,15 +1344,19 @@
 !               	    write(*,'(/a46, 5e10.2/)') 'SpInEf(3,iv) [W/eV/sr/cm2], Vcap,
 !                             + factor =', SpInEf(3,iv), Vcap, (2.*pin**2)/(3.*Vcap*Ntet)         !@#$%
 
-        if(ti.LT.tiInf .and. tiInf.LE.tf) then  ! at print-info time "tiInf" print in "EffSpIns.dat"
+      enddo  ! iv
+!$omp end parallel do
+
+      if(ti.LT.tiInf .and. tiInf.LE.tf) then  ! at print-info time "tiInf" print in "EffSpIns.dat"
+        do iv= 1, nvM
           if(iv.eq.1) write(61,'(a75)') 'hvKeV       BS        Core     &
      & Capsule     abRbs     abRcore    abR3mR2'
 
-           write(61,'(f10.5, 9e11.4)')   hvV(iv)/1.d3, &  ! [after column 72, ignored:] ! keV
-     &        SpInEf(1,iv), SpInEf(2,iv), SpInEf(3,iv), ab1*R1, ab2*R2, &  ! [after column 72, ignored:] ! W/eV/sr/cm2 = kW/keV/sr/cm2
-     &                                    ab3*(R3-R2)
-        endif
-      enddo  ! iv
+           write(61,'(f10.5, 9e11.4)')   hvV(iv)/1.d3, &  ! keV
+     &        SpInEf(1,iv), SpInEf(2,iv), SpInEf(3,iv), abTot(1,iv)*R1, &  ! W/eV/sr/cm2 = kW/keV/sr/cm2
+     &        abTot(2,iv)*R2, abTot(3,iv)*(R3-R2)
+        enddo
+      endif
       Return
       END  ! 'EffSpIn' subr
 
@@ -1334,6 +1366,7 @@
       SUBROUTINE PowYie()  ! is CALLed on each t. Computes from-target Specific Power & Yield in each frame, file (181.
       use mo1co2feb  ! This subroutine is CALLed from outside La-loop, thus on entry has La = LaMx+1
       implicit none
+      real(8) So1, So2, So3, wBS  ! (Nov 2026) local, were in the module
       integer i, iv, j, k  ! (Nov 2026) local, was in the module
       real(8) dhv, frac  ! (Nov 2026) local, was in the module
       integer nCo  ! number of thru-core towards-target LOSs
