@@ -4,25 +4,35 @@ c  All subroutines and functions are in Co2feb26_procs.for (split for testing, N
       implicit none
       CALL AllocArrays() ! Generic version: array sizes from Params0.inp (max NST, max HSS) at run time
       CALL OpenFiles() ! Open Output files, write titles of columns
+      CALL TimOn(1)
       CALL Intro()     ! Read input files; fill in atomic data arrays and 
+      CALL TimOff(1)
 c                        initial population ("POPs") of energy levels ("ELs")
+      CALL TimOn(2)
       CALL LineList()  ! Find spectral lines in full [hvmin, hvmax] interval, print file "LineList.dat"
+      CALL TimOff(2)
+      CALL TimOn(3)
       CALL hvPoints()  ! Build the array of hv points in full [hvMin, hvMax] interval 
+      CALL TimOff(3)
       Count = 0        ! This integer counts lines during reading atomic data files
       FrYie = 0.		 ! FrYie(iv,frame#)= 0.  ! t-integral of SpPow(iv) [W/eV/sr] within j-th frame
 
       tf= strt
   1   ti= tf  
       tf= ti+ tstep  
+      CALL TimReport(0)   ! times of the finished step -> Timing.log
       write(*,'(/a40, f6.2, a4)') 'Start ti =', ti*1.d12, 'ps:'
 
       if(ti.GE.StopTime) then
+         CALL TimReport(1)
          CALL FixLeadingZeros()   ! .ddd instead of 0.ddd in output files, as in the old MS Fortran build (lzfix_Co2_GNU.f90)
          STOP '   ti >= StopTime.  The End.'
       endif
 
       do La = 1, LaMx     ! La is zone number. La=1 is BS, La=2 is Core, La=3 is Capsule     
+        CALL TimOn(4)
         CALL SCENARIO()   ! for t= ti compute R, Te, TD, DenI, ZC1, Dene
+        CALL TimOff(4)
         write(*,'(a33, i2, e11.4, 2f7.0, e11.4, f10.4)') 
      +          'Zone, R(cm), Te, TD, ne, Z(X) =', 
      +           La, CeR(La), Te(La), TD(La), Dene(La), ZC(1,La)  
@@ -35,11 +45,17 @@ c                        initial population ("POPs") of energy levels ("ELs")
      +                                bp(La), bc(La)/1.d3, bw(La)/1.d3   ! [keV]
 
         do nX = 1, nXkin ! nXE  ! For Te=Ti, Den(nX,La) of t = ti. Note: only X has lines and DPI   *********** !!!! *********
+           CALL TimOn(5)
            CALL LevStW()    ! For these La,nX compu FWHM [eV] of all E-LEVELs "LvJW(La,nX,k)" [eV] 
+           CALL TimOff(5)
 
+           CALL TimOn(6)
            CALL redPI()     ! For these La,nX, for each jSS compu DPI(jSS,nX,La) and PIR(jSS,nX,La).  
+           CALL TimOff(6)
 
+           CALL TimOn(7)
            CALL BEvPr()     ! For these La,nX compu Binding Energy of outermost electron "BE(k,nX,La)".
+           CALL TimOff(7)
 c                             Move POPs from BE-cut LEs to ground state of next SpS.
 
 c          Gaussian part of FWHM/hvC of lines of #nX in zone #La is denoted "FWkVcGAU(La,nX)"
@@ -51,15 +67,21 @@ c             FWkVcGAU(La,nX)= sqrt(fwTiKvC(La,nX)**2 +fwTUKvC(La,nX)**2)  ! FWH
            FWkVcGAU(La,nX)= 7.7155e-5*sqrt(TD(La)/AtMass(nX))  ! my page on thermal & hydro broadenings, see BlackFold   
         enddo  ! nX
 
+        CALL TimOn(8)
         CALL EmiAbso()  ! Compu this-La "EmTot(La,hv)" [W/cc/sr/eV] and "AbTot(La,hv)" [1/cm]
+        CALL TimOff(8)
 c                         via params of t=ti and POPi(k,nX,La).  
       enddo  ! La loop;   La is zone number; La=1 is BS, La=2 is Core, La=3 is Capsule       
 
+      CALL TimOn(11)
       CALL EffSpIn()  ! Compute due-to-all-La "SpInEf(La,iv)" [W/eV/sr/cm2] in RP of each "La", 
+      CALL TimOff(11)
 c                       La-loop is inside this subr because each "La" has contribs from other "La"s.  
 c                      "SpInEf(La,iv)" is needed for Win, Wab, WphI, WiRR at t= ti" for d02 of POPs towards "tf".
 
+      CALL TimOn(12)
       CALL PowYie()   ! Compute Spectral Power from the target using EmTot, AmTot computed
+      CALL TimOff(12)
 c	                  for params of t=ti and POPi(k,nX,La).  Print frames in files (181 - (186 and power detectors in files (187 - 189 	 
 
       do La = 1, LaMx	 
@@ -69,7 +91,9 @@ cccc     +                                 La, nX, Dene(La)
          if(Dene(La).gt.1.e15) then  ! For each (La,nX) compute Ws & PM; run d02 for POPs from "ti" to "tf" with params of "ti".  
 c                                    ! Note: ne > 10^15 e/cc excludes inrerruption in NAG d02EAF. For some {Te, dTe/dt, Jv} this NAG subr may work even for lower ne       
 cccc                 write(*,'(a30)') 'CALLing Atkins'         !@#$%***********************
+               CALL TimOn(13)
                CALL AtKins()  ! It gives "POPf(k,nX,La)" that is POP(tf) to be first used in Scenario of NEXT "ti" as POPi(k,nX,La).
+               CALL TimOff(13)
 cccc                 write(*,'(a30)') 'Returned from Atkins'   !@#$%***********************
          endif
       enddo   

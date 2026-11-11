@@ -909,6 +909,7 @@ c  Full-shape BB EMISSIVITY and ABSORPTIVITY due to all lines;  Also Line Lorent
         endif
       enddo   ! lw loop
 
+      CALL TimOn(9)
       if(ti .LT. (strt+2*tstep)) goto 2   
       pBB(1)= zero     ! pBB(1) is used below but never set: was 0 only as static memory
       absoBB= zero     ! local plasma bound-bound absorption coef corre for stimulated emission [1/cm], XE-sum, line sum
@@ -943,6 +944,8 @@ c                                                      	    To return these phot
       enddo    ! lw
   2   continue
 
+      CALL TimOff(9)
+      CALL TimOn(10)
 ******  BF absorptivity corrected for induced inverse process and FB emissivity, 
 ***                     Notations: (j,k) + hv --> (j+1, kf) + e , like in function "SigPhi" to be used
 c  Faster version (Nov 2026): all tests that do not depend on hv are made
@@ -1040,6 +1043,7 @@ c  FB EMISSION due to RR onto ions of current nX:  (SS=j+1,kf) + e  --> (j,k) + 
       k  = kEnd
       kf = kfEnd
       BEk= BEkEnd
+      CALL TimOff(10)
       deallocate(chK, chKf, chBE)
 
       absoBF= zero   
@@ -1649,9 +1653,13 @@ ccccc                       write(*,'(a45)') 'Out from PowYie'     !@#$%********
       real(8)  Sum1
       external POPdot  ! subroutine mentioned by name in arguments of NAG d02
  
+      CALL TimOn(14)
       CALL Ws()  ! calculate all transition probabilities mentioned in the Rate Equations
+      CALL TimOff(14)
 
+      CALL TimOn(19)
       CALL PMg0  ! PM(k,kf), Wout(k), WoutXE(k,nX,La) for g0 case		 
+      CALL TimOff(19)
 
       do k= 1, NST(nX)
         POP(k) = POPi(k,nX,La)   ! Load POPs in 1D array. 1D is request of d02 
@@ -1666,8 +1674,10 @@ ccccc                       write(*,'(a45)') 'Out from PowYie'     !@#$%********
       if(nX .ne. 1) CALL Pause1(' Came to the rate eqs with nX=/= 1')   ! with this DaBa it must be X only; 
 
 ccccc                      write(*,'(a35, i2)') 'Came to D02EAF, La=', La     !@#$%********************
+      CALL TimOn(20)
       CALL D02EAF(tiS, tfS, NST(nX), POP, tolD02, POPdot, WEAF, Nwork,  
      +            ifail) 
+      CALL TimOff(20)
 ccccc                      write(*,'(a35, i2)') 'Out from D02EAF, La=', La    !@#$%********************
 
       if(ifail.ne.0) CALL Pause1('ifail =/= 0 in d02. My STOP')  
@@ -1979,6 +1989,7 @@ CUT-off block. On this t-step some ELs could get "BE < 1.d-3". I move POP of the
 c      write(*,'(a50,2i3)') 'inside subr Ws, La,nX=', La, nX
 
       pv(1) = zero   ! pv(1) is used below (iv=2) but never set: was 0 only as static memory
+      CALL TimOn(15)
 *** Probability of bound-bound INDUCED transition down (emission) and up (absorption): Wind(U,L) and Wab(L,U)
       do lw= 1, linM4                 ! loop over all spectral lines
          if( nX3(lw) .ne. nX) cycle   ! skip lines of another XE  
@@ -2026,6 +2037,8 @@ c     +     'ArPv =', ArPv, '< 0.5;  lw, hvC=', lw, hvC(lw)
 
 c      write(*,'(a50,2i3)') 'Passed lw-loop, La,nX=', La, nX   
 
+      CALL TimOff(15)
+      CALL TimOn(16)
       upTB= 200.*Te(La)    ! Maximal energy for over-energy integration in case of Maxwell EED     
       if(bp(La).gt.1.d-7) upTB= 10*Te(La) +bc(La) +3.*bw(La)
 
@@ -2087,6 +2100,8 @@ c                                             Go to photo-ionization
   3     continue
       enddo        ! k.  Closed ioniz/recomb loop
 
+      CALL TimOff(16)
+      CALL TimOn(17)
 ******  Excitation Probability matrix WEX(k,kf).  Notation (j,k) --> (j, kf>k)  
       do k= 1, NST(nX) 
         if(BE(k,nX,La).LT.1.d-3) goto 5  ! dead EL. It can be only non-AI EL.: Nucl and AI ELs are "never dead" 
@@ -2116,6 +2131,8 @@ c          write(*,'(a20, i5, f10.2, i6, 2f11.3)') 'kf, E, k, E, DE =', kf, E(kf
   5     continue
       enddo      ! k
 
+      CALL TimOff(17)
+      CALL TimOn(18)
 ******  Dielectr Capture: (j,k) + e --> (j-1,kAI).  We follow Griem3 (6.35), i.e. derive WDC from detailed balance with WAiz in high-density limit.
 c                                                   Algorithm, used for "Ejm" and "WDC", is checked by exact (in LTE) Griem3 (6.34) formula  
 c                                                        WDC(k,kAI) = WAiz(kAI,k)*popLTE(kAI)/popLTE(k).  
@@ -2140,6 +2157,7 @@ c                                                                               
         enddo     ! kAI 
   7     continue
       enddo       ! k
+      CALL TimOff(18)
       return
       END         ! of 'Ws' subr  
 

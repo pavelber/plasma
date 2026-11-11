@@ -318,7 +318,69 @@ c     npInpRes (number of hv points in each InpResp*.inp) is counted in OpenFile
      +           0.99966, 0.99975, 0.99982, 0.99987, 0.99992, 0.99995, 
      +           0.99997, 0.99998, 0.99999, 1.0,     1.0  /
 
+c  ---- Wall-clock timers (Nov 2026). TimOn(i)/TimOff(i) around the main parts of
+c       a time step; TimReport writes one line per time step to Timing.log.
+c       They only measure time and do not change any result.
+      integer, public, parameter :: nTim = 20
+      character(9), public, parameter :: tName(nTim) = (/
+     + 'Intro    ','LineList ','hvPoints ','SCENARIO ','LevStW   ',
+     + 'redPI    ','BEvPr    ','EmiAbso  ','EA_BB    ','EA_BF    ',
+     + 'EffSpIn  ','PowYie   ','AtKins   ','Ws       ','Ws_lines ',
+     + 'Ws_ioniz ','Ws_excit ','Ws_DC    ','PMg0     ','D02EAF   ' /)
+      real(8), public :: tAcc(nTim)= 0.d0, tBeg(nTim)= 0.d0,
+     +                   tLast(nTim)= 0.d0, tRep= -1.d0, tRun0= -1.d0,
+     +                   tiStep= 0.d0
+
       contains
+
+      real(8) FUNCTION WallSec()   ! wall-clock time [s]
+      integer(8) cnt, rate
+      call system_clock(cnt, rate)
+      WallSec= dble(cnt)/dble(rate)
+      END FUNCTION WallSec
+
+      SUBROUTINE TimOn(it)
+      integer it
+      if(tRun0 .lt. 0.d0) tRun0= WallSec()
+      tBeg(it)= WallSec()
+      END SUBROUTINE TimOn
+
+      SUBROUTINE TimOff(it)
+      integer it
+      tAcc(it)= tAcc(it)+ WallSec()- tBeg(it)
+      END SUBROUTINE TimOff
+
+      SUBROUTINE TimReport(mode)  ! mode 0: at the start of each time step,
+!$      use omp_lib               ! mode 1: at the end of the run (totals)
+      integer mode, iu, it, nthr
+      real(8) now
+      nthr= 1
+!$      nthr= omp_get_max_threads()
+      now= WallSec()
+      if(tRun0 .lt. 0.d0) tRun0= now
+      if(tRep .lt. 0.d0) then           ! first call: header and start-up times
+        open(newunit=iu, file='Timing.log', status='replace')
+        write(iu,'(2a,i4)') '# Code2: wall-clock time [s] per',
+     +      ' time step;  OpenMP threads =', nthr
+        write(iu,'(a8,a9,20a10)') '# tiPS  ', '    step ',
+     +                            (tName(it), it=1,nTim)
+        write(iu,'(a8,f9.2,20f10.2)') '  init  ', now- tRun0,
+     +                            (tAcc(it)- tLast(it), it=1,nTim)
+      else
+        open(newunit=iu, file='Timing.log', position='append')
+        if(mode .eq. 0) then
+          write(iu,'(f8.2,f9.2,20f10.2)') tiStep*1.d12, now- tRep,
+     +                            (tAcc(it)- tLast(it), it=1,nTim)
+        else
+          write(iu,'(a8,f9.2,20f10.2)') '  total ', now- tRun0,
+     +                            (tAcc(it), it=1,nTim)
+        endif
+      endif
+      close(iu)
+      tLast= tAcc
+      tRep = now
+      tiStep= ti
+      END SUBROUTINE TimReport
 
 
       SUBROUTINE AllocArrays()  ! Generic version: sizes of atomic-data arrays at run time.

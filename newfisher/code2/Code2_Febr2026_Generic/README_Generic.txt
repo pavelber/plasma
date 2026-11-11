@@ -77,6 +77,15 @@ EmiAbso are set to zero explicitly; the number of points of each InpResp*.inp is
 counted from the file (it was DATA npInpRes in the module); SigPhiA = SigPhi with
 the channel (k, kf, BEk, nX) as arguments.
 
+Timing
+------
+Each run writes Timing.log: wall-clock seconds of the main parts of every time step
+(Intro, EmiAbso with its BB and BF parts, EffSpIn, PowYie, AtKins = Ws + PMg0 +
+D02EAF, Ws split into lines / ionization / excitation / dielectronic capture) and the
+totals at the end. The timers do not change any result.
+Full Kr run to 65 ps on 20 cores: 35 min (2098 s); D02EAF 46%, Ws ionization 28%,
+Ws excitation 6%, EmiAbso 9%, PMg0 5%, EffSpIn 3%.
+
 Tests
 -----
   mingw32-make -f Makefile.gnu test       T1 + T2, about 2 min
