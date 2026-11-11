@@ -16,7 +16,10 @@
 #   test-all       - T1 + T2 + T3
 #
 # Sources:
-#   mo1co2feb.f90            - module; element-dependent arrays are ALLOCATABLE,
+#   co2_const.f90, co2_atom.f90, co2_util.f90, mo1co2feb.f90 - modules: constants;
+#                              atomic data, rates, channel lists (ALLOCATABLE, sizes at run
+#                              time); timers and utilities; plasma state, grids, spectra.
+#                              mo1co2feb uses the other three. Element-dependent arrays are ALLOCATABLE,
 #                              AllocArrays/AllocLines allocate them at run time
 #   Co2feb26_main.f90, Co2feb26_procs.f90 - main program and all procedures of
 #                              Co2feb26_GNU.for (split for tests); the GNU port is
@@ -56,12 +59,16 @@ OPT     ?= -O2
 FFLAGS  ?= $(OPT) $(FFLAGS_COMMON)
 LDFLAGS ?= $(LDSTATIC)
 
+CONST_OBJ:= co2_const.o
+UTIL_OBJ := co2_util.o
+ATOM_OBJ := co2_atom.o
 MOD_OBJ  := mo1co2feb.o
+MODS_OBJ := $(CONST_OBJ) $(UTIL_OBJ) $(ATOM_OBJ) $(MOD_OBJ)
 NAG_OBJ  := nag_replacements_Co2_GNU.o
 LZ_OBJ   := lzfix_Co2_GNU.o
 PROC_OBJ := Co2feb26_procs.o
 MAIN_OBJ := Co2feb26_main.o
-LIB_OBJS := $(MOD_OBJ) $(NAG_OBJ) $(LZ_OBJ) $(PROC_OBJ)
+LIB_OBJS := $(MODS_OBJ) $(NAG_OBJ) $(LZ_OBJ) $(PROC_OBJ)
 OBJS     := $(LIB_OBJS) $(MAIN_OBJ)
 
 .PHONY: all debug run clean tests test test-e2e test-all
@@ -71,8 +78,17 @@ all: $(EXE)
 $(EXE): $(OBJS)
 	$(FC) $(FFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
-# module mo1co2feb must be compiled first (produces mo1co2feb.mod)
-$(MOD_OBJ): mo1co2feb.f90
+# modules first: co2_const, co2_util, co2_atom, then mo1co2feb (uses the three)
+$(CONST_OBJ): co2_const.f90
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(UTIL_OBJ): co2_util.f90
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(ATOM_OBJ): co2_atom.f90 $(CONST_OBJ)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(MOD_OBJ): mo1co2feb.f90 $(CONST_OBJ) $(UTIL_OBJ) $(ATOM_OBJ)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 $(NAG_OBJ): nag_replacements_Co2_GNU.f90 $(MOD_OBJ)
