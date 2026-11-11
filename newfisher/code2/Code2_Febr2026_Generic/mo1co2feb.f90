@@ -313,6 +313,14 @@
      &           0.99966, 0.99975, 0.99982, 0.99987, 0.99992, 0.99995, &
      &           0.99997, 0.99998, 0.99999, 1.0,     1.0  /
 
+!  ---- Channel lists of the atomic database of X (Nov 2026), built once by BuildChannels
+!       (first call of Ws). For level k the channels are ChXxxS(k) ... ChXxxS(k+1)-1:
+!       ChInzKf  ionization / recombination k -> kf (bra = 1),
+!       ChExcKf  excitation k -> kf (fit given, same SpS, E(kf) > E(k)),
+!       ChDcK    AI levels kAI coupled to k by autoionization / dielectronic capture.
+      integer, public, allocatable :: ChInzS(:), ChInzKf(:), ChExcS(:), ChExcKf(:), &
+     &                                ChDcS(:), ChDcK(:)
+
 !  ---- Integration context (Nov 2026): the channel whose rate D01AHF integrates.
 !       FVSinz, FVStbr, FVSEx, FVSDx read it (they can have only one argument).
 !       Each OpenMP thread has its own copy (threadprivate).
@@ -383,6 +391,47 @@
       tRep = now
       tiStep= ti
       END SUBROUTINE TimReport
+
+      SUBROUTINE BuildChannels()  ! channel lists of X (nX = 1), see ChInzS above
+      integer k, kf, n, nI, nE, nD
+      n = NST(1)
+      allocate(ChInzS(n+1), ChExcS(n+1), ChDcS(n+1))
+      nI = 0;  nE = 0;  nD = 0
+      do k = 1, n                        ! count
+        do kf = 1, n
+          if(k .ne. Nnu(1) .and. bra(k,kf,1) .ge. 0.5) nI = nI + 1
+          if(MthdEX(k,kf) .ne. -7 .and. KiSS(kf,1) .eq. KiSS(k,1) .and. &
+     &       E(kf,1) - E(k,1) .gt. zero) nE = nE + 1
+        enddo
+        do kf = Nnu(1)+1, n
+          if(WAiz(kf,k,1) .ge. 10.) nD = nD + 1
+        enddo
+      enddo
+      allocate(ChInzKf(max(nI,1)), ChExcKf(max(nE,1)), ChDcK(max(nD,1)))
+      nI = 0;  nE = 0;  nD = 0
+      do k = 1, n                        ! fill, in the order of k, kf as the old loops
+        ChInzS(k) = nI + 1
+        ChExcS(k) = nE + 1
+        ChDcS(k)  = nD + 1
+        do kf = 1, n
+          if(k .ne. Nnu(1) .and. bra(k,kf,1) .ge. 0.5) then
+            nI = nI + 1;  ChInzKf(nI) = kf
+          endif
+          if(MthdEX(k,kf) .ne. -7 .and. KiSS(kf,1) .eq. KiSS(k,1) .and. &
+     &       E(kf,1) - E(k,1) .gt. zero) then
+            nE = nE + 1;  ChExcKf(nE) = kf
+          endif
+        enddo
+        do kf = Nnu(1)+1, n
+          if(WAiz(kf,k,1) .ge. 10.) then
+            nD = nD + 1;  ChDcK(nD) = kf
+          endif
+        enddo
+      enddo
+      ChInzS(n+1) = nI + 1
+      ChExcS(n+1) = nE + 1
+      ChDcS(n+1)  = nD + 1
+      END SUBROUTINE BuildChannels
 
       SUBROUTINE FlushAll()  ! flush all open output units (Nov 2026): a run that is
       integer iu  ! stopped keeps the output of the finished time steps

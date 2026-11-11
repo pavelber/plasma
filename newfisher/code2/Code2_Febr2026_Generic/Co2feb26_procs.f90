@@ -2015,6 +2015,7 @@
       SUBROUTINE Ws()  ! Transition probabilities for Rate Equations
       use mo1co2feb  ! In each W-matrix, first index shows INITIAL EL of the transition.
       implicit none
+      integer m  ! (Nov 2026) index in the channel lists
       integer ifail, iv, j, k, kf, kl, ku, lw, nlim, npts  ! (Nov 2026) local, was in the module
       real(8) bek, de, dhv, rer, uptb, wing  ! (Nov 2026) local, was in the module
       integer  kAI  ! mw,
@@ -2038,6 +2039,8 @@
 
 !      write(*,'(a50,2i3)') 'inside subr Ws, La,nX=', La, nX
 
+      if(nX .ne. 1) CALL Pause1('Ws: the channel lists are for nX = 1 only')
+      if(.not. allocated(ChInzS)) CALL BuildChannels()  ! (Nov 2026) once per run
       CALL TimOn(15)
 !** Probability of bound-bound INDUCED transition down (emission) and up (absorption): Wind(U,L) and Wab(L,U)
 !  (Nov 2026) OpenMP: the lines are shared between threads; each line writes only its
@@ -2104,7 +2107,7 @@
 !  writes only its own elements of WI, WTB, WPhI, WRR, WiRR; the integration context
 !  cK, cKf, cJ, cBE of D01AHF is threadprivate.
 !$omp parallel do default(shared) schedule(dynamic,1) &
-!$omp   private(k, kf, j, BEk, rate, NPTS, rer, Ifail, probPhi, probRR, probIRR, iv, hvw, &
+!$omp   private(k, kf, m, j, BEk, rate, NPTS, rer, Ifail, probPhi, probRR, probIRR, iv, hvw, &
 !$omp           SiPhi, dhv, eeV, dEe, Velo, SiRR, Sca, fun) firstprivate(Nlim)
       do k= 1, NST(nX)
         if(k .eq. Nnu(nX))       cycle  ! no ioniz of nucl, no recomb in nucl
@@ -2112,8 +2115,8 @@
 !                                       For convenience of computations I gave them BE= 77777.in subr "BEvPr" and it never changes.
         j= KiSS(k,nX)
 
-        do kf= 1, NST(nX)
-          if(bra(k,kf,nX).LT. 0.5)  goto 2  ! no inz/rec channel; "bra" is 0 or 1 with FAC bases
+        do m= ChInzS(k), ChInzS(k+1)-1  ! (Nov 2026) only the kf with an inz/rec channel (bra = 1)
+          kf= ChInzKf(m)
           if(BE(kf,nX,La).LT.1.d-3) goto 2  ! dead "kf". Possible only for non-AI EL.: Nucl and AI ELs have BE= 77777, see comment 6 lines above
           if(KiSS(kf,nX).ne.j+1)    CALL Pause1('SS error in WI')
 
@@ -2173,14 +2176,13 @@
 !*****  Excitation Probability matrix WEX(k,kf).  Notation (j,k) --> (j, kf>k)
 !  (Nov 2026) OpenMP over k, as above: each (k,kf) writes only WEX(k,kf) and WDX(kf,k)
 !$omp parallel do default(shared) schedule(dynamic,1) &
-!$omp   private(k, kf, j, DE, rate, npts, rer, Ifail) firstprivate(Nlim)
+!$omp   private(k, kf, m, j, DE, rate, npts, rer, Ifail) firstprivate(Nlim)
       do k= 1, NST(nX)
         if(BE(k,nX,La).LT.1.d-3) goto 5  ! dead EL. It can be only non-AI EL.: Nucl and AI ELs are "never dead"
 !                                          because I gave them BE= 77777.in subr "BEvPr" and it never changes.
         j= KiSS(k,nX)
-        do kf= 1, NST(nX)
-          if(mthdEX(k,kf).eq.-7)      goto 4  ! "-7" means that k-to-kf transition isn't described in "ExcXE...inp":  leave WEX=0
-          if(KiSS(kf,nX).ne.j)        goto 4  ! another SS
+        do m= ChExcS(k), ChExcS(k+1)-1  ! (Nov 2026) only the kf with an excitation fit, same SpS, E(kf) > E(k)
+          kf= ChExcKf(m)
           if(BE(kf,nX,La) .LT. 1.d-3) goto 4  ! skip dead "kf"
           DE= E(kf,nX) - E(k,nX)  ! because of common GSs. Remember "DE < 0" control in "SigExc" and "DE=0" control in Intro subr.
 
@@ -2215,8 +2217,8 @@
       do k= 1, NST(nX)  ! All ELs.
         if(BE(k,nX,La).LT.1.d-3) goto 7  ! dead EL, however, Nucl and AI ELs are "never dead" because given BE= 77777.in subr "BEvPr" and it never changes.
         j= KiSS(k,nX)
-        do kAI= Nnu(nX)+1, NST(nX)  ! check all AI ELs, maybe they are coupled to "k" by AI/DC .
-          if(WAiz(kAI,k,nX).lt. 10.) goto 6  ! NO AI/DC channel between kAI and k
+        do m= ChDcS(k), ChDcS(k+1)-1  ! (Nov 2026) only the AI ELs coupled to "k" by AI/DC (WAiz >= 10)
+          kAI= ChDcK(m)
           Ejm= EAI(kAI,k) + DPI(j-1,nX,La)  ! EAI(kAI,k) > 0 is from-FAC energy of AI transition in VACUUM. Its meaning is
 !                                              E(kAI) - E(k) taken relative to common zero [which is GS of AI ion (j-1)].
 !                                                                Thus EAI(kAI,k) = E(kAI) - [PI(j-1) + E(k)].
