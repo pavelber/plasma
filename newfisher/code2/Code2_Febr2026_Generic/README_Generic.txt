@@ -87,4 +87,4 @@ T2: one time step of all routines on the real Kr and Ge databases.
 T3: the real program, sha256 of all .dat files and of the screen output.
 All comparisons are bit for bit. Needs python 3. Golden files: tests/golden.
 
-See also PLAN_refactoring_speed.md (next steps) and PHYSICS_QUESTIONS.md.
+See also PLAN_refactoring_speed.md (next steps) and PHYSICS_QUESTIONS.md (possible future physics changes).
