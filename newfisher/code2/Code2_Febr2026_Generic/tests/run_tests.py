@@ -26,9 +26,17 @@ ROOT = os.path.dirname(HERE)                       # Code2_Febr2026_Generic
 GOLD = os.path.join(HERE, 'golden')
 WORK = os.path.join(HERE, '_work')
 EXE = '.exe' if os.name == 'nt' else ''
-CASES = {
-    'kr': ROOT,                                                   # Kr inputs next to the sources
-    'ge': os.path.join(os.path.dirname(ROOT), 'code2Feb2026-case16-Ge'),
+def _first_case_dir(*dirs):
+    for d in dirs:
+        if os.path.exists(os.path.join(d, 'Params0.inp')):
+            return d
+    return dirs[0]
+
+
+CASES = {   # input files of the test cases: examples/ in the zip, or the repository layout
+    'kr': _first_case_dir(os.path.join(os.path.dirname(ROOT), 'examples', 'Kr'), ROOT),
+    'ge': _first_case_dir(os.path.join(os.path.dirname(ROOT), 'examples', 'Ge'),
+                          os.path.join(os.path.dirname(ROOT), 'code2Feb2026-case16-Ge')),
 }
 INPUT_RE = re.compile(r'.*\.(inp|INP)$')
 E2E_STOP = '7.6d-12'      # Params2.inp line 5: StopTime -> 3 time steps (the third one has BB emission)
