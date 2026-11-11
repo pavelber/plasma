@@ -4,6 +4,7 @@
       SUBROUTINE OpenFiles()
       use mo1co2feb
       implicit none
+      integer iv, j, k, k7  ! (Nov 2026) local, was in the module
       integer ios
 
       open(12, file= 'Params0.inp')
@@ -123,6 +124,8 @@
       SUBROUTINE Intro()  ! Read input files, print list of ELs (non-AI and AI), provide ELs p.q.n., A coefs and initial POPs; print this info in "Comment.dat"
       use mo1co2feb
       implicit none
+      integer i, iss, j, k, k1, kf, kl, ku  ! (Nov 2026) local, was in the module
+      real(8) de  ! (Nov 2026) local, was in the module
       character*1 po1  ! for conversion of EL name symbols (1 position) in p.q.n., Lorb, ...
       integer char2int  ! symbol-to-integer convertor function
       integer iniQS, nSS, mth, LL, LU, ki, &
@@ -662,6 +665,7 @@
       SUBROUTINE LineList()  ! List spectral lines along hv;  file #30.
       use mo1co2feb
       implicit none
+      integer iw, k, k2, lin, lw  ! (Nov 2026) local, was in the module
       integer lnew, lmin, nXmin
       real(8) hvCmin,	Alamda, DEul
       open (30, file= 'LineList.dat')
@@ -768,6 +772,8 @@
       SUBROUTINE hvPoints()  ! Build the array of hv points
       use mo1co2feb
       implicit none
+      integer iv, j  ! (Nov 2026) local, was in the module
+      real(8) frac  ! (Nov 2026) local, was in the module
       real(8) dvTOv
       integer ic, icL
 
@@ -833,18 +839,19 @@
       SUBROUTINE EmiAbso()  ! Compu this-La emissivity "EmTot(La,hv)" [W/cc/sr/eV] and absorption coef corrected for stimulated emission"AbTot(La,hv)" [1/cm]
       use mo1co2feb  ! at t = ti, using all params of t= ti and POPi(EL,nX,La)
       implicit none
+      integer iv, j, k, kf, kl, ku, lw  ! (Nov 2026) local, was in the module
+      real(8) bek, dhv, hvev, wing  ! (Nov 2026) local, was in the module
       real(8), allocatable, save :: EmiLFul(:), AbsoAm(:), &  ! (MNLe) Amplitude of bound-bound (BB) emissivity and absorptivity
      &         AlfaBB(:), &  ! (MNLe) (nU/gU)/(nL/gL)
      &         ArPBB(:)  ! (MNLe)
       real(8)  pBB(nvL), dev, &
      &         FreE, EED, FWevDop, Voigt2, alfaFB, &
      &         Velo, SigPhI, contrib, SiPh, SiRR, HalfLor, VoiFWHM
-      integer  nCh, ic, kEnd, kfEnd  ! BF channel list
+      integer  nCh, ic  ! BF channel list
       integer  ivq, nXq, kq, kfq
       real(8)  BEq, Wwq, SigPhiA
       real(8)  EEDv
       integer, allocatable :: chK(:), chKf(:)
-      real(8)  BEkEnd
       real(8), allocatable :: chBE(:)
       save pBB  ! (Nov 2026) explicit: was static only because of its size
 
@@ -997,9 +1004,6 @@
   9       continue
         enddo  ! k
       enddo  ! nX
-      kEnd = k  ! values of k, kf, BEk as left by the old loop
-      kfEnd= kf
-      BEkEnd= BEk
 
 !  The hv points are independent: they are shared between OpenMP threads.
 !  Inside one hv point the channels are summed in the same order as before,
@@ -1043,11 +1047,7 @@
         enddo  ! nX
       enddo  ! iv
 !$omp end parallel do
-      iv = nvM + 1  ! module iv and nX as left by the old serial loops
-      nX = nXkin + 1
-      k  = kEnd
-      kf = kfEnd
-      BEk= BEkEnd
+      nX = nXkin + 1  ! module nX as left by the old serial loop over nX
       CALL TimOff(10)
       deallocate(chK, chKf, chBE)
 
@@ -1085,6 +1085,7 @@
       SUBROUTINE EffSpIn()  ! Mean (i.e. space- direction- average) specific intensity of radiation in zone La=1,2,3
       use mo1co2feb  ! is "SpInEf(La,hv)" [W/eV/sr/cm2], see (II.9), (AI.0). In manual "La" is "b".
       implicit none
+      integer i, iv, j  ! (Nov 2026) local, was in the module
       real(8) SpInt(3,Ntet), AngSum(3,Nr), LaySum(3), dr1, dr2, dr3, &
      &                       ab1, ab2, ab3, dtet, teta, rm, g3, h3, ca, &
      &                      sq1, sq2, sq3, pa1, pa2, pa3, pa4, pa5, pa6, &
@@ -1333,6 +1334,8 @@
       SUBROUTINE PowYie()  ! is CALLed on each t. Computes from-target Specific Power & Yield in each frame, file (181.
       use mo1co2feb  ! This subroutine is CALLed from outside La-loop, thus on entry has La = LaMx+1
       implicit none
+      integer i, iv, j, k  ! (Nov 2026) local, was in the module
+      real(8) dhv, frac  ! (Nov 2026) local, was in the module
       integer nCo  ! number of thru-core towards-target LOSs
       real(8)       SpInCC(nvL,NCL), SpInBSs(nvL,NCL), SpPowBSs(nvL), &  ! SumBS(nvL),
      &	          FrGaConv(nvL), FrLorConv(nvL), SpPowCC(nvL), &
@@ -1657,6 +1660,7 @@
       SUBROUTINE AtKins()  ! For known La,nX run Atomic Kinetics from "ti" to "tf" using
       use mo1co2feb  ! all params, W's, POPs  of t=ti. Note: these POPs are POPi(k,nX,La).
       implicit none  ! "Atkins" produces POPf(k,nX,La), that are POPs at t = tf.
+      integer ifail, j, k  ! (Nov 2026) local, was in the module
       real(8)  Sum1
       external POPdot  ! subroutine mentioned by name in arguments of NAG d02
 
@@ -1755,6 +1759,7 @@
       SUBROUTINE redPI()  ! For this La and nX=1 this subr gives from-the-ground-state
       use mo1co2feb  ! ionization energy of ions (PIR) in the Ion-Sphere approach
       implicit none
+      integer jss  ! (Nov 2026) local, was in the module
       real(8) SpheR
 
       do jSS = FSS(nX), HSS(nX)  ! all ionizible SSs; jSS is spectroscopic symbol
@@ -1783,6 +1788,8 @@
       SUBROUTINE LevStW()  ! For these La,nX compu J-Stark FWHM of all energy levels "LvJW(La,nX,k)" [eV] following Refs [8,9].
       use mo1co2feb  ! "k" is # of energy level
       implicit none
+      integer ix, k, k1, kw  ! (Nov 2026) local, was in the module
+      real(8) frac  ! (Nov 2026) local, was in the module
 
 !  in this subr e = m = (h/2pi) = 1; for conversion to CGS units see http://en.wikipedia.org/wiki/Atomic_units
 !  the energy   unit is 1 hartree = 27.211396 eV = 2*Ry = 4.359810e-18 J; "har" in code
@@ -1924,6 +1931,7 @@
       SUBROUTINE BEvPr()  ! For this (La,nX) compute Binding Energy of outermost electron "BE(k,nX,La)",
       use mo1co2feb  ! CUT ELs with BE < 0, i.e, load their POP in next GrSt
       implicit none
+      integer j, k  ! (Nov 2026) local, was in the module
 
       do k= 1, NST(nX)
            BE(k,nX,La)= -13.d0  ! Preliminary value '-13' will reveal forgotten EL, ~20 strings below
@@ -1974,6 +1982,8 @@
       SUBROUTINE Ws()  ! Transition probabilities for Rate Equations
       use mo1co2feb  ! In each W-matrix, first index shows INITIAL EL of the transition.
       implicit none
+      integer ifail, iv, j, k, kf, kl, ku, lw, nlim, npts  ! (Nov 2026) local, was in the module
+      real(8) bek, de, dhv, rer, uptb, wing  ! (Nov 2026) local, was in the module
       integer  kAI  ! mw,
       real(8)  pvq(nvL), freq, Wave, DEJ, BemHz, Bem, Bab, dev, AbSpIn, &
      &         rate, Ejm, wFac, D01ahf, EED, eeV, Sca, hvw, fun, &
@@ -2001,7 +2011,7 @@
 !  own WInd(kU,kL) and Wab(kL,kU), and pvq is a private profile array of each thread.
 !$omp parallel do default(shared) schedule(dynamic,16) &
 !$omp   private(lw, freq, Wave, DEJ, BemHz, Bem, Bab, FWevDop, ArPv, iv, pvq, dev, AbSpIn) &
-!$omp   lastprivate(kU, kL, Wing, dhv)
+!$omp   private(kU, kL, Wing, dhv)
       do lw= 1, linM4  ! loop over all spectral lines
          pvq(1) = zero  ! pvq(1) is used below (iv=2); before, pv(1) was 0 only as static memory
          if( nX3(lw) .ne. nX) cycle  ! skip lines of another XE
@@ -2047,13 +2057,12 @@
          Wab (kL,kU)= Bab*AbSpIn
       enddo  ! lw
 !$omp end parallel do
-      lw = linM4 + 1  ! module lw, iv as left by the old serial loop
-      iv = nvM + 1
 
 !      write(*,'(a50,2i3)') 'Passed lw-loop, La,nX=', La, nX
 
       CALL TimOff(15)
       CALL TimOn(16)
+      Nlim= 0  ! not used by the D01AHF replacement (it was 0 as a module variable)
       upTB= 200.*Te(La)  ! Maximal energy for over-energy integration in case of Maxwell EED
       if(bp(La).gt.1.d-7) upTB= 10*Te(La) +bc(La) +3.*bw(La)
 
@@ -2125,7 +2134,6 @@
   3     continue
       enddo  ! k.  Closed ioniz/recomb loop
 !$omp end parallel do
-      k = NST(nX) + 1  ! module k as left by the old serial loop
 
       CALL TimOff(16)
       CALL TimOn(17)
@@ -2165,8 +2173,6 @@
   5     continue
       enddo  ! k
 !$omp end parallel do
-      k = NST(nX) + 1
-
       CALL TimOff(17)
       CALL TimOn(18)
 !*****  Dielectr Capture: (j,k) + e --> (j-1,kAI).  We follow Griem3 (6.35), i.e. derive WDC from detailed balance with WAiz in high-density limit.
@@ -2220,6 +2226,8 @@
       SUBROUTINE GauInstrConvo(Simu, Co)  ! Convolution with Gaussian instrumental function
       use mo1co2feb  ! in interval narrower than [minGaLor, maxGaLor] [eV]
       implicit none
+      integer iw  ! (Nov 2026) local, was in the module
+      real(8) dhv  ! (Nov 2026) local, was in the module
       integer i1
       real(8) Simu(nvM), Co(nvM), fwPv, v0, FWins, Sver, dev, InsFunc, &
      &                                                   prF, Gauss
@@ -2271,6 +2279,8 @@
       SUBROUTINE LorInstrConvo(Simu, Co)  ! Convolution with Lorentzian instrumental function
       use mo1co2feb  ! in interval < [minGaLor, maxGaLor] [eV]
       implicit none
+      integer iw  ! (Nov 2026) local, was in the module
+      real(8) dhv  ! (Nov 2026) local, was in the module
       integer i1
       real(8) Simu(nvM), Co(nvM), fwPv, v0, FWins, Sver, dev, InsFunc, &
      &                                      Loren, prF, prL, ArLor
@@ -2332,12 +2342,6 @@
 
 
 
-      real(8) function SigInz(eeV)  ! requires nX, k, kf, j, BEk of the module
-      use mo1co2feb
-      implicit none
-      real(8) eeV, SigInzA
-      SigInz= SigInzA(eeV, k, kf, j, BEk)
-      END
 
 
       real(8) function SigInzA(eeV, kk, kkf, jj, BEkk)  ! (Nov 2026) SigInz with the channel as arguments
@@ -2390,12 +2394,6 @@
 
 
 
-      real(8) function SigPhi(hv)  ! cm2, eV;  PhotoIonz Cross-Sec.   Notations:  (j,k) + hv --> (j+1,kf) + e
-      use mo1co2feb  ! function "SigPhi" for nX, k, kf, BEk from call
-      implicit none
-      real(8) hv, SigPhiA
-      SigPhi= SigPhiA(hv, k, kf, BEk, nX)
-      END
 
 
       real(8) function SigPhiA(hv, kk, kkf, BEkk, nXk)  ! same as SigPhi with the channel as arguments (Nov 2026)
@@ -2446,12 +2444,6 @@
 
 
 
-      real(8) function SigExc(eeV)  ! 'k' is lower,  'kf' is upper (module k, kf, j, DE)
-      use mo1co2feb
-      implicit none
-      real(8) eeV, SigExcA
-      SigExc= SigExcA(eeV, k, kf, j, DE)
-      END
 
 
       real(8) function SigExcA(eeV, kk, kkf, jj, DEE)  ! (Nov 2026) SigExc with the channel as arguments; kk lower, kkf upper
@@ -2519,6 +2511,7 @@
       SUBROUTINE POPdot(tSC, wPOP, dPOPpdt)
       use mo1co2feb
       implicit none
+      integer k, k1  ! (Nov 2026) local, was in the module
       real(8) tSC, wPOP(nQSm), dPOPpdt(nQSm), sum, xx
       do k = 1, NST(nX)
         sum = zero
@@ -2652,6 +2645,7 @@
       subroutine PMg0()  ! For known La,nX compute transition probability
       use mo1co2feb  ! matrix PM(k,kf) and EL de-population rate Wout(k); also dZ/dt
       implicit none
+      integer k, k1, kf  ! (Nov 2026) local, was in the module
       Wout = zero  ! Wout(k) is Total depletion rate of 'k' into all 'kf'=/='k'
 !  (Nov 2026) OpenMP over k: each k sums its own Wout(k) over kf in the old order
 !                         must be 1D for d02
@@ -2693,8 +2687,6 @@
         enddo  ! kf
       enddo  ! k
 !$omp end parallel do
-      k = NST(nX) + 1  ! module k, kf as left by the old serial loops
-      kf = NST(nX) + 1
 
 !  For suspicious  POP(k)*PM(k,kf) > 10^17  or
 !                  POP(k)*Wout(k)  > 10^17  print details in "Happened.dat", file (341
@@ -2795,10 +2787,14 @@
       SUBROUTINE SCENARIO()  ! load and calculate parameters for t=ti
       use mo1co2feb
       implicit none
+      integer i, iw, k  ! (Nov 2026) local, was in the module
+      real(8) frac  ! (Nov 2026) local, was in the module
 
+      i = 0
       do iw = 1, ntp-1
          if(tPo(iw).LE.ti .and. ti.LT.tPo(iw+1)) i = iw
       enddo
+      if(i .eq. 0) CALL Pause1('SCENARIO: ti outside the time points of Params2.inp')
       frac = (ti-tPo(i)) / (tPo(i+1)-tPo(i))
 
       nuBSs = nuBSst(i)
@@ -2869,11 +2865,28 @@
 !  any other input, or no keyboard (end of input), stops the program.
 !  In addition the message is appended to Warnings.log with time and zone, and
 !  the stop sets exit code 1 (PAUSE stopped with code 0, as a normal end).
+!  Inside a parallel (OpenMP) loop there is no question: the message is written and
+!  the program stops at once (several threads cannot sensibly ask for "go").
       use mo1co2feb, only: ti, La
+!$    use omp_lib
       implicit none
       character(*) msg
       character(8) ans
       integer iu, ios
+!$    if(omp_in_parallel()) then
+!$omp   critical (co2_messages)
+!$      open(newunit=iu, file='Warnings.log', position='append', iostat=ios)
+!$      if(ios.eq.0) then
+!$        write(iu,'(a,1pe11.4,a,i2,2a)') ' ti=', ti, ' s, zone', La, &
+!$              ':  STOP (in a parallel loop) ', trim(msg)
+!$        close(iu)
+!$      endif
+!$      write(0,'(2a)') 'STOP in a parallel loop: ', trim(msg)
+!$      write(0,'(a)') 'See Warnings.log'
+!$omp   end critical (co2_messages)
+!$      call exit(1)   ! all threads stop at once (ERROR STOP would print a backtrace)
+!$    endif
+!$omp critical (co2_messages)
       open(newunit=iu, file='Warnings.log', position='append', &
      &     iostat=ios)
       if(ios.eq.0) then
@@ -2891,6 +2904,7 @@
         STOP 1
       endif
       write(0,'(a)') 'RESUMED'
+!$omp end critical (co2_messages)
       END SUBROUTINE Pause1
 
 
@@ -2902,8 +2916,9 @@
       character(80), save :: done(20) = ' '
       integer, save :: nDone = 0
       integer iu, ios, m
+!$omp critical (co2_messages)
       do m = 1, nDone
-        if(done(m) .eq. msg) return
+        if(done(m) .eq. msg) goto 9
       enddo
       if(nDone .lt. 20) then
         nDone = nDone + 1
@@ -2916,4 +2931,6 @@
      &        ':  WARNING ', trim(msg)
         close(iu)
       endif
+  9   continue
+!$omp end critical (co2_messages)
       END SUBROUTINE Warn1

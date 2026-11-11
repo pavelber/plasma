@@ -8,7 +8,7 @@ program test_unit
   use mo1co2feb
   use testio
   implicit none
-  real(8), external :: EED, SigPhi, SigInz, SigExc, FVSinz, FVStbr, FVSEx, &
+  real(8), external :: EED, SigPhiA, SigInzA, SigExcA, FVSinz, FVStbr, FVSEx, &
                        FVSDx, Voigt2, VOIGT, Gauss, Loren, D01AHF
   external POPdot
   real(8) :: Tes(3), bps(2), ees(12), BEs(2), xf(5), cPhi(4,3), cInz(4,3)
@@ -17,6 +17,8 @@ program test_unit
   real(8) :: r, rr, yv(6), dts(3)
   integer :: it, ibp, ie, iBE, mx, ic, id, il, ig, jv, np, nl, ifl, ia, ja
   character(64) :: nm
+  integer :: k, kf, j          ! channel of the cross sections (were module variables)
+  real(8) :: BEk, DE, upTB
   character(256) :: outf
 
   outf = 'unit_out.txt'
@@ -62,7 +64,7 @@ program test_unit
       BEk = BEs(iBE)
       do mx = 1, 5
         write(nm,'(a,3i3)') 'SigPhi', ic, iBE, mx
-        call rec(nm, SigPhi(BEk*xf(mx)))
+        call rec(nm, SigPhiA(BEk*xf(mx), k, kf, BEk, nX))
       end do
     end do
   end do
@@ -80,7 +82,7 @@ program test_unit
       BEk = BEs(iBE)
       do mx = 1, 5
         write(nm,'(a,3i3)') 'SigInz', ic, iBE, mx
-        call rec(nm, SigInz(BEk*xf(mx)))
+        call rec(nm, SigInzA(BEk*xf(mx), k, kf, j, BEk))
         write(nm,'(a,3i3)') 'FVSinz', ic, iBE, mx
         call sync()   ! integration context = module k, kf, j, BEk, DE
         call rec(nm, FVSinz(BEk*xf(mx)))
@@ -110,7 +112,7 @@ program test_unit
       DE = DEs(id)
       do mx = 1, 6
         write(nm,'(a,3i3)') 'SigExc', ic, id, mx
-        call rec(nm, SigExc(DE*xe(mx)))
+        call rec(nm, SigExcA(DE*xe(mx), k, kf, j, DE))
         write(nm,'(a,3i3)') 'FVSEx', ic, id, mx
         call sync()   ! integration context = module k, kf, j, BEk, DE
         call rec(nm, FVSEx(DE*xe(mx)))

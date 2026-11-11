@@ -45,6 +45,8 @@ CASES = {   # input files of the test cases: examples/ in the zip, or the reposi
 }
 INPUT_RE = re.compile(r'.*\.(inp|INP)$')
 E2E_STOP = '7.6d-12'      # Params2.inp line 5: StopTime -> 3 time steps (the third one has BB emission)
+E2E_TIINF = '6.d-12'      # Params2.inp line 6: tiInf -> the detailed print-outs at tiInf are made
+                          # in the third step (LineInfo, emiAbso, EffSpIns, Image, SpInDi, AlongCeLOS, Contacts)
 
 
 THREADS = None            # --threads N: OMP_NUM_THREADS for the programs under test
@@ -220,6 +222,7 @@ def test_d02(update):
 def set_stop_time(params2):
     lines = open(params2, newline='').read().split('\n')
     lines[4] = re.sub(r'^(\s*)\S+', lambda m: m.group(1) + E2E_STOP, lines[4], count=1)
+    lines[5] = re.sub(r'^(\s*)\S+', lambda m: m.group(1) + E2E_TIINF, lines[5], count=1)
     open(params2, 'w', newline='').write('\n'.join(lines))
 
 
@@ -255,6 +258,13 @@ def test_e2e(update):
                     h = hashlib.sha256(open(os.path.join(d, name), 'rb').read()).hexdigest()
                     f.write(f'{name} {h}\n')
         ok &= compare_lines(f'T3 e2e {case}', out, os.path.join(GOLD, f'e2e_{case}.txt'), update)
+        if update:      # also the output files themselves, for the --numeric comparison
+            import zipfile
+            with zipfile.ZipFile(os.path.join(GOLD, f'e2e_{case}_dat.zip'), 'w',
+                                 zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+                for name in sorted(os.listdir(d)):
+                    if name.endswith('.dat') or name == 'screen.log':
+                        z.write(os.path.join(d, name), name)
     return ok
 
 

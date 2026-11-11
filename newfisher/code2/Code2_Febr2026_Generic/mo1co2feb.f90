@@ -89,11 +89,10 @@
      &  NCL, &  ! number of coaxial cylindrical tubes == number of concentrical radial belts on
 !                       seen-to-detector plane round image of target, Figs.1,2.
      &  nvM, LastFr, &  ! number of hv-points in full interval, see subr "hvPoints"
-     &  k, kf, j, i, iX, iv, iw, &  ! variable integers
-     &  kw, k7, k1, k2, kU, kL, &
-     &  iSS, jSS, kQS, kS, nw, &  ! variable integers
-     &  lin, nLam, nXw, n7, lw, &  ! variable integers
-     &  npts, Nlim, Ifail, &  ! integers in D01ahf and d02
+!       (Nov 2026) loop counters and work integers (k, kf, j, i, iX, iv, iw, kw, k7, k1, k2,
+!       kU, kL, iSS, jSS, kQS, kS, nw, lin, nLam, nXw, n7, lw, npts, Nlim, Ifail) are no
+!       longer module variables: each procedure has its own. The same for the work
+!       reals DE, BEk, rer, upTB, frac, Wing, dhv, ww, hveV, LambA.
      &  nuBSs, &  ! number of BSs in the core
      &  Count, StrExc, CountExc, &
      &  StrInz, CountInz, &
@@ -227,7 +226,6 @@
      &   hvPrint4(diLOSn), &  ! [eV] hard edges of
      &   PDsign(nPD), &
      &   PowDet, &
-     &   hveV, LambA, &
      &   wBS, diBSs, &  ! mean distance between centers of neibouring BS.	(II.1a)
      &   dc, &  ! distance from center of test BS to surface of core, Fig.3.
      &   tiInf, &  ! time to display "...LineInfo.dat", "...EmiAbso.dat", "EffSpIns.dat", "AlongCeLOS.dat"
@@ -240,16 +238,15 @@
      &   Amass, &  ! ion mass [g],   Amass= AtMass(nX)*1.66054d-24
      &   AulMin, &  ! Min allowed value of Einst A() coef. If A() < AulMin, we replace it by A() =0 in "Intro"
      &   fluMin, &  ! Min allowed value of Abso OscStrenght. If f() < fluMin, we replace A bt 0 in "Intro"
-     &   DE, BEk, &  ! E betw two levels under consideration, E required for any 'k'-->'kf' transition, init energy of free el in fb trans.
      &   stopTime, &  ! time to stop the run [s].  Instant chosen for CRE calculations, both from FLAG
      &   SumP, Scale, &  ! sum POP
      &   tstep, ti, tf, &  ! time-step [s]. Initial & final instants of present time-step: tf= ti+ tstep; tm=(ti+tf)/2. Start-value of "ti".
-     &   strt, tm, rer, &  ! used in D01ahf(...)
+     &   strt, tm, &  ! strt: start time
      &   TeDotFrE, &  ! part of 'dTe/dt', namely, what is due to thermalization of fresh electrons to 'Te'
      &   Zw, wtot, wtot1, &  ! w-var for Zbar and CPpCm in 'AtKins'
      &   POPk, POPkr, &  ! used for PhI with
      &   rPSI, distII, &  ! used in functions SigExc, SigInz, SigPhi for avoiding too large values via FAC fit errors.  No corre in REVERSE processes as (1) they are expre via direct & (2) must provide equilibration.
-     &   upTB, Incr, frac, &
+     &   Incr, &
      &   ReduReso, ReReiv, &
      &   R1, R2, R3, &  ! [cm] more practical than "CeR(La)"; t-dependent
      &   L1, L2, L3, &
@@ -259,7 +256,6 @@
      &   FrL, &  ! duration of x-ray frame;
      &   W2,W2max, &  ! probability of crossing 2 BSs by 1 LOS, maximal
      &   hvKey, WingCut, &  ! restricts hv-length of line wing via Wing = hvC(line)*WingCut
-     &   Wing, dhv, ww, &
      &   MaxExch, POPexch, &
      &   AsumU, AsumL, Asum, &
      &   minGaLor, maxGaLor, &  ! Edges of instr-conv interval [eV]
