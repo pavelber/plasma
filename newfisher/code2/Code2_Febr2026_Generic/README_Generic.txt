@@ -47,7 +47,11 @@ Sources (Nov 2026)
 ------------------
   Co2feb26_main.f90     main program (time loop)
   Co2feb26_procs.f90    all subroutines and functions
-  mo1co2feb.f90         module: constants, arrays, AllocArrays/AllocSized/AllocLines
+  co2_const.f90         module: constants and fixed dimensions
+  co2_atom.f90          module: atomic data, rates, populations, channel lists,
+                        AllocArrays/AllocSized/AllocLines/BuildChannels
+  co2_util.f90          module: timers, integration context of D01AHF, FlushAll
+  mo1co2feb.f90         module: plasma state, grids, spectra; uses the three above
   nag_replacements_Co2_GNU.f90, lzfix_Co2_GNU.f90   as in the GNU port
 The former Co2feb26_GNU.for = Co2feb26_main.f90 + Co2feb26_procs.f90, split so that
 tests can call the procedures with their own main program.
@@ -62,7 +66,9 @@ for byte to those of the first GNU version.
      level pairs at every one of the ~10500 hv points; same summation order.
   2. VOIGT: its constant tables are computed once instead of in every call.
   3. EED in the BF loop is computed once instead of twice.
-  4. OpenMP (all cores, or OMP_NUM_THREADS): BF loop over hv points; Ws lines,
+  4. OpenMP (all cores, or OMP_NUM_THREADS): BF loop over hv points; BB part of
+     EmiAbso (areas of the line profiles over the lines, then the contributions over
+     the hv points in the old order of the lines); EffSpIn over hv points; Ws lines,
      ionization and excitation (over lines / initial levels); PMg0 (over levels).
      Each sum keeps its old order, so the results do not depend on the number of
      threads (tested with 1, 3 and 20).
@@ -90,8 +96,8 @@ Each run writes Timing.log: wall-clock seconds of the main parts of every time s
 (Intro, EmiAbso with its BB and BF parts, EffSpIn, PowYie, AtKins = Ws + PMg0 +
 D02EAF, Ws split into lines / ionization / excitation / dielectronic capture) and the
 totals at the end. The timers do not change any result.
-Full Kr run: D02EAF 142 s, EmiAbso 107 s (BB 45 s, serial), EffSpIn 43 s (serial),
-Ws 67 s, PMg0 11 s.
+Every run uses all cores: run calculations and tests one after another, not at the
+same time (the tests run the Kr and Ge cases one after the other).
 
 Tests
 -----
@@ -103,7 +109,8 @@ Tests
 T1: unit tests of the physics functions (EED, cross sections, VOIGT, D01AHF, D02EAF).
 T1-D02: D02EAF against the previous algorithm and against quadruple precision.
 T2: one time step of all routines on the real Kr and Ge databases.
-T3: the real program, sha256 of all .dat files and of the screen output.
+T3: the real program, sha256 of all .dat files and of the screen output; tiInf is
+    set to 6 ps, so the detailed print-outs at tiInf are tested too.
 Comparisons are bit for bit. With --numeric (for changes that move the last digits):
 T1/T2 within relative 1e-9, T3 within one unit of the last printed digit against
 tests/golden/e2e_*_dat.zip. tests/numcompare.py compares two result folders the same

@@ -167,12 +167,11 @@ def test_unit(update):
 
 
 def test_step(update):
-    procs = {}
+    # one case after the other: every run uses all cores (OpenMP)
+    ok = True
     for case in CASES:
         d = prepare(case, 'step')
-        procs[case] = (d, run([os.path.join(ROOT, 'test_step' + EXE), 'step_out.txt'], d, 'screen.log'))
-    ok = True
-    for case, (d, p) in procs.items():
+        p = run([os.path.join(ROOT, 'test_step' + EXE), 'step_out.txt'], d, 'screen.log')
         p.wait()
         if p.returncode != 0:
             print(f'  T2 step {case}: FAIL, exit code {p.returncode}, see {d}')
@@ -227,13 +226,12 @@ def set_stop_time(params2):
 
 
 def test_e2e(update):
-    procs = {}
+    # one case after the other: every run uses all cores (OpenMP)
+    ok = True
     for case in CASES:
         d = prepare(case, 'e2e')
         set_stop_time(os.path.join(d, 'Params2.inp'))
-        procs[case] = (d, run([os.path.join(ROOT, 'Co2feb26_Generic' + EXE)], d, 'screen.log'))
-    ok = True
-    for case, (d, p) in procs.items():
+        p = run([os.path.join(ROOT, 'Co2feb26_Generic' + EXE)], d, 'screen.log')
         p.wait()
         if p.returncode != 0:
             print(f'  T3 e2e {case}: FAIL, exit code {p.returncode}, see {d}')
