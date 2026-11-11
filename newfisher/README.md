@@ -13,7 +13,7 @@ GNU-версии собираются gfortran без NAG: две процеду
 
 | Задача | Папка | Исполняемый файл |
 |---|---|---|
-| Code2, любой элемент (Kr, Ge, …) + C, He, D | `code2/Code2_Febr2026_Generic` | `Co2feb26_Generic.exe` |
+| Code2, любой элемент (Kr, Ge, …) + C, He, D | `code2/Code2_Febr2026_Generic` | `Co2feb26_Generic_v3.exe` |
 | Code1, Al + Mg | `code1/Code1_AlMg_GNU` | `Code1_AlMg.exe` |
 | Code1, Kr + Mg (только MS Fortran + NAG) | `code1/Code 1 Feb2026` | `Code1_Feb2026.exe` |
 

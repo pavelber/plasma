@@ -231,7 +231,7 @@ def test_e2e(update):
     for case in CASES:
         d = prepare(case, 'e2e')
         set_stop_time(os.path.join(d, 'Params2.inp'))
-        p = run([os.path.join(ROOT, 'Co2feb26_Generic' + EXE)], d, 'screen.log')
+        p = run([os.path.join(ROOT, 'Co2feb26_Generic_v3' + EXE)], d, 'screen.log')
         p.wait()
         if p.returncode != 0:
             print(f'  T3 e2e {case}: FAIL, exit code {p.returncode}, see {d}')

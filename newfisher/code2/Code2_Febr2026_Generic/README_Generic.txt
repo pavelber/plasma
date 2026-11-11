@@ -38,9 +38,9 @@ What is still fixed at compile time (does not depend on the element):
 
 Build
 -----
-  mingw32-make -f Makefile.gnu          -> Co2feb26_Generic.exe
+  mingw32-make -f Makefile.gnu          -> Co2feb26_Generic_v3.exe
   mingw32-make -f Makefile.gnu debug    -> same with bounds checking
-Run: copy Co2feb26_Generic.exe into the folder with the input files of the case
+Run: copy Co2feb26_Generic_v3.exe into the folder with the input files of the case
 and start it there.
 
 Sources (Nov 2026)

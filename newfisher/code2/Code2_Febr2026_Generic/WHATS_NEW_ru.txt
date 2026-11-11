@@ -3,11 +3,11 @@
 
 КАК ЗАПУСКАТЬ НА РАЗНЫХ ЭЛЕМЕНТАХ
 
-Одна программа Co2feb26_Generic.exe считает любой элемент, перекомпилировать её не
+Одна программа Co2feb26_Generic_v3.exe считает любой элемент, перекомпилировать её не
 нужно. Для каждого расчёта сделайте папку со всеми входными файлами элемента
 (Params0.inp, Params1.inp, Params2.inp, QSs.inp, QSsC.inp, QSsHe.inp, QSsD.inp,
 Exc.inp, Inz.inp, AIw.inp, InpResp1.inp ... InpResp9.inp - формат тот же, что
-раньше), положите туда Co2feb26_Generic.exe и запустите его в этой папке.
+раньше), положите туда Co2feb26_Generic_v3.exe и запустите его в этой папке.
 Размеры массивов программа берёт из Params0.inp (строки 2 и 4: HSS и NST).
 Params0.inp можно построить по QSs*-файлам скриптом tools\create_params0.py.
 По умолчанию программа занимает все ядра; число потоков можно задать переменной
@@ -156,7 +156,7 @@ PROGRAMMING_ISSUES.md.
 
 7. Состав архива
 
-  Co2feb26_Generic.exe      программа (Windows 10/11, 64 бит; дополнительных DLL не нужно)
+  Co2feb26_Generic_v3.exe      программа (Windows 10/11, 64 бит; дополнительных DLL не нужно)
   RUN_INSTRUCTIONS_ru.txt   как запускать
   WHATS_NEW_ru.txt          этот файл
   README_Generic.txt        техническое описание версии (англ.)

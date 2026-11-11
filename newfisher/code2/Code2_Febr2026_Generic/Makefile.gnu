@@ -38,11 +38,11 @@ endif
 
 ifeq ($(OS),Windows_NT)
   EXEEXT  := .exe
-  EXE     := Co2feb26_Generic.exe
+  EXE     := Co2feb26_Generic_v3.exe
   # Static link: the .exe runs on any Windows PC without the MinGW DLLs
   LDSTATIC := -static
 else
-  EXE     := Co2feb26_Generic
+  EXE     := Co2feb26_Generic_v3
   LDSTATIC :=
 endif
 
