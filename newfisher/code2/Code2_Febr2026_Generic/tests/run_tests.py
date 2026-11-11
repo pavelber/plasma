@@ -7,6 +7,11 @@
   python tests/run_tests.py e2e        T3: the real program, 3 time steps of Kr and Ge, ~8 min
   python tests/run_tests.py all        T1 + T2 + T3
   ... --threads N                      run the programs with OMP_NUM_THREADS=N
+  ... --numeric                        compare with tolerances (for changes that move the last
+                                       digits, e.g. a new D02EAF): T1/T2 values within rtol 1e-9,
+                                       T3 numbers within 1 unit of the last printed digit
+                                       (golden data: golden/e2e_<case>_dat.zip)
+  python tests/run_tests.py d02        new D02EAF against the previous algorithm (seconds)
   ... --update                         write the golden files instead of comparing
                                        (only after deciding that a change of results is wanted)
 
@@ -43,6 +48,11 @@ E2E_STOP = '7.6d-12'      # Params2.inp line 5: StopTime -> 3 time steps (the th
 
 
 THREADS = None            # --threads N: OMP_NUM_THREADS for the programs under test
+NUMERIC = False           # --numeric: compare with tolerances instead of bit for bit
+RTOL = 1e-9               # relative tolerance of T1/T2 values in --numeric mode
+UNITS = 1                 # T3 in --numeric mode: allowed difference, in units of the last printed digit
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import numcompare         # noqa: E402
 
 
 def env():
@@ -64,7 +74,56 @@ def prepare(case, name):
     return d
 
 
+def parse_value_line(line):
+    """T1/T2 line -> (name, kind, values): scalar 'name HEX value', array
+    'name HASH sum= S max= M', or integer 'name N'."""
+    t = line.split()
+    if 'sum=' in t:
+        i = t.index('sum=')
+        return ' '.join(t[:i - 1]), 'arr', (float(t[i + 1]), float(t[i + 3]))
+    if len(t) >= 3 and re.fullmatch(r'[0-9A-F]{16}', t[-2]):
+        return ' '.join(t[:-2]), 'val', (float(t[-1]),)
+    return ' '.join(t[:-1]), 'int', (int(t[-1]),)
+
+
+def compare_numeric(name, got_file, gold_file):
+    got = open(got_file).read().splitlines()
+    gold = open(gold_file).read().splitlines()
+    if len(gold) != len(got):
+        print(f'  {name}: FAIL, {len(got)} lines, golden has {len(gold)}')
+        return False
+    nbit = nbad = 0
+    worst, wl = 0.0, ''
+    for g, h in zip(gold, got):
+        if g == h:
+            nbit += 1
+            continue
+        ng, kg, vg = parse_value_line(g)
+        nh, kh, vh = parse_value_line(h)
+        if ng != nh or kg != kh:
+            print(f'  {name}: FAIL, lines do not match:')
+            print(f'     golden: {g}')
+            print(f'     now:    {h}')
+            return False
+        for a, b in zip(vg, vh):
+            if kg == 'int':
+                rel = 0.0 if a == b else 1.0
+            else:
+                rel = 0.0 if a == b else abs(a - b) / max(abs(a), abs(b))
+            if rel > worst:
+                worst, wl = rel, ng
+            if rel > RTOL:
+                nbad += 1
+    status = 'OK' if nbad == 0 else 'FAIL'
+    where = f' ({wl})' if wl else ''
+    print(f'  {name}: {status} (numeric, rtol {RTOL:g}): {nbit} of {len(gold)} values bit for bit, '
+          f'max rel. difference {worst:.1e}{where}, {nbad} outside')
+    return nbad == 0
+
+
 def compare_lines(name, got_file, gold_file, update):
+    if NUMERIC and not update:
+        return compare_numeric(name, got_file, gold_file)
     got = open(got_file).read().splitlines()
     if update:
         shutil.copy2(got_file, gold_file)
@@ -122,6 +181,42 @@ def test_step(update):
     return ok
 
 
+def test_d02(update):
+    """New D02EAF against the previous algorithm D02EAF_TAYLOR (no golden file)."""
+    d = os.path.join(WORK, 'd02')
+    os.makedirs(d, exist_ok=True)
+    p = run([os.path.join(ROOT, 'test_d02' + EXE), 'd02_out.txt'], d, 'screen.log')
+    p.wait()
+    if p.returncode != 0:
+        print(f'  T1 D02EAF: FAIL, exit code {p.returncode}, see {d}')
+        return False
+    ok = True
+    worst = 0.0
+    rows = [r for r in open(os.path.join(d, 'd02_out.txt')).read().splitlines() if r.strip()]
+    print('     n   ||A||   new-old   err new   err old  (err: vs quadruple precision)')
+    for r in rows:
+        t = r.split()
+        n, nrm, rel, dsum, ymin = int(t[0]), float(t[1]), float(t[2]), float(t[3]), float(t[4])
+        f1, f2 = int(t[5]), int(t[6])
+        errn, erro, dsumo = float(t[7]), float(t[8]), float(t[9])
+        worst = max(worst, rel)
+        if errn >= 0:   # exact reference: the new one must not be less accurate than the old one
+            good = errn <= 10 * max(erro, 1e-14)
+            print(f'   {n:4d} {nrm:7.0e} {rel:9.1e} {errn:9.1e} {erro:9.1e}')
+        else:
+            good = rel <= 1e-8
+        good = good and dsum <= 10 * max(dsumo, 1e-14) and ymin >= -1e-12 and f1 == 0 and f2 == 0
+        if not good:
+            print(f'  T1 D02EAF: FAIL for n={n}, ||A||={nrm:g}: new-old {rel:.1e}, err new {errn:.1e}, '
+                  f'err old {erro:.1e}, |sum-1| new {dsum:.1e} old {dsumo:.1e}, min {ymin:.1e}, '
+                  f'ifail {f1} {f2}')
+            ok = False
+    if ok:
+        print(f'  T1 D02EAF: OK ({len(rows)} cases): not less accurate than the previous algorithm; '
+              f'max new-old difference {worst:.1e}')
+    return ok
+
+
 def set_stop_time(params2):
     lines = open(params2, newline='').read().split('\n')
     lines[4] = re.sub(r'^(\s*)\S+', lambda m: m.group(1) + E2E_STOP, lines[4], count=1)
@@ -140,6 +235,18 @@ def test_e2e(update):
         if p.returncode != 0:
             print(f'  T3 e2e {case}: FAIL, exit code {p.returncode}, see {d}')
             ok = False
+            continue
+        if NUMERIC and not update:
+            import zipfile
+            ref = os.path.join(WORK, f'e2e_{case}_ref')
+            if os.path.isdir(ref):
+                shutil.rmtree(ref)
+            zipfile.ZipFile(os.path.join(GOLD, f'e2e_{case}_dat.zip')).extractall(ref)
+            files = sorted(f for f in os.listdir(ref) if f.endswith('.dat')) + ['screen.log']
+            print(f'  T3 e2e {case} (numeric, up to {UNITS:g} unit(s) of the last printed digit):')
+            good = numcompare.compare_dirs(ref, d, files, UNITS, quiet=True)
+            print(f'  T3 e2e {case}: {"OK" if good else "FAIL"}')
+            ok &= good
             continue
         out = os.path.join(d, 'e2e_sha256.txt')
         with open(out, 'w') as f:
@@ -161,9 +268,15 @@ def main():
         THREADS = int(args[i + 1])
         del args[i:i + 2]
         print(f'OMP_NUM_THREADS = {THREADS}')
+    global NUMERIC
+    if '--numeric' in args:
+        NUMERIC = True
+        args = [a for a in args if a != '--numeric']
+        print('numeric comparison (tolerances), not bit for bit')
     what = args[0] if args else 'quick'
-    tests = {'unit': [test_unit], 'step': [test_step], 'e2e': [test_e2e],
-             'quick': [test_unit, test_step], 'all': [test_unit, test_step, test_e2e]}[what]
+    tests = {'unit': [test_unit], 'step': [test_step], 'e2e': [test_e2e], 'd02': [test_d02],
+             'quick': [test_unit, test_d02, test_step],
+             'all': [test_unit, test_d02, test_step, test_e2e]}[what]
     os.makedirs(WORK, exist_ok=True)
     os.makedirs(GOLD, exist_ok=True)
     ok = True

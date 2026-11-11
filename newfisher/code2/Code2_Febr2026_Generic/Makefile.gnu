@@ -94,7 +94,7 @@ debug:
 
 # ---- tests (see tests/run_tests.py and PLAN_refactoring_speed.md)
 TEST_IO   := tests/testio.o
-tests: test_unit$(EXEEXT) test_step$(EXEEXT) $(EXE)
+tests: test_unit$(EXEEXT) test_step$(EXEEXT) test_d02$(EXEEXT) $(EXE)
 
 $(TEST_IO): tests/testio.f90
 	$(FC) $(FFLAGS) -Jtests -c $< -o $@
@@ -104,6 +104,12 @@ tests/test_unit.o: tests/test_unit.f90 $(TEST_IO) $(MOD_OBJ)
 
 tests/test_step.o: tests/test_step.f90 $(TEST_IO) $(MOD_OBJ)
 	$(FC) $(FFLAGS) -Itests -c $< -o $@
+
+tests/test_d02.o: tests/test_d02.f90 $(MOD_OBJ)
+	$(FC) $(FFLAGS) -Itests -c $< -o $@
+
+test_d02$(EXEEXT): tests/test_d02.o $(LIB_OBJS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
 
 test_unit$(EXEEXT): tests/test_unit.o $(TEST_IO) $(LIB_OBJS)
 	$(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
@@ -126,8 +132,8 @@ run: $(EXE)
 # Works both when make uses cmd.exe and when it uses sh (Git Bash / MSYS / Linux)
 ifeq ($(shell echo %OS%),%OS%)
 clean:
-	rm -f *.o *.mod $(EXE) tests/*.o tests/*.mod test_unit$(EXEEXT) test_step$(EXEEXT)
+	rm -f *.o *.mod $(EXE) tests/*.o tests/*.mod test_unit$(EXEEXT) test_step$(EXEEXT) test_d02$(EXEEXT)
 else
 clean:
-	-del /Q *.o *.mod $(EXE) tests\*.o tests\*.mod test_unit$(EXEEXT) test_step$(EXEEXT) 2>nul
+	-del /Q *.o *.mod $(EXE) tests\*.o tests\*.mod test_unit$(EXEEXT) test_step$(EXEEXT) test_d02$(EXEEXT) 2>nul
 endif

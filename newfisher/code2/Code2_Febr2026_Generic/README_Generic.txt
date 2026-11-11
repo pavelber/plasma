@@ -52,30 +52,37 @@ Sources (Nov 2026)
 The former Co2feb26_GNU.for = Co2feb26_main.f90 + Co2feb26_procs.f90, split so that
 tests can call the procedures with their own main program.
 
-Faster versions, same results bit for bit (Nov 2026)
-----------------------------------------------------
+Faster versions (Nov 2026)
+--------------------------
+Full runs to 65 ps on 20 cores: Kr 6 min 15 s (5 h 15 min in the first GNU version:
+about 50 times faster), Ge 5 min 13 s. All 30 output files of the full Kr and Ge runs are identical byte
+for byte to those of the first GNU version.
   1. EmiAbso, bound-free absorption / free-bound emission: the list of BF
      channels (k,kf) is built once per call instead of testing all 1612 x 1612
      level pairs at every one of the ~10500 hv points; same summation order.
   2. VOIGT: its constant tables are computed once instead of in every call.
   3. EED in the BF loop is computed once instead of twice.
-Full Kr run to 65 ps: 5 h 43 min before, 44 min after 1 and 2. All 30 output
-files of full Kr and Ge runs are identical byte for byte to the older version.
+  4. OpenMP (all cores, or OMP_NUM_THREADS): BF loop over hv points; Ws lines,
+     ionization and excitation (over lines / initial levels); PMg0 (over levels).
+     Each sum keeps its old order, so the results do not depend on the number of
+     threads (tested with 1, 3 and 20).
+  5. D02EAF: degree-16 Taylor polynomial by the Paterson-Stockmeyer scheme
+     (6 matrix products instead of ~13), the last 10 of the s squarings applied to
+     the vector, parallel matrix products with a fixed order of summation: about 11
+     times faster. This is the only change that moves digits: internal values
+     (populations) differ by up to 4e-12 relative; the printed output did not change.
+     The previous algorithm is kept as D02EAF_TAYLOR (for the tests).
 
-  4. OpenMP: the BF loop over hv points runs in parallel (all cores, or set
-     OMP_NUM_THREADS). Each hv point keeps its own sum in the old order, so the
-     results do not depend on the number of threads (tested with 1 and 20).
-     The 3-step Kr+Ge test (T3) takes 425 s instead of 1016 s on 20 cores.
-
-Other changes that do not change results: "do nX = 1, nXkin" (nXkin = 1 in the
-module: kinetics, lines and BF only for X) instead of "do nX = 1, 1 ! nXE";
-PAUSE replaced by CALL Pause1('...'), which behaves as PAUSE but also writes the
-message to Warnings.log and stops with exit code 1 (gfortran's PAUSE without a
-keyboard silently stopped the run with exit code 0, as a normal end).
-Also: VOIGT no longer changes the module variable I; pv(1) in Ws and pBB(1) in
-EmiAbso are set to zero explicitly; the number of points of each InpResp*.inp is
-counted from the file (it was DATA npInpRes in the module); SigPhiA = SigPhi with
-the channel (k, kf, BEk, nX) as arguments.
+Other changes that do not change results: sources in free form (.f90; text that was
+after column 72 is kept as a marked comment); "do nX = 1, nXkin" (nXkin = 1: kinetics,
+lines and BF only for X); PAUSE replaced by CALL Pause1('...'), which behaves as PAUSE
+but also writes the message to Warnings.log and stops with exit code 1 (gfortran's
+PAUSE without a keyboard silently stopped the run with exit code 0); VOIGT no longer
+changes the module variable I; explicit zeros and SAVE for work arrays; the number of
+points of each InpResp*.inp is counted from the file; cross sections with explicit
+arguments (SigPhiA, SigInzA, SigExcA) and a threadprivate integration context for the
+integrands of D01AHF; output files flushed at the end of each time step; a warning in
+Warnings.log if not R1 < dc < R2-R1. See PROGRAMMING_ISSUES.md.
 
 Timing
 ------
@@ -83,17 +90,24 @@ Each run writes Timing.log: wall-clock seconds of the main parts of every time s
 (Intro, EmiAbso with its BB and BF parts, EffSpIn, PowYie, AtKins = Ws + PMg0 +
 D02EAF, Ws split into lines / ionization / excitation / dielectronic capture) and the
 totals at the end. The timers do not change any result.
-Full Kr run to 65 ps on 20 cores: 35 min (2098 s); D02EAF 46%, Ws ionization 28%,
-Ws excitation 6%, EmiAbso 9%, PMg0 5%, EffSpIn 3%.
+Full Kr run: D02EAF 142 s, EmiAbso 107 s (BB 45 s, serial), EffSpIn 43 s (serial),
+Ws 67 s, PMg0 11 s.
 
 Tests
 -----
-  mingw32-make -f Makefile.gnu test       T1 + T2, about 2 min
-  mingw32-make -f Makefile.gnu test-e2e   T3, 3 time steps of Kr and Ge (~10-20 min)
-  python tests/run_tests.py e2e --update  rewrite the golden files (only on purpose)
+  mingw32-make -f Makefile.gnu test       T1, T1-D02, T2 (about 30 s)
+  mingw32-make -f Makefile.gnu test-e2e   T3, 3 time steps of Kr and Ge (about 70 s)
+  python tests/run_tests.py all --threads N   with N OpenMP threads
+  python tests/run_tests.py all --numeric     numeric comparison (see below)
+  python tests/run_tests.py e2e --update      rewrite the golden files (only on purpose)
 T1: unit tests of the physics functions (EED, cross sections, VOIGT, D01AHF, D02EAF).
+T1-D02: D02EAF against the previous algorithm and against quadruple precision.
 T2: one time step of all routines on the real Kr and Ge databases.
 T3: the real program, sha256 of all .dat files and of the screen output.
-All comparisons are bit for bit. Needs python 3. Golden files: tests/golden.
+Comparisons are bit for bit. With --numeric (for changes that move the last digits):
+T1/T2 within relative 1e-9, T3 within one unit of the last printed digit against
+tests/golden/e2e_*_dat.zip. tests/numcompare.py compares two result folders the same
+way. Needs python 3. Golden files: tests/golden.
 
-See also PLAN_refactoring_speed.md (next steps) and PHYSICS_QUESTIONS.md (possible future physics changes).
+See also PLAN_refactoring_speed.md (next steps) and PHYSICS_QUESTIONS.md (possible
+future physics changes).
