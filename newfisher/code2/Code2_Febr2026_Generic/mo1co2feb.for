@@ -272,8 +272,7 @@ c     +   fwTUKvC(LaMx,nXE),   ! for-broadening info
      +   QMlimit(:,:), ! (MNLe,LaMx) lower limit for level width from uncertainty princip
      +   FWevLor(:,:)  ! (MNLe,LaMx) Lorentzian (Stark) part of FWHM [eV]
 
-      DATA npInpRes /13, 13, 13, 13, 9, 7, 9, 9, 9  /  ! "number of hv points in input file of 
-c                                                         Spectral Response of each of "mDet" detectors  
+c     npInpRes (number of hv points in each InpResp*.inp) is counted in OpenFiles
 
       DATA kRp /0., 
      +       3.52E-4,  4.05E-4,  4.65E-4,  5.35E-4,  6.15E-4,  7.08E-4,  ! tau-points of our 119-point fit to spherical K13(tau)  

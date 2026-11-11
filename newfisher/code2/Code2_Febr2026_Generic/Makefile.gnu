@@ -46,7 +46,12 @@ endif
 # Standard 72-column fixed form, as MS Fortran PowerStation: text after column 72 is ignored
 # (several statements in Co2feb26.for have comments there without '!').
 # -std=legacy: accept PAUSE and other old extensions without warnings
-FFLAGS_COMMON := -std=legacy
+# OpenMP: parallel loops (number of threads = number of cores, or OMP_NUM_THREADS).
+# -fmax-stack-var-size=65536 keeps large local arrays static, as without -fopenmp
+# (otherwise -fopenmp moves them to the stack); results are the same with any number
+# of threads, see tests/run_tests.py --threads.
+OMPFLAGS ?= -fopenmp -fmax-stack-var-size=65536
+FFLAGS_COMMON := -std=legacy $(OMPFLAGS)
 OPT     ?= -O2
 FFLAGS  ?= $(OPT) $(FFLAGS_COMMON)
 LDFLAGS ?= $(LDSTATIC)

@@ -4,6 +4,7 @@ c  The main program is in Co2feb26_main.for; tests link these procedures with th
       SUBROUTINE OpenFiles() 
       use mo1co2feb
       implicit none
+      integer ios
 
       open(12, file= 'Params0.inp')
       open(13, file= 'Params1.inp')
@@ -86,9 +87,13 @@ c                                       Spectral response of spectrometer_1 [arb
 
       do j = 1, mDet      ! all detectors 
          read(200+j,'(a10)') title
-         do iv = 1, npInpRes(j)
-            read(200+j,*) hvRes(iv,j), InRes(iv,j)   ! input points of photon energy and response of j-th detector in this point 
+         npInpRes(j)= 0   ! number of points: counted in the file (Nov 2026), was DATA in the module
+         do iv = 1, mxPoRes
+            read(200+j,*,iostat=ios) hvRes(iv,j), InRes(iv,j)   ! input points of photon energy and response of j-th detector in this point 
+            if(ios.ne.0) exit
+            npInpRes(j)= iv
          enddo	  		 	  
+         if(npInpRes(j).lt.2) CALL Pause1('InpResp file has < 2 points')
          close(200+j)
       enddo
 
@@ -805,11 +810,13 @@ Control of consistency:
 
       do j = 1, mDet                 ! each detector
         do iv= 2, nvM 	           ! serial numbers of all hv points of the code
+           icL= 0
            do ic = 1, npInpRes(j)-1  ! serial numbers of hv points of input file    
 
               if(hvRes(ic,j).lt.hvV(iv) .and. hvV(iv).le.hvRes(ic+1,j)) 
      +            icL= ic
            enddo  						
+           if(icL.eq.0) CALL Pause1('hv point outside InpResp table')
            Frac= (hvV(iv)-hvRes(icL,j)) / (hvRes(icL+1,j)-hvRes(icL,j))	              		   
            Resp(iv,j)= InRes(icL,j)+ Frac*(InRes(icL+1,j)-InRes(icL,j))  ! Response on hv array of the code  
         enddo
@@ -829,6 +836,8 @@ Control of consistency:
      +         FreE, EED, FWevDop, Voigt2, alfaFB,
      +         Velo, SigPhI, contrib, SiPh, SiRR, HalfLor, VoiFWHM
       integer  nCh, ic, kEnd, kfEnd                    ! BF channel list
+      integer  ivq, nXq, kq, kfq
+      real(8)  BEq, Wwq, SigPhiA
       real(8)  EEDv
       integer, allocatable :: chK(:), chKf(:)
       real(8)  BEkEnd
@@ -901,6 +910,7 @@ c  Full-shape BB EMISSIVITY and ABSORPTIVITY due to all lines;  Also Line Lorent
       enddo   ! lw loop
 
       if(ti .LT. (strt+2*tstep)) goto 2   
+      pBB(1)= zero     ! pBB(1) is used below but never set: was 0 only as static memory
       absoBB= zero     ! local plasma bound-bound absorption coef corre for stimulated emission [1/cm], XE-sum, line sum
       emisBB= zero     ! local plasma BB emissivity   [W/cc/sr/eV]
       do lw= 1, linM4  ! each "hvV(iv)" may include contributions from many lines because of their long wings.
@@ -983,39 +993,50 @@ c                                                  scaling of from-FAC SigPhi ov
       kfEnd= kf
       BEkEnd= BEk
 
-      do iv= 1, nvM 
-        do nX = 1, nXkin   ! nXE    ! In this version of the code I excluded C,He, D from FBBF because they are excluded from AtKins, thus
-          absoBFx(iv,nX)= zero  ! contribution of one nX                             !@#$%*******************
-          emisFBx(iv,nX)= zero  
+c  The hv points are independent: they are shared between OpenMP threads.
+c  Inside one hv point the channels are summed in the same order as before,
+c  so the result does not depend on the number of threads. The loop uses its
+c  own (private) variables; SigPhiA gets the channel as arguments.
+!$omp parallel do default(shared) schedule(dynamic,64)
+!$omp& private(ivq, nXq, ic, kq, kfq, BEq, FreE, EEDv, Wwq, alfaFB,
+!$omp&         SiPh, contrib, Velo, SiRR)
+      do ivq= 1, nvM 
+        do nXq = 1, nXkin   ! nXE    ! In this version of the code I excluded C,He, D from FBBF because they are excluded from AtKins, thus
+          absoBFx(ivq,nXq)= zero  ! contribution of one nX
+          emisFBx(ivq,nXq)= zero  
           do ic= 1, nCh                 ! BF channels (k,kf) in the old k,kf order
-               k  = chK(ic)
-               kf = chKf(ic)
-               BEk= chBE(ic)
-               if(hvV(iv) .LT. BEk+1.d-6)   cycle   ! hv cannot Photo-Ionize k  --> kf
-               FreE = hvV(iv)- BEk                               ! energy of freed electron 
+               kq  = chK(ic)
+               kfq = chKf(ic)
+               BEq = chBE(ic)
+               if(hvV(ivq) .LT. BEq+1.d-6)   cycle   ! hv cannot Photo-Ionize k  --> kf
+               FreE = hvV(ivq)- BEq                              ! energy of freed electron 
                EEDv= EED(FreE)                                   ! once; used twice below
-               Ww= 1.46796094d-22*Dene(La)*EEDv/sqrt(FreE)       ! We write "1.468" instead of "2.936../two" because 
+               Wwq= 1.46796094d-22*Dene(La)*EEDv/sqrt(FreE)      ! We write "1.468" instead of "2.936../two" because 
 c                                                                  proved the error in (49), see comment in BlackFold
-               alfaFB = Ww * (POPi(kf,nX,La)/g0(kf,nX))
-     +                     / (POPi(k ,nX,La)/g0(k ,nX))
+               alfaFB = Wwq * (POPi(kfq,nXq,La)/g0(kfq,nXq))
+     +                      / (POPi(kq ,nXq,La)/g0(kq ,nXq))
 
-               SiPh = SigPhI(hvV(iv))          
-               contrib = Den(nX,La)*POPi(k,nX,La)* SiPh *(one - alfaFB) ! (49); 
-               absoBFx(iv,nX)= absoBFx(iv,nX) + contrib               ! (50), this XE
+               SiPh = SigPhiA(hvV(ivq), kq, kfq, BEq, nXq)
+               contrib = Den(nXq,La)*POPi(kq,nXq,La)*                  ! (49)
+     +                   SiPh *(one - alfaFB)
+               absoBFx(ivq,nXq)= absoBFx(ivq,nXq) + contrib            ! (50), this XE
 
 c  FB EMISSION due to RR onto ions of current nX:  (SS=j+1,kf) + e  --> (j,k) + hv   
 
                Velo= 5.93096887d7*sqrt(FreE)               ! Velocity of free electron = sq(2k*E/m); cm/s  
-               SiRR= SiPh *g0(k ,nX)* hvV(iv)**2 /        
-     +                    (g0(kf,nX)* FreE* 1.02199815d6)  ! (39); 1.022 MeV== 2mc^2, see mo1co2feb.for 9 digits 
+               SiRR= SiPh *g0(kq ,nXq)* hvV(ivq)**2 /        
+     +                    (g0(kfq,nXq)* FreE* 1.02199815d6)  ! (39); 1.022 MeV== 2mc^2, see mo1co2feb.for 9 digits 
 
-               contrib= Dene(La)*Den(nX,La)*POPi(kf,nX,La)*       ! (34), (28): one kf-->k channel to (37) sum
-     +                  BolJ*hvV(iv)* Velo*EEDv *SiRR/FoPi        ! SigRR is expressed via "SigPhi"
+               contrib= Dene(La)*Den(nXq,La)*POPi(kfq,nXq,La)*    ! (34), (28): one kf-->k channel to (37) sum
+     +                  BolJ*hvV(ivq)* Velo*EEDv *SiRR/FoPi       ! SigRR is expressed via "SigPhi"
 
-               emisFBx(iv,nX)= emisFBx(iv,nX) + contrib    ! k,kf Sum (37) for this XE, [W/cc/sr/eV] 
+               emisFBx(ivq,nXq)= emisFBx(ivq,nXq) + contrib    ! k,kf Sum (37) for this XE, [W/cc/sr/eV] 
           enddo      ! ic
         enddo         ! nX  
       enddo           ! iv 
+!$omp end parallel do
+      iv = nvM + 1     ! module iv and nX as left by the old serial loops
+      nX = nXkin + 1
       k  = kEnd
       kf = kfEnd
       BEk= BEkEnd
@@ -1957,6 +1978,7 @@ CUT-off block. On this t-step some ELs could get "BE < 1.d-3". I move POP of the
 
 c      write(*,'(a50,2i3)') 'inside subr Ws, La,nX=', La, nX
 
+      pv(1) = zero   ! pv(1) is used below (iv=2) but never set: was 0 only as static memory
 *** Probability of bound-bound INDUCED transition down (emission) and up (absorption): Wind(U,L) and Wab(L,U)
       do lw= 1, linM4                 ! loop over all spectral lines
          if( nX3(lw) .ne. nX) cycle   ! skip lines of another XE  
@@ -2307,28 +2329,34 @@ c        therefore I restrict "SigInz", "SigPhi", no need in restricting recombi
 	real(8) function SigPhi(hv)  ! cm2, eV;  PhotoIonz Cross-Sec.   Notations:  (j,k) + hv --> (j+1,kf) + e
       use mo1co2feb                ! function "SigPhi" for nX, k, kf, BEk from call
 	implicit none      
-	real(8) hv, xw
-        if(nX .ne. 1  )
+	real(8) hv, SigPhiA
+      SigPhi= SigPhiA(hv, k, kf, BEk, nX)
+      END 
+
+
+      real(8) function SigPhiA(hv, kk, kkf, BEkk, nXk) ! same as SigPhi with the channel as arguments (Nov 2026)
+      use mo1co2feb, only: bra, Eix, Fix, Gix, Hix, SigMax, La, zero
+	implicit none      
+      integer kk, kkf, nXk
+	real(8) hv, BEkk, xw
+      if(nXk .ne. 1)
      +   CALL Pause1('Came in SigPhi with nX =/= 1')
-      if(bra(k,kf,nX).LT. 0.5)
-     +   CALL Pause1('Came in SigPhi with bra < 0.5') ! FAC "InzXE....inp" has no coefs for SigPhi in this channel 
-  	if(hv .LE. BEk) then
+      if(bra(kk,kkf,nXk).LT. 0.5)
+     +   CALL Pause1('Came in SigPhi with bra < 0.5') ! FAC "InzXE....inp" has no coefs for SigPhi in this channel
+  	if(hv .LE. BEkk) then
          write(*,'(/a40, 2i5, 2f12.3, e11.2)') 
      +          'In func SigPhi: k, kf, BEk, hv =',           
-     +           k, kf, BEk, hv 
+     +           kk, kkf, BEkk, hv 
          CALL Pause1('i.e. came in SigPhi with hv < BEk')
       endif
 
-      xw = hv/BEk
-      SigPhi= (Eix(k,kf)+ Fix(k,kf)/xw + Gix(k,kf)/xw/xw)/  ! MFGu fit to SigPhi(x), see "GU expres for Cross-sec.pdf" file from Bern   
-     +                         xw**(3.5+ Hix(k,kf))   
-c                              SigPhi= 7.9d-18* (BEk/hv)**3 /HSS(nX)**2  ! Kramers;  see BlackFold(42); H-like to nucl.
-      if(SigPhi.LT.zero)       SigPhi= zero        ! Bad fits to FAC points may cause Sig < 0 
+      xw = hv/BEkk
+      SigPhiA= (Eix(kk,kkf)+ Fix(kk,kkf)/xw + Gix(kk,kkf)/xw/xw)/  ! MFGu fit to SigPhi(x), see "GU expres for Cross-sec.pdf" file from Bern
+     +                         xw**(3.5+ Hix(kk,kkf))   
+      if(SigPhiA.LT.zero)       SigPhiA= zero        ! Bad fits to FAC points may cause Sig < 0 
 
-      if(SigPhi.GT.SigMax(La)) SigPhi= SigMax(La)  ! (i)  We assume scaling of from-FAC ioniz cross-secs over eeV/BEk
-c                                                         but it can cause huge SigPhi (if BEk is small), 
+      if(SigPhiA.GT.SigMax(La)) SigPhiA= SigMax(La)  ! (i)  We assume scaling of from-FAC ioniz cross-secs over eeV/BEk
 c                                                    (ii) Also, a bad fit to from-FAC points can cause huge SigPhi.
-c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombination because they are expressed via SigInz, SigPhi 
       END 
 
 
@@ -2440,9 +2468,8 @@ c        therefore I restrict "SigInz", "SigPhi". No need in restricting recombi
 
 
       real(8) FUNCTION VOIGT(X,Y) ! Voigt shape normalized to sqrt(pi); From Drayson, JQSRT, v.16, pp.611-614, 1976
-	use mo1co2feb 
 	implicit none
-	integer MAX, N, MIN, Jvo
+	integer MAX, N, MIN, Jvo, I   ! I is local (Nov 2026); before, VOIGT changed I of module mo1co2feb
 	real(8) X,Y, B(22), RI(15), XN(15), YN(15), D0(25), D1(25),D2(25),
      +       D3(25), D4(25), HN(25), XX(3),  HH(3), NBY2(19), Cv(21),
      +       CO, UU, VV, U, Y2, Hv, DXv, V
@@ -2478,7 +2505,6 @@ c  were recomputed in every call, now only in the first one (same values).
       ENDDO
         TabOK = .true.
       endif
-      I = 26   ! module variable I as left by the DO I=1,25 loop above in every call before
 
 104   IF (X-5.) 105,112,112
 105   IF (Y-1.) 110,110,106

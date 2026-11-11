@@ -62,11 +62,20 @@ Faster versions, same results bit for bit (Nov 2026)
 Full Kr run to 65 ps: 5 h 43 min before, 44 min after 1 and 2. All 30 output
 files of full Kr and Ge runs are identical byte for byte to the older version.
 
+  4. OpenMP: the BF loop over hv points runs in parallel (all cores, or set
+     OMP_NUM_THREADS). Each hv point keeps its own sum in the old order, so the
+     results do not depend on the number of threads (tested with 1 and 20).
+     The 3-step Kr+Ge test (T3) takes 425 s instead of 1016 s on 20 cores.
+
 Other changes that do not change results: "do nX = 1, nXkin" (nXkin = 1 in the
 module: kinetics, lines and BF only for X) instead of "do nX = 1, 1 ! nXE";
 PAUSE replaced by CALL Pause1('...'), which behaves as PAUSE but also writes the
 message to Warnings.log and stops with exit code 1 (gfortran's PAUSE without a
 keyboard silently stopped the run with exit code 0, as a normal end).
+Also: VOIGT no longer changes the module variable I; pv(1) in Ws and pBB(1) in
+EmiAbso are set to zero explicitly; the number of points of each InpResp*.inp is
+counted from the file (it was DATA npInpRes in the module); SigPhiA = SigPhi with
+the channel (k, kf, BEk, nX) as arguments.
 
 Tests
 -----

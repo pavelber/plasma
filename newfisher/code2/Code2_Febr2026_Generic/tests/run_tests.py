@@ -6,6 +6,7 @@
   python tests/run_tests.py step       T2 only
   python tests/run_tests.py e2e        T3: the real program, 3 time steps of Kr and Ge, ~8 min
   python tests/run_tests.py all        T1 + T2 + T3
+  ... --threads N                      run the programs with OMP_NUM_THREADS=N
   ... --update                         write the golden files instead of comparing
                                        (only after deciding that a change of results is wanted)
 
@@ -33,9 +34,14 @@ INPUT_RE = re.compile(r'.*\.(inp|INP)$')
 E2E_STOP = '7.6d-12'      # Params2.inp line 5: StopTime -> 3 time steps (the third one has BB emission)
 
 
+THREADS = None            # --threads N: OMP_NUM_THREADS for the programs under test
+
+
 def env():
     e = dict(os.environ)
     e['GFORTRAN_UNBUFFERED_PRECONNECTED'] = 'y'
+    if THREADS:
+        e['OMP_NUM_THREADS'] = str(THREADS)
     return e
 
 
@@ -139,8 +145,14 @@ def test_e2e(update):
 
 def main():
     args = sys.argv[1:]
+    global THREADS
     update = '--update' in args
     args = [a for a in args if a != '--update']
+    if '--threads' in args:
+        i = args.index('--threads')
+        THREADS = int(args[i + 1])
+        del args[i:i + 2]
+        print(f'OMP_NUM_THREADS = {THREADS}')
     what = args[0] if args else 'quick'
     tests = {'unit': [test_unit], 'step': [test_step], 'e2e': [test_e2e],
              'quick': [test_unit, test_step], 'all': [test_unit, test_step, test_e2e]}[what]
