@@ -16,9 +16,9 @@
 #   test-all       - T1 + T2 + T3
 #
 # Sources:
-#   mo1co2feb.for            - module; element-dependent arrays are ALLOCATABLE,
+#   mo1co2feb.f90            - module; element-dependent arrays are ALLOCATABLE,
 #                              AllocArrays/AllocLines allocate them at run time
-#   Co2feb26_main.for, Co2feb26_procs.for - main program and all procedures of
+#   Co2feb26_main.f90, Co2feb26_procs.f90 - main program and all procedures of
 #                              Co2feb26_GNU.for (split for tests); the GNU port is
 #                              Co2feb26.for with two tab-started continuation lines
 #                              (421, 2438) rewritten as standard column-6 continuations,
@@ -43,14 +43,14 @@ else
   LDSTATIC :=
 endif
 
-# Standard 72-column fixed form, as MS Fortran PowerStation: text after column 72 is ignored
-# (several statements in Co2feb26.for have comments there without '!').
+# Free-form sources (.f90), converted from the 72-column fixed form of MS Fortran
+# PowerStation; text that was after column 72 (ignored there) is kept as a comment
+# marked '[after column 72, ignored:]'.
 # -std=legacy: accept PAUSE and other old extensions without warnings
 # OpenMP: parallel loops (number of threads = number of cores, or OMP_NUM_THREADS).
-# -fmax-stack-var-size=65536 keeps large local arrays static, as without -fopenmp
-# (otherwise -fopenmp moves them to the stack); results are the same with any number
-# of threads, see tests/run_tests.py --threads.
-OMPFLAGS ?= -fopenmp -fmax-stack-var-size=65536
+# Results are the same with any number of threads, see tests/run_tests.py --threads.
+# Large local arrays that keep values between calls have an explicit SAVE.
+OMPFLAGS ?= -fopenmp
 FFLAGS_COMMON := -std=legacy $(OMPFLAGS)
 OPT     ?= -O2
 FFLAGS  ?= $(OPT) $(FFLAGS_COMMON)
@@ -72,7 +72,7 @@ $(EXE): $(OBJS)
 	$(FC) $(FFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 # module mo1co2feb must be compiled first (produces mo1co2feb.mod)
-$(MOD_OBJ): mo1co2feb.for
+$(MOD_OBJ): mo1co2feb.f90
 	$(FC) $(FFLAGS) -c $< -o $@
 
 $(NAG_OBJ): nag_replacements_Co2_GNU.f90 $(MOD_OBJ)
@@ -82,10 +82,10 @@ $(NAG_OBJ): nag_replacements_Co2_GNU.f90 $(MOD_OBJ)
 $(LZ_OBJ): lzfix_Co2_GNU.f90
 	$(FC) $(FFLAGS) -c $< -o $@
 
-$(PROC_OBJ): Co2feb26_procs.for $(MOD_OBJ)
+$(PROC_OBJ): Co2feb26_procs.f90 $(MOD_OBJ)
 	$(FC) $(FFLAGS) -c $< -o $@
 
-$(MAIN_OBJ): Co2feb26_main.for $(MOD_OBJ)
+$(MAIN_OBJ): Co2feb26_main.f90 $(MOD_OBJ)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 debug:

@@ -82,8 +82,10 @@ program test_unit
         write(nm,'(a,3i3)') 'SigInz', ic, iBE, mx
         call rec(nm, SigInz(BEk*xf(mx)))
         write(nm,'(a,3i3)') 'FVSinz', ic, iBE, mx
+        call sync()   ! integration context = module k, kf, j, BEk, DE
         call rec(nm, FVSinz(BEk*xf(mx)))
         write(nm,'(a,3i3)') 'FVStbr', ic, iBE, mx
+        call sync()   ! integration context = module k, kf, j, BEk, DE
         call rec(nm, FVStbr(BEk*xf(mx)*0.01d0))
       end do
     end do
@@ -110,8 +112,10 @@ program test_unit
         write(nm,'(a,3i3)') 'SigExc', ic, id, mx
         call rec(nm, SigExc(DE*xe(mx)))
         write(nm,'(a,3i3)') 'FVSEx', ic, id, mx
+        call sync()   ! integration context = module k, kf, j, BEk, DE
         call rec(nm, FVSEx(DE*xe(mx)))
         write(nm,'(a,3i3)') 'FVSDx', ic, id, mx
+        call sync()   ! integration context = module k, kf, j, BEk, DE
         call rec(nm, FVSDx(DE*xe(mx)*0.1d0))
       end do
     end do
@@ -124,16 +128,20 @@ program test_unit
     k = 1;  kf = 4;  j = 1;  BEk = 50.d0
     Aix(1,4) = 1.d0; Bix(1,4) = 0.5d0; Cix(1,4) = -0.2d0; Dix(1,4) = 0.1d0
     ifl = -1
+    call sync()   ! integration context = module k, kf, j, BEk, DE
     rr = D01AHF(BEk, upTB, tol, np, r, FVSinz, nl, ifl)
     write(nm,'(a,i3)') 'D01_inz', it;  call rec(nm, rr);  call reci(trim(nm)//'_n', np)
+    call sync()   ! integration context = module k, kf, j, BEk, DE
     rr = D01AHF(1.d-8, upTB, tol, np, r, FVStbr, nl, ifl)
     write(nm,'(a,i3)') 'D01_tbr', it;  call rec(nm, rr);  call reci(trim(nm)//'_n', np)
     k = 1;  kf = 2;  DE = 12.d0
     MthdEX(1,2) = 5
     Ax(1,2) = 1.d-17; Bx(1,2) = 2.d-18; Cx(1,2) = -1.d-18
     Dx(1,2) = 3.d-19; Ex(1,2) = 1.d-18; Fx(1,2) = 0.d0
+    call sync()   ! integration context = module k, kf, j, BEk, DE
     rr = D01AHF(DE, upTB, tol, np, r, FVSEx, nl, ifl)
     write(nm,'(a,i3)') 'D01_ex', it;  call rec(nm, rr);  call reci(trim(nm)//'_n', np)
+    call sync()   ! integration context = module k, kf, j, BEk, DE
     rr = D01AHF(1.d-8, upTB, tol, np, r, FVSDx, nl, ifl)
     write(nm,'(a,i3)') 'D01_dx', it;  call rec(nm, rr);  call reci(trim(nm)//'_n', np)
   end do
@@ -186,4 +194,8 @@ program test_unit
   end do
 
   call tclose()
+contains
+  subroutine sync()   ! FVS* read the channel from the integration context
+    cK = k;  cKf = kf;  cJ = j;  cBE = BEk;  cDE = DE
+  end subroutine sync
 end program test_unit

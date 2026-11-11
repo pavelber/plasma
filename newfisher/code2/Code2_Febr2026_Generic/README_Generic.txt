@@ -16,7 +16,7 @@ so a new element could require editing mo1co2feb.for and recompiling.
 
 Here they are run-time variables:
   nQSm = max(NST) and HSSm = max(HSS), read from lines 2 and 4 of Params0.inp
-         at the start of the run (subroutine AllocArrays in mo1co2feb.for);
+         at the start of the run (subroutine AllocArrays in mo1co2feb.f90);
   MNLe = number of spectral lines + 1, counted in LineList with the same
          criteria (fluMin, AulMin, hvMin) before the line arrays are filled
          (subroutine AllocLines).
@@ -45,11 +45,11 @@ and start it there.
 
 Sources (Nov 2026)
 ------------------
-  Co2feb26_main.for     main program (time loop)
-  Co2feb26_procs.for    all subroutines and functions
-  mo1co2feb.for         module: constants, arrays, AllocArrays/AllocSized/AllocLines
+  Co2feb26_main.f90     main program (time loop)
+  Co2feb26_procs.f90    all subroutines and functions
+  mo1co2feb.f90         module: constants, arrays, AllocArrays/AllocSized/AllocLines
   nag_replacements_Co2_GNU.f90, lzfix_Co2_GNU.f90   as in the GNU port
-The former Co2feb26_GNU.for = Co2feb26_main.for + Co2feb26_procs.for, split so that
+The former Co2feb26_GNU.for = Co2feb26_main.f90 + Co2feb26_procs.f90, split so that
 tests can call the procedures with their own main program.
 
 Faster versions, same results bit for bit (Nov 2026)
